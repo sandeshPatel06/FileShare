@@ -2,10 +2,14 @@ import { SignJWT, jwtVerify } from "jose";
 
 const secretValue = process.env.JWT_SECRET;
 
-// Fail closed in production: the fallback below is public in the repo, so
-// any prod without JWT_SECRET would accept attacker-forged tokens for every
-// protected page. Dev keeps the fallback for zero-config local runs.
-if (!secretValue && process.env.NODE_ENV === "production") {
+// Fail closed in production runtime: dev keeps the fallback for zero-config local runs.
+// During static build collection (NEXT_PHASE=phase-production-build or npm build),
+// allow compilation without requiring build-time runtime secrets.
+const isBuildPhase =
+  process.env.NEXT_PHASE === "phase-production-build" ||
+  process.env.npm_lifecycle_event === "build";
+
+if (!secretValue && process.env.NODE_ENV === "production" && !isBuildPhase) {
   throw new Error(
     "JWT_SECRET is not set. Refusing to start with a publicly-known signing key."
   );

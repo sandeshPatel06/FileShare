@@ -42,6 +42,7 @@ function getS3Client(): { client: S3Client; bucketName: string } | null {
     s3ClientInstance = new S3Client({
       endpoint: config.endpoint,
       region: config.region,
+      forcePathStyle: true,
       credentials: {
         accessKeyId: config.keyId,
         secretAccessKey: config.applicationKey,

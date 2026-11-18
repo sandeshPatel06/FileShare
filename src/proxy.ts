@@ -8,14 +8,17 @@ export function proxy(request: NextRequest) {
   const currentDomain = forwardedHost || host;
 
   // Never redirect if already on the new domain
-  if (currentDomain.includes("fileshare.shptechnology.online")) {
+  if (currentDomain.includes("filesp.pages.dev")) {
     return NextResponse.next();
   }
 
-  // Redirect old domain to new domain
-  if (currentDomain.includes("fileshare-live.onrender.com")) {
+  // Redirect old domains to new domain
+  if (
+    currentDomain.includes("fileshare-live.onrender.com") ||
+    currentDomain.includes("fileshare.shptechnology.online")
+  ) {
     const url = request.nextUrl.clone();
-    url.hostname = "fileshare.shptechnology.online";
+    url.hostname = "filesp.pages.dev";
     url.protocol = "https";
     url.port = "";
     return NextResponse.redirect(url, 301);

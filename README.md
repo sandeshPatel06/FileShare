@@ -71,7 +71,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 3. **Build Command**: `./deploy.sh`
 4. **Start Command**: `npm start`
 5. **Environment Variables**:
-   - `NEXT_PUBLIC_APP_URL` (e.g. `https://fileshare.shptechnology.online`)
+   - `NEXT_PUBLIC_APP_URL` (e.g. `https://filesp.pages.dev`)
    - `JWT_SECRET`
    - `DATABASE_URL` (Render PostgreSQL connection string)
    - `B2_ENDPOINT`, `B2_KEY_ID`, `B2_APPLICATION_KEY`, `B2_BUCKET_NAME`, `B2_REGION`
@@ -91,7 +91,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 🔌 API Reference
 
-Base URL: `http://localhost:3000` (local) · `https://fileshare.shptechnology.online` (prod).
+Base URL: `http://localhost:3000` (local) · `https://filesp.pages.dev` (prod).
 
 **Auth model:** public pages need no auth. Password-protected pages require `Authorization: Bearer <JWT>` whose payload `slug` matches the path slug. Get a token via `POST /api/pages/:slug/verify`. SSE and file-download also accept `?token=` since `EventSource`/`<a download>` can't set headers. Slugs: 3–48 chars, `^[a-z0-9]+(-[a-z0-9]+)*$`.
 
@@ -139,7 +139,7 @@ curl -N -H "Accept: text/event-stream" "localhost:3000/api/pages/demo/events?tok
 Import `bruno/` into [Bruno](https://www.usebruno.com). Two environments included — pick one from the environment selector:
 
 - **Local** → `http://localhost:3000`
-- **Production** → `https://fileshare.shptechnology.online`
+- **Production** → `https://filesp.pages.dev`
 
 Suggested run order: `Get Page → Update Content → Check Slug → Create Page → Rename → Set Password → Verify → SSE → Files (List → Upload → Delete → Serve) → Delete Workspace`.
 

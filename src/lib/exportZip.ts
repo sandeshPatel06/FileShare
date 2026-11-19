@@ -37,7 +37,7 @@ FileShare is a zero-registration, privacy-first service.
 Inactive workspaces and attached files may be pruned after
 30 days of inactivity. This export contains your offline backup.
 
-Website: https://fileshare.shptechnology.online
+Website: ${typeof window !== "undefined" ? window.location.origin : "https://filesp.pages.dev"}
 =====================================================
 `;
     zip.file("README.txt", readmeContent);

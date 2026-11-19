@@ -140,7 +140,7 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: "google8d8686369b9d6380",
+    google: "FAwpNypqtvK6LiCHZQk4SWhP2nl8wYOqZ_XjFRVnVhU",
   },
 };
 

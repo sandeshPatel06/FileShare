@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
+    "build:pages": "bash scripts/build-pages.sh",
     "clean": "rm -rf .next out"
   },
   "engines": {

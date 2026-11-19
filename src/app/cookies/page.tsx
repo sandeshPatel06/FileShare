@@ -205,7 +205,7 @@ export default function CookiePolicyPage() {
             <div className="p-4 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs font-mono space-y-1 break-all">
               <div>Entity: SHP Technology</div>
               <div>Grievance Officer: Sandesh Patel</div>
-              <div>Email: grievance@fileshare.shptechnology.online / support@fileshare.shptechnology.online</div>
+              <div>Email: sandeshpatel.sp.93@gmail.com</div>
               <div>Address: 1st floor, SHP Technology, Near Underground Bridge, Madan Mahal Station, Jabalpur, Madhya Pradesh 482001, India</div>
             </div>
           </section>

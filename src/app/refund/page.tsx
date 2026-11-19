@@ -141,8 +141,8 @@ export default function RefundPolicyPage() {
             </p>
             <div className="p-4 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs font-mono space-y-1 break-all">
               <div>Entity: SHP Technology (FileShare)</div>
-              <div>Billing Email: billing@fileshare.shptechnology.online</div>
-              <div>Support Email: support@fileshare.shptechnology.online</div>
+              <div>Billing Email: sandeshpatel.sp.93@gmail.com</div>
+              <div>Support Email: sandeshpatel.sp.93@gmail.com</div>
               <div>Operating Address: 1st floor, SHP Technology, Near Underground Bridge, Madan Mahal Station, Jabalpur, Madhya Pradesh 482001, India</div>
               <div>Response Time: 24 to 48 business hours</div>
             </div>

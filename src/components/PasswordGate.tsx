@@ -43,7 +43,10 @@ export function PasswordGate({ slug, onUnlocked }: PasswordGateProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col items-center justify-center p-4 relative overflow-hidden transition-colors duration-200">
+    <div
+      id="workspace-shell"
+      className="h-screen h-dvh max-h-dvh min-h-0 w-full max-w-full bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col items-center justify-center p-3 sm:p-4 relative overflow-hidden overscroll-none transition-colors duration-200"
+    >
       {/* Glow Orbs — capped opacity so the green wash never oversaturates dark canvas */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[var(--border-glow)] rounded-full blur-[150px] opacity-20 pointer-events-none" />
 

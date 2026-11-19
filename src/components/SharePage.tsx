@@ -74,6 +74,30 @@ export function SharePage({ pageData }: SharePageProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [showFilePanel]);
 
+  // Lock document-level scrolling & overscroll bounce while the workspace shell is mounted.
+  // This guarantees document.documentElement.scrollHeight === window.innerHeight under all
+  // screen dimensions and mobile dynamic browser chrome resize events.
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const originalHtmlOverflow = html.style.overflow;
+    const originalBodyOverflow = body.style.overflow;
+    const originalHtmlOverscroll = html.style.overscrollBehavior;
+    const originalBodyOverscroll = body.style.overscrollBehavior;
+
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    html.style.overscrollBehavior = "none";
+    body.style.overscrollBehavior = "none";
+
+    return () => {
+      html.style.overflow = originalHtmlOverflow;
+      body.style.overflow = originalBodyOverflow;
+      html.style.overscrollBehavior = originalHtmlOverscroll;
+      body.style.overscrollBehavior = originalBodyOverscroll;
+    };
+  }, []);
+
   const effectiveToken = tokenState ?? storedToken;
   const isUnlocked = !isProtected || Boolean(effectiveToken) || isUnlockedState;
 
@@ -98,9 +122,12 @@ export function SharePage({ pageData }: SharePageProps) {
   }
 
   return (
-    <div className="flex flex-col h-dvh w-full overflow-hidden bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-200 relative">
+    <div
+      id="workspace-shell"
+      className="flex flex-col h-screen h-dvh max-h-dvh flex-1 min-h-0 w-full max-w-full overflow-hidden overscroll-none bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-200 relative"
+    >
       {/* Top Header Navigation */}
-      <header className="h-11 sm:h-12 px-2 sm:px-3 bg-[var(--header-bg)] border-b border-[var(--border-color)] flex items-center shrink-0 z-[60] transition-colors duration-200">
+      <header className="h-11 sm:h-12 min-h-11 sm:min-h-12 max-h-11 sm:max-h-12 px-2 sm:px-3 bg-[var(--header-bg)] border-b border-[var(--border-color)] flex items-center shrink-0 w-full min-w-0 max-w-full z-[60] transition-colors duration-200 overflow-hidden">
         <SlugBar
           slug={slug}
           isProtected={isProtected}
@@ -112,7 +139,7 @@ export function SharePage({ pageData }: SharePageProps) {
       </header>
 
       {/* Main Workspace */}
-      <main className="flex-1 flex min-h-0 relative overflow-hidden">
+      <main className="flex-1 flex min-h-0 min-w-0 w-full max-w-full relative overflow-hidden">
         {/* Left Editor Pane */}
         <section aria-label="Markdown workspace" className="flex-1 min-w-0 min-h-0 h-full flex flex-col overflow-hidden">
           <TextEditor slug={slug} initialContent={pageData.content} token={effectiveToken} />
@@ -126,11 +153,12 @@ export function SharePage({ pageData }: SharePageProps) {
           className={`
             absolute sm:static inset-y-0 right-0 z-40 sm:z-auto
             bg-[var(--bg-surface)]
-            flex flex-col shrink-0 min-h-0 overflow-hidden overscroll-contain max-w-full
+            flex flex-col shrink-0 min-h-0 h-full overflow-hidden overscroll-contain max-w-full
             transition-[transform,width,opacity] duration-200 ease-in-out
+            w-[280px] max-w-[85vw] sm:max-w-full
             ${showFilePanel
-              ? "translate-x-0 w-[280px] max-w-[85vw] sm:max-w-full sm:w-[300px] md:w-[320px] border-l border-[var(--border-color)] opacity-100 shadow-xl sm:shadow-none"
-              : "translate-x-full sm:translate-x-0 sm:w-0 sm:border-l-0 sm:opacity-0 sm:overflow-hidden pointer-events-none sm:pointer-events-auto"
+              ? "translate-x-0 opacity-100 sm:w-[300px] md:w-[320px] border-l border-[var(--border-color)] shadow-xl sm:shadow-none"
+              : "translate-x-full opacity-0 sm:opacity-0 sm:translate-x-0 sm:w-0 sm:border-l-0 sm:overflow-hidden pointer-events-none sm:pointer-events-auto"
             }
           `}
         >
@@ -156,7 +184,7 @@ export function SharePage({ pageData }: SharePageProps) {
         {showFilePanel && (
           <div
             aria-hidden="true"
-            className="sm:hidden absolute inset-0 bg-black/60 z-30 transition-opacity duration-200"
+            className="sm:hidden absolute inset-0 bg-black/60 z-30 transition-opacity duration-200 touch-none overscroll-none cursor-pointer"
             onClick={() => setUserPanelToggle(false)}
           />
         )}
@@ -171,21 +199,21 @@ export function SharePage({ pageData }: SharePageProps) {
         onSuccess={(protectedState) => setIsProtected(protectedState)}
       />
 
-      <footer className="border-t border-[var(--border-color)] bg-[var(--header-bg)] h-7 min-h-7 py-0 px-2 sm:px-3 shrink-0 text-[10px] sm:text-xs text-[var(--text-muted)] flex flex-wrap items-center justify-center sm:justify-between gap-1.5 sm:gap-2 z-20 font-medium overflow-visible">
+      <footer className="border-t border-[var(--border-color)] bg-[var(--header-bg)] h-7 min-h-7 max-h-7 py-0 px-2 sm:px-3 shrink-0 text-[10px] sm:text-xs text-[var(--text-muted)] flex flex-nowrap items-center justify-center sm:justify-between gap-1.5 sm:gap-2 z-20 font-medium overflow-hidden w-full min-w-0 max-w-full select-none">
         <div className="hidden sm:flex items-center gap-1.5 min-w-0 max-w-full flex-1 overflow-hidden">
           <span className="truncate min-w-0">Workspace: <code className="font-mono font-semibold text-[var(--text-main)] truncate max-w-[45vw] sm:max-w-[280px] inline-block align-bottom">/s/{slug}</code></span>
         </div>
-        <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap min-w-0 max-w-full whitespace-nowrap">
-          <Link href="/guide" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors py-0.5">User Guide</Link>
-          <span className="text-[var(--text-subtle)]" aria-hidden="true">•</span>
-          <Link href="/resources" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors py-0.5">Resources</Link>
-          <span className="text-[var(--text-subtle)]" aria-hidden="true">•</span>
-          <Link href="/about" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors py-0.5">About</Link>
-          <span className="text-[var(--text-subtle)]" aria-hidden="true">•</span>
-          <Link href="/contact" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors py-0.5">Contact</Link>
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap min-w-0 max-w-full whitespace-nowrap overflow-x-auto no-scrollbar">
+          <Link href="/guide" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors py-0.5 shrink-0">User Guide</Link>
+          <span className="text-[var(--text-subtle)] shrink-0" aria-hidden="true">•</span>
+          <Link href="/resources" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors py-0.5 shrink-0">Resources</Link>
+          <span className="text-[var(--text-subtle)] shrink-0" aria-hidden="true">•</span>
+          <Link href="/about" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors py-0.5 shrink-0">About</Link>
+          <span className="text-[var(--text-subtle)] shrink-0" aria-hidden="true">•</span>
+          <Link href="/contact" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors py-0.5 shrink-0">Contact</Link>
 
           {/* Mobile Legal dropdown */}
-          <div className="relative sm:hidden">
+          <div className="relative sm:hidden shrink-0">
             <button
               ref={legalMenuButtonRef}
               type="button"
@@ -207,14 +235,14 @@ export function SharePage({ pageData }: SharePageProps) {
           </div>
 
           {/* Desktop inline legal links */}
-          <span className="hidden sm:inline text-[var(--text-subtle)]" aria-hidden="true">•</span>
-          <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="hidden sm:inline hover:text-[var(--text-main)] transition-colors py-0.5">Privacy</Link>
-          <span className="hidden sm:inline text-[var(--text-subtle)]" aria-hidden="true">•</span>
-          <Link href="/terms" target="_blank" rel="noopener noreferrer" className="hidden sm:inline hover:text-[var(--text-main)] transition-colors py-0.5">Terms</Link>
-          <span className="hidden sm:inline text-[var(--text-subtle)]" aria-hidden="true">•</span>
-          <Link href="/cookies" target="_blank" rel="noopener noreferrer" className="hidden sm:inline hover:text-[var(--text-main)] transition-colors py-0.5">Cookies</Link>
-          <span className="hidden sm:inline text-[var(--text-subtle)]" aria-hidden="true">•</span>
-          <Link href="/refund" target="_blank" rel="noopener noreferrer" className="hidden sm:inline hover:text-[var(--text-main)] transition-colors py-0.5">Refund</Link>
+          <span className="hidden sm:inline text-[var(--text-subtle)] shrink-0" aria-hidden="true">•</span>
+          <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="hidden sm:inline hover:text-[var(--text-main)] transition-colors py-0.5 shrink-0">Privacy</Link>
+          <span className="hidden sm:inline text-[var(--text-subtle)] shrink-0" aria-hidden="true">•</span>
+          <Link href="/terms" target="_blank" rel="noopener noreferrer" className="hidden sm:inline hover:text-[var(--text-main)] transition-colors py-0.5 shrink-0">Terms</Link>
+          <span className="hidden sm:inline text-[var(--text-subtle)] shrink-0" aria-hidden="true">•</span>
+          <Link href="/cookies" target="_blank" rel="noopener noreferrer" className="hidden sm:inline hover:text-[var(--text-main)] transition-colors py-0.5 shrink-0">Cookies</Link>
+          <span className="hidden sm:inline text-[var(--text-subtle)] shrink-0" aria-hidden="true">•</span>
+          <Link href="/refund" target="_blank" rel="noopener noreferrer" className="hidden sm:inline hover:text-[var(--text-main)] transition-colors py-0.5 shrink-0">Refund</Link>
         </div>
       </footer>
     </div>

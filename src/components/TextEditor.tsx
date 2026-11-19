@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/Button";
 import { exportAllAsZip } from "@/lib/exportZip";
 import { copyToClipboard } from "@/lib/clipboard";
 import { createPortal } from "react-dom";
-import { computePosition, flip, shift, offset } from "@floating-ui/dom";
+import { computePosition, flip, shift, offset, size } from "@floating-ui/dom";
 import { FloatingMenu } from "@/components/ui/FloatingMenu";
 import { getCaretCoordinates } from "@/lib/caret";
 
@@ -455,6 +455,14 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
         offset(6),
         flip({ padding: 12 }),
         shift({ padding: 12 }),
+        size({
+          padding: 12,
+          apply({ availableHeight, elements }) {
+            Object.assign(elements.floating.style, {
+              maxHeight: `${Math.min(280, Math.max(120, availableHeight))}px`,
+            });
+          },
+        }),
       ],
     }).then(({ x, y }) => {
       Object.assign(menuEl.style, {
@@ -1101,7 +1109,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
       {/* Sleek IDE Top Toolbar */}
       <header className="relative z-30 flex flex-col sm:flex-row items-stretch sm:items-center px-2.5 py-1.5 border-b border-[var(--border-color)] bg-[var(--bg-surface)] shrink-0 gap-1.5 select-none min-h-[44px] w-full min-w-0 max-w-full">
         {/* Left: Markdown Format Icons Toolbar */}
-        <div className="flex items-center gap-1.5 flex-nowrap flex-none w-full sm:flex-1 overflow-x-auto no-scrollbar py-0.5 min-w-0 max-w-full">
+        <div className="flex items-center gap-1.5 flex-nowrap flex-none w-full sm:flex-1 overflow-x-auto no-scrollbar py-0.5 min-w-0 max-w-full overscroll-x-contain">
           {/* Headings */}
           <div className="flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)] shrink-0">
             <button
@@ -1234,7 +1242,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
         </div>
 
         {/* Right: Actions, Templates, Export, Zen & View Controls */}
-        <div className="flex items-center justify-end gap-1 sm:gap-1.5 flex-nowrap flex-none w-full sm:w-auto min-w-0 sm:shrink-0 ml-0 sm:ml-auto overflow-x-auto max-w-full no-scrollbar">
+        <div className="flex items-center justify-start sm:justify-end gap-1 sm:gap-1.5 flex-nowrap flex-none w-full sm:w-auto min-w-0 sm:shrink-0 ml-0 sm:ml-auto overflow-x-auto max-w-full no-scrollbar py-0.5 overscroll-x-contain">
           {/* Starter Templates Button */}
           <button
             type="button"
@@ -1313,7 +1321,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
               <ChevronDown size={13} className={`transition-transform duration-200 ${showExportMenu ? "rotate-180" : ""}`} />
             </button>
             {showExportMenu && (
-              <FloatingMenu open={showExportMenu} anchorRef={exportMenuRef} placement="bottom-end" className="w-56 max-w-[calc(100vw-1rem)] rounded-xl bg-[var(--modal-bg)] border border-[var(--border-color)] shadow-xl p-1 text-xs font-medium">
+              <FloatingMenu open={showExportMenu} anchorRef={exportMenuRef} placement="bottom-end" className="w-56 max-w-[calc(100vw-1rem)] max-h-[calc(100vh-5rem)] overflow-y-auto overscroll-contain rounded-xl bg-[var(--modal-bg)] border border-[var(--border-color)] shadow-xl p-1 text-xs font-medium">
                 <button
                   type="button"
                   onClick={handleExportAllZip}
@@ -1497,19 +1505,26 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
           <div className="w-full h-full flex min-h-0 max-w-full overflow-hidden">
             {/* Outline Sidebar Pane */}
             {showOutline && (
-              <aside className="absolute sm:static z-20 w-64 max-w-[80vw] h-full min-w-0 flex flex-col bg-[var(--bg-surface)] border-r border-[var(--border-color)] overflow-hidden shrink-0 animate-fade-in shadow-xl sm:shadow-none">
-                <div className="px-3 py-2.5 border-b border-[var(--border-color)] flex items-center justify-between shrink-0">
-                  <span className="text-xs font-bold text-[var(--text-main)] uppercase tracking-wider">Outline</span>
-                  <button
-                    type="button"
-                    onClick={() => setShowOutline(false)}
-                    className="sm:hidden text-xs text-[var(--text-muted)] hover:text-[var(--text-main)] p-1 cursor-pointer"
-                    aria-label="Close outline"
-                  >
-                    ✕
-                  </button>
-                </div>
-                <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-1">
+              <>
+                {/* Mobile backdrop for outline drawer */}
+                <div
+                  aria-hidden="true"
+                  className="sm:hidden absolute inset-0 bg-black/40 z-20 transition-opacity animate-fade-in"
+                  onClick={() => setShowOutline(false)}
+                />
+                <aside className="absolute sm:static inset-y-0 left-0 z-30 w-64 max-w-[85vw] h-full min-h-0 min-w-0 flex flex-col bg-[var(--bg-surface)] border-r border-[var(--border-color)] overflow-hidden shrink-0 animate-fade-in shadow-xl sm:shadow-none">
+                  <div className="px-3 py-2.5 border-b border-[var(--border-color)] flex items-center justify-between shrink-0">
+                    <span className="text-xs font-bold text-[var(--text-main)] uppercase tracking-wider">Outline</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowOutline(false)}
+                      className="sm:hidden text-xs text-[var(--text-muted)] hover:text-[var(--text-main)] p-1 cursor-pointer min-h-[32px] min-w-[32px] flex items-center justify-center rounded"
+                      aria-label="Close outline"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-3 space-y-1">
                   {headings.length === 0 ? (
                     <p className="text-xs text-[var(--text-muted)] italic">No headings found in document.</p>
                   ) : (
@@ -1540,16 +1555,17 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                   )}
                 </div>
               </aside>
-            )}
+            </>
+          )}
 
             {/* Writer Pane */}
             {(viewMode === "write" || viewMode === "split") && (
               <div className={`flex-1 h-full min-h-0 min-w-0 flex flex-col bg-[var(--bg-card)] relative overflow-hidden ${viewMode === "split" ? "border-r border-[var(--border-color)]" : ""}`}>
-                <div className="flex-1 flex min-h-0 relative overflow-hidden">
+                <div className="flex-1 h-full flex min-h-0 relative overflow-hidden">
                   {/* Line Numbers Gutter */}
                   <div
                     ref={lineNumbersRef}
-                    className="select-none py-3 px-2 text-right font-mono text-xs sm:text-sm text-[var(--text-subtle)] bg-[var(--bg-surface)]/60 border-r border-[var(--border-color)] shrink-0 overflow-hidden hidden sm:block min-w-[44px]"
+                    className="select-none py-3 px-2 text-right font-mono text-xs sm:text-sm text-[var(--text-subtle)] bg-[var(--bg-surface)]/60 border-r border-[var(--border-color)] shrink-0 overflow-hidden hidden sm:block min-w-[44px] h-full"
                     aria-hidden="true"
                   >
                     {Array.from({ length: lineCount }, (_, i) => (
@@ -1568,7 +1584,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                     onScroll={handleScroll}
                     placeholder="Type or paste Markdown here... (Type '/' for commands)"
                     aria-label="Notes markdown content editor"
-                    className="w-full flex-1 min-h-0 max-w-full resize-none bg-transparent text-[var(--text-main)] py-3 px-3 sm:px-4 outline-none font-mono text-base sm:text-sm leading-6 placeholder-[var(--text-subtle)] overflow-y-auto overflow-x-hidden selection:bg-[var(--accent-primary)]/20 relative z-10"
+                    className="w-full flex-1 h-full min-h-0 max-w-full resize-none bg-transparent text-[var(--text-main)] py-3 px-3 sm:px-4 outline-none font-mono text-base sm:text-sm leading-6 placeholder-[var(--text-subtle)] overflow-y-auto overflow-x-hidden overscroll-contain selection:bg-[var(--accent-primary)]/20 relative z-10"
                     spellCheck="false"
                   />
 
@@ -1579,10 +1595,10 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                         ref={slashMenuRef}
                         role="listbox"
                         aria-label="Slash commands suggestions"
-                        className="fixed w-64 max-w-[calc(100vw-1.5rem)] bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl shadow-xl overflow-hidden z-50 animate-scale-in"
+                        className="fixed w-64 max-w-[calc(100vw-1.5rem)] flex flex-col bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl shadow-xl overflow-hidden z-50 animate-scale-in"
                         style={{ top: "-9999px", left: "-9999px" }}
                       >
-                        <div className="px-3 py-1.5 border-b border-[var(--border-color)] bg-[var(--bg-card)] flex items-center justify-between select-none">
+                        <div className="px-3 py-1.5 border-b border-[var(--border-color)] bg-[var(--bg-card)] flex items-center justify-between select-none shrink-0">
                           <span className="text-[11px] font-bold uppercase text-[var(--text-muted)] tracking-wider">
                             Basic Blocks
                           </span>
@@ -1590,7 +1606,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                             ↑↓ · ↵ to insert
                           </span>
                         </div>
-                        <div className="max-h-60 overflow-y-auto p-1.5 space-y-0.5">
+                        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-1.5 space-y-0.5">
                           {filteredSlashOptions.map((opt, i) => (
                             <div
                               key={opt.id}
@@ -1622,7 +1638,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
             {/* Formatted Markdown Live Preview Pane */}
             {(viewMode === "preview" || viewMode === "split") && (
               <section className="flex-1 h-full min-h-0 min-w-0 flex flex-col bg-[var(--bg-main)] overflow-hidden">
-                <div ref={previewRef} className="flex-1 min-h-0 min-w-0 p-4 sm:p-6 md:p-8 overflow-y-auto overflow-x-hidden max-w-full lg:max-w-4xl lg:mx-auto scroll-smooth w-full">
+                <div ref={previewRef} className="flex-1 h-full min-h-0 min-w-0 p-4 sm:p-6 md:p-8 overflow-y-auto overflow-x-hidden overscroll-contain max-w-full lg:max-w-4xl lg:mx-auto scroll-smooth w-full">
                   <MarkdownRenderer content={displayContent} onToggleTask={handleToggleTask} />
                 </div>
               </section>
@@ -1633,12 +1649,12 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
 
       {/* Bottom Status Bar (IDE Utility Style) */}
       <footer className="h-7 min-h-7 px-2.5 sm:px-3 bg-[var(--bg-surface)] border-t border-[var(--border-color)] text-[11px] leading-none text-[var(--text-muted)] flex items-center justify-between gap-2 font-mono select-none shrink-0 overflow-hidden">
-        <div className="flex items-center gap-2 min-w-0 overflow-hidden whitespace-nowrap">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 overflow-hidden whitespace-nowrap truncate">
           <span>{readTime} min read</span>
           <span className="text-[var(--border-color)]">·</span>
           <span>{wordCount.toLocaleString()} words</span>
-          <span className="text-[var(--border-color)]">·</span>
-          <span>{charCount.toLocaleString()} chars</span>
+          <span className="hidden min-[400px]:inline text-[var(--border-color)]">·</span>
+          <span className="hidden min-[400px]:inline">{charCount.toLocaleString()} chars</span>
           <span className="hidden sm:inline text-[var(--border-color)]">·</span>
           <span className="hidden sm:inline">{lineCount.toLocaleString()} lines</span>
           {totalTasks > 0 && (

@@ -99,6 +99,8 @@ export function FilePanel({ slug, token }: FilePanelProps) {
   const [zipStatus,      setZipStatus]      = useState("");
   const activeXhrs = useRef<Record<string, XMLHttpRequest>>({});
   const inputRef = useRef<HTMLInputElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const dragCounter = useRef(0);
 
   const cancelUpload = useCallback((id: string) => {
     if (activeXhrs.current[id]) {
@@ -150,6 +152,9 @@ export function FilePanel({ slug, token }: FilePanelProps) {
         etaFormatted: "",
       },
     }));
+
+    // Scroll to top of list smoothly so upload progress card is immediately visible
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
 
     try {
       await new Promise<void>((resolve, reject) => {
@@ -244,14 +249,43 @@ export function FilePanel({ slug, token }: FilePanelProps) {
     }
   }, [slug, token]);
 
-  function handleFiles(fileList: FileList | null) {
+  const handleFiles = useCallback((fileList: FileList | null) => {
     if (!fileList) return;
     Array.from(fileList).forEach(uploadFile);
-  }
+  }, [uploadFile]);
 
-  function onDragOver(e: React.DragEvent) { e.preventDefault(); setDragging(true); }
-  function onDragLeave()                  { setDragging(false); }
-  function onDrop(e: React.DragEvent)     { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files); }
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current += 1;
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+      setDragging(true);
+    }
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = "copy";
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current -= 1;
+    if (dragCounter.current <= 0) {
+      dragCounter.current = 0;
+      setDragging(false);
+    }
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current = 0;
+    setDragging(false);
+    handleFiles(e.dataTransfer.files);
+  }, [handleFiles]);
 
   const filteredFiles = files.filter((f) => {
     const matchesSearch = f.originalName.toLowerCase().includes(searchQuery.toLowerCase());
@@ -268,7 +302,14 @@ export function FilePanel({ slug, token }: FilePanelProps) {
   ];
 
   return (
-    <aside aria-label="Vault files manager" className="flex flex-col h-full min-h-0 min-w-0 overflow-hidden bg-[var(--bg-surface)] transition-colors select-none">
+    <aside
+      aria-label="Vault files manager"
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className="flex flex-col flex-1 h-full min-h-0 min-w-0 overflow-hidden bg-[var(--bg-surface)] transition-colors select-none relative"
+    >
       {/* Hidden File Input */}
       <input
         ref={inputRef}
@@ -281,6 +322,24 @@ export function FilePanel({ slug, token }: FilePanelProps) {
           e.target.value = "";
         }}
       />
+
+      {/* Full-panel Drag Overlay when dragging files over active vault */}
+      {dragging && files.length > 0 && (
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 z-30 bg-[var(--bg-surface)]/90 backdrop-blur-xs border-2 border-dashed border-[var(--accent-primary)] rounded-md m-2 flex flex-col items-center justify-center gap-2 pointer-events-none transition-all"
+        >
+          <div className="w-11 h-11 rounded-full bg-[var(--badge-bg)] text-[var(--accent-primary)] flex items-center justify-center">
+            <UploadCloud size={22} className="animate-pulse" />
+          </div>
+          <p className="text-xs font-semibold text-[var(--accent-primary)]">
+            Drop files to upload to vault
+          </p>
+          <p className="text-[11px] font-mono text-[var(--text-muted)]">
+            ≤ 500 MB per file · Streamed direct
+          </p>
+        </div>
+      )}
 
       {/* Header Toolbar */}
       <header className="flex items-center justify-between px-3 py-2 border-b border-[var(--border-color)] bg-[var(--bg-surface)] shrink-0 min-h-[44px] gap-2">
@@ -396,15 +455,15 @@ export function FilePanel({ slug, token }: FilePanelProps) {
       )}
 
       {/* Panel Scrollable Content: single scroll node */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden overscroll-contain p-2.5 space-y-2.5 min-h-0 min-w-0 max-w-full">
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto overflow-x-hidden overscroll-contain p-2.5 space-y-2.5 min-h-0 min-w-0 max-w-full"
+      >
         {/* Compact drop zone container (only when files already exist in space) */}
         {files.length > 0 && (
           <div
             role="button"
             tabIndex={0}
-            onDragOver={onDragOver}
-            onDragLeave={onDragLeave}
-            onDrop={onDrop}
             onClick={() => inputRef.current?.click()}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
@@ -414,21 +473,28 @@ export function FilePanel({ slug, token }: FilePanelProps) {
             }}
             aria-label="Upload files (drop files here or click to browse)"
             className={`
-              relative flex items-center justify-between gap-3 px-3 py-2 min-h-[44px]
-              rounded-md border border-dashed transition-colors cursor-pointer
+              relative flex items-center justify-between gap-2 px-3 py-2 min-h-[44px]
+              rounded-md border border-dashed transition-colors cursor-pointer shrink-0
               ${dragging
                 ? "border-[var(--accent-primary)] bg-[var(--badge-bg)]"
                 : "border-[var(--border-color)] hover:border-[var(--accent-primary)] bg-[var(--input-bg)]/50 hover:bg-[var(--bg-card-hover)]"
               }
             `}
           >
-            <div className="flex items-center gap-2 min-w-0">
-              <UploadCloud size={15} className={dragging ? "text-[var(--accent-primary)]" : "text-[var(--text-muted)]"} />
-              <span className="text-xs font-medium text-[var(--text-main)] truncate">
-                {dragging ? "Release to drop files" : "Drop files to upload, or browse"}
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <UploadCloud size={15} className={dragging ? "text-[var(--accent-primary)] shrink-0" : "text-[var(--text-muted)] shrink-0"} />
+              <span className="text-xs font-medium text-[var(--text-main)] truncate min-w-0">
+                {dragging ? (
+                  "Release to drop files"
+                ) : (
+                  <>
+                    <span className="inline sm:hidden">Drop files or browse</span>
+                    <span className="hidden sm:inline">Drop files to upload, or browse</span>
+                  </>
+                )}
               </span>
             </div>
-            <span className="text-[11px] font-mono text-[var(--text-muted)] shrink-0">
+            <span className="text-[11px] font-mono text-[var(--text-muted)] shrink-0 whitespace-nowrap">
               ≤ 500 MB
             </span>
           </div>
@@ -439,7 +505,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
           <article
             key={item.id}
             aria-label={`Uploading ${item.name}`}
-            className="flex flex-col gap-2 p-2.5 rounded-md bg-[var(--bg-card)] border border-[var(--border-color)] min-w-0 max-w-full overflow-hidden"
+            className="flex flex-col gap-2 p-2.5 rounded-md bg-[var(--bg-card)] border border-[var(--border-color)] min-w-0 max-w-full overflow-hidden shrink-0"
           >
             <div className="flex items-center justify-between gap-2 min-w-0 max-w-full">
               <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -461,7 +527,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
                   onClick={() => cancelUpload(item.id)}
                   title="Cancel upload"
                   aria-label={`Cancel upload for ${item.name}`}
-                  className="p-1 min-h-[44px] min-w-[44px] sm:min-h-[28px] sm:min-w-[28px] flex items-center justify-center rounded text-[var(--text-muted)] hover:text-[var(--status-danger-text)] hover:bg-[var(--status-danger-bg)] transition-colors cursor-pointer"
+                  className="p-1 min-h-[36px] min-w-[36px] sm:min-h-[26px] sm:min-w-[26px] flex items-center justify-center rounded text-[var(--text-muted)] hover:text-[var(--status-danger-text)] hover:bg-[var(--status-danger-bg)] transition-colors cursor-pointer"
                 >
                   <X size={13} />
                 </button>
@@ -477,7 +543,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
             </div>
 
             {/* Metrics */}
-            <div className="flex items-center justify-between gap-2 text-[11px] font-mono text-[var(--text-muted)]">
+            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-[11px] font-mono text-[var(--text-muted)]">
               <span className="truncate min-w-0">
                 {item.loadedFormatted} / {item.totalFormatted}
               </span>
@@ -502,9 +568,6 @@ export function FilePanel({ slug, token }: FilePanelProps) {
             <div
               role="button"
               tabIndex={0}
-              onDragOver={onDragOver}
-              onDragLeave={onDragLeave}
-              onDrop={onDrop}
               onClick={() => inputRef.current?.click()}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
@@ -516,7 +579,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
               className={`
                 text-center p-6 sm:p-8 rounded-lg border border-dashed transition-colors cursor-pointer
                 ${dragging
-                  ? "border-[var(--accent-primary)] bg-[var(--badge-bg)]"
+                  ? "border-[var(--accent-primary)] bg-[var(--badge-bg)] ring-1 ring-[var(--accent-primary)]/40"
                   : "border-[var(--border-color)] hover:border-[var(--accent-primary)] bg-[var(--input-bg)]/40 hover:bg-[var(--bg-card-hover)]/40"
                 }
               `}
@@ -565,7 +628,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
             </div>
           )
         ) : (
-          <div className={viewLayout === "grid" ? "grid grid-cols-1 min-[420px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-2 min-w-0 max-w-full" : "space-y-1.5 min-w-0 max-w-full"}>
+          <div className={viewLayout === "grid" ? "grid grid-cols-1 sm:grid-cols-2 gap-2 min-w-0 max-w-full" : "space-y-1.5 min-w-0 max-w-full"}>
             {filteredFiles.map((f) => (
               <FileCard key={f.fileId} file={f} slug={slug} token={token} layout={viewLayout} />
             ))}

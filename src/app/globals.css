@@ -144,6 +144,16 @@ body {
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
+/* Workspace Shell Viewport Lock:
+   Guarantee zero document-level scrollbars and prevent dynamic viewport bounce
+   while the real-time workspace is active. */
+html:has(#workspace-shell),
+body:has(#workspace-shell) {
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  height: 100dvh !important;
+}
+
 ::selection {
   background-color: var(--badge-border);
   color: var(--text-main);

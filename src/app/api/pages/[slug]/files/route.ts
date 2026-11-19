@@ -30,15 +30,25 @@ function parseUtcSeconds(uploadedAt: unknown): number {
     return uploadedAt > 1e11 ? Math.floor(uploadedAt / 1000) : Math.floor(uploadedAt);
   }
   const str = String(uploadedAt).trim();
-  const directDate = new Date(str);
-  if (!isNaN(directDate.getTime())) {
-    return Math.floor(directDate.getTime() / 1000);
+  if (!str) return Math.floor(Date.now() / 1000);
+
+  // If already contains timezone indicator (Z or +/-offset at the end, e.g. +05:30)
+  if (str.endsWith("Z") || /[+-]\d{2}(:?\d{2})?$/.test(str)) {
+    const d = new Date(str);
+    if (!isNaN(d.getTime())) return Math.floor(d.getTime() / 1000);
   }
-  const iso = str.includes("T")
-    ? (str.endsWith("Z") ? str : `${str}Z`)
-    : `${str.replace(" ", "T")}Z`;
+
+  // SQLite CURRENT_TIMESTAMP format "YYYY-MM-DD HH:MM:SS" is always stored in UTC.
+  // Converting it to ISO format with trailing "Z" ensures JavaScript parses it as UTC
+  // regardless of what timezone the server's Node.js environment is set to (e.g. IST +05:30).
+  const iso = str.includes("T") ? `${str}Z` : `${str.replace(" ", "T")}Z`;
   const d = new Date(iso);
-  return isNaN(d.getTime()) ? Math.floor(Date.now() / 1000) : Math.floor(d.getTime() / 1000);
+  if (!isNaN(d.getTime())) {
+    return Math.floor(d.getTime() / 1000);
+  }
+
+  const directDate = new Date(str);
+  return isNaN(directDate.getTime()) ? Math.floor(Date.now() / 1000) : Math.floor(directDate.getTime() / 1000);
 }
 
 // GET /api/pages/[slug]/files — list all files for a page (verifies auth if protected)

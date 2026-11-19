@@ -80,10 +80,13 @@ function timeAgo(seconds: number): string {
 function formatUserLocalDateTime(seconds: number): string {
   const d = new Date(seconds * 1000);
   return d.toLocaleString(undefined, {
+    year: "numeric",
     month: "short",
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
+    second: "2-digit",
+    timeZoneName: "short",
   });
 }
 
@@ -166,7 +169,11 @@ export function FileCard({ file, slug, token, layout = "list" }: FileCardProps) 
             </p>
             <p className="text-[11px] text-[var(--text-muted)] mt-0.5 font-mono truncate max-w-full">
               {formatBytes(file.size)}
-              {file.uploadedAt && <span> · {timeAgo(file.uploadedAt.seconds)}</span>}
+              {file.uploadedAt && (
+                <span title={formatUserLocalDateTime(file.uploadedAt.seconds)}>
+                  {" · "}{timeAgo(file.uploadedAt.seconds)}
+                </span>
+              )}
             </p>
           </div>
 

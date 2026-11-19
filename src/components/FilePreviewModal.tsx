@@ -20,6 +20,19 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function formatUserLocalDateTime(seconds: number): string {
+  const d = new Date(seconds * 1000);
+  return d.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZoneName: "short",
+  });
+}
+
 export function FilePreviewModal({ file, token, open, onClose }: FilePreviewModalProps) {
   const [textContent, setTextContent] = useState<string | null>(null);
   const [loadingText, setLoadingText] = useState(false);
@@ -213,6 +226,15 @@ export function FilePreviewModal({ file, token, open, onClose }: FilePreviewModa
             {copied ? "Copied!" : "Copy Link"}
           </Button>
         </div>
+
+        {file.uploadedAt && (
+          <div className="text-[11px] font-mono text-[var(--text-muted)] flex flex-wrap items-center justify-between gap-1 w-full px-1">
+            <span>Size: {formatBytes(file.size)}</span>
+            <span title="Converted to your local browser timezone">
+              Uploaded: {formatUserLocalDateTime(file.uploadedAt.seconds)}
+            </span>
+          </div>
+        )}
       </div>
     </Modal>
   );

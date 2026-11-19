@@ -18,14 +18,14 @@ import {
 } from "lucide-react";
 import { AdSenseScript } from "@/components/ads/AdSenseScript";
 import { AdBanner } from "@/components/ads/AdBanner";
-import { CookieSettingsButton } from "@/components/ui/CookieConsent";
+import { Footer } from "@/components/Footer";
 import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 import { ADSENSE_SLOTS } from "@/lib/ads";
 
 const appUrl = getAppUrl();
 
 export const metadata: Metadata = {
-  title: "User Guide & Documentation — FileShare",
+  title: "User Guide & Documentation | FileShare",
   description: "Learn how to use FileShare: real-time notes, one-click formatting, simple diagrams, file sharing up to 500 MB, and password protection without creating an account.",
   keywords: [
     "FileShare user guide",
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     canonical: `${appUrl}/guide`,
   },
   openGraph: {
-    title: "User Guide & Documentation — FileShare",
+    title: "User Guide & Documentation | FileShare",
     description: "Learn how to use FileShare: real-time notes, one-click formatting, simple diagrams, file sharing up to 500 MB, and password protection without creating an account.",
     url: `${appUrl}/guide`,
     siteName: "FileShare",
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@SandeshPat007",
     creator: "@SandeshPat007",
-    title: "User Guide & Documentation — FileShare",
+    title: "User Guide & Documentation | FileShare",
     description: "Learn how to use FileShare: real-time notes, one-click formatting, simple diagrams, file sharing up to 500 MB, and password protection without creating an account.",
     images: [`${appUrl}/og-image.png`],
   },
@@ -219,7 +219,7 @@ export default function GuidePage() {
             How to Use FileShare
           </h1>
           <p className="max-w-3xl text-sm sm:text-base text-[var(--text-muted)] leading-relaxed">
-            A simple, step-by-step guide to writing notes, sharing files up to 500&nbsp;MB, and working together in real time—no account or sign-up needed.
+            A simple, step-by-step guide to writing notes, sharing files up to 500&nbsp;MB, and working together in real time: no account or sign-up needed.
           </p>
           <div className="mt-4 flex flex-wrap gap-4 text-xs font-mono text-[var(--text-subtle)]">
             <span>Updated 2026</span>
@@ -358,7 +358,7 @@ export default function GuidePage() {
             </h2>
           </div>
           <p className="text-sm leading-relaxed text-[var(--text-muted)]">
-            You can turn simple text into visual flowcharts and charts right inside your notes—without drawing tools or separate apps. Just type a <code className="font-mono text-xs">```mermaid</code> block, and FileShare renders it as a clean visual graphic in the preview.
+            You can turn simple text into visual flowcharts and charts right inside your notes without drawing tools or separate apps. Just type a <code className="font-mono text-xs">```mermaid</code> block, and FileShare renders it as a clean visual graphic in the preview.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
             <div className="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)]">
@@ -660,33 +660,7 @@ sequenceDiagram
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-[var(--border-color)] py-8 bg-[var(--header-bg)]">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
-          <p>© 2026 FileShare (SHP Technology). Real-time notes and file sharing.</p>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <Link href="/" className="hover:text-[var(--text-main)] transition-colors">Home</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/about" className="hover:text-[var(--text-main)] transition-colors">About</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/guide" className="hover:text-[var(--text-main)] transition-colors">Guide</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/resources" className="hover:text-[var(--text-main)] transition-colors">Resources</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy Policy</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms &amp; Conditions</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/cookies" className="hover:text-[var(--text-main)] transition-colors">Cookie Policy</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/refund" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
-            <span className="hidden sm:inline">•</span>
-            <CookieSettingsButton />
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

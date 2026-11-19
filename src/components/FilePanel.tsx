@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { UploadCloud, FolderOpen, FileUp, Search, LayoutGrid, LayoutList, X, Download, Loader2 } from "lucide-react";
 import { useFileList, FileItem } from "@/hooks/useFileList";
 import { FileCard } from "@/components/FileCard";
@@ -254,6 +254,17 @@ export function FilePanel({ slug, token }: FilePanelProps) {
     Array.from(fileList).forEach(uploadFile);
   }, [uploadFile]);
 
+  useEffect(() => {
+    const handleGlobalDrop = (e: Event) => {
+      const customEvent = e as CustomEvent<FileList>;
+      if (customEvent.detail) {
+        handleFiles(customEvent.detail);
+      }
+    };
+    window.addEventListener("fileshare:drop-upload", handleGlobalDrop);
+    return () => window.removeEventListener("fileshare:drop-upload", handleGlobalDrop);
+  }, [handleFiles]);
+
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -327,7 +338,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
       {dragging && files.length > 0 && (
         <div
           aria-hidden="true"
-          className="absolute inset-0 z-30 bg-[var(--bg-surface)]/90 backdrop-blur-xs border-2 border-dashed border-[var(--accent-primary)] rounded-md m-2 flex flex-col items-center justify-center gap-2 pointer-events-none transition-all"
+          className="absolute inset-0 z-30 bg-[var(--bg-surface)]/95 border-2 border-dashed border-[var(--accent-primary)] rounded-md m-2 flex flex-col items-center justify-center gap-2 pointer-events-none transition-all"
         >
           <div className="w-11 h-11 rounded-full bg-[var(--badge-bg)] text-[var(--accent-primary)] flex items-center justify-center">
             <UploadCloud size={22} className="animate-pulse" />

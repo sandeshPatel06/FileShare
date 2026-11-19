@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FileText, CheckCircle2, AlertTriangle, ShieldAlert, Scale, Globe, Building2, HardDrive, Shield } from "lucide-react";
+import { Footer } from "@/components/Footer";
 import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 
 const appUrl = getAppUrl();
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
     canonical: `${appUrl}/terms`,
   },
   openGraph: {
-    title: "Terms and Conditions — FileShare",
+    title: "Terms and Conditions | FileShare",
     description: "Terms of Service, Intermediary Guidelines, and Acceptable Use Policy for FileShare.",
     url: `${appUrl}/terms`,
     siteName: "FileShare",
@@ -20,14 +21,14 @@ export const metadata: Metadata = {
     type: "website",
     images: getDefaultOgImages(
       appUrl,
-      "FileShare — Terms and Conditions & Intermediary Guidelines"
+      "FileShare: Terms and Conditions & Intermediary Guidelines"
     ),
   },
   twitter: {
     card: "summary_large_image",
     site: "@SandeshPat007",
     creator: "@SandeshPat007",
-    title: "Terms and Conditions — FileShare",
+    title: "Terms and Conditions | FileShare",
     description: "Terms of Service, Intermediary Guidelines, and Acceptable Use Policy for FileShare.",
     images: [`${appUrl}/og-image.png`],
   },
@@ -132,7 +133,7 @@ export default function TermsPage() {
               </div>
 
               <div className="p-3.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] space-y-1">
-                <div className="font-bold text-[var(--status-danger-text)]">Child Harm (CSAM) — Zero Tolerance</div>
+                <div className="font-bold text-[var(--status-danger-text)]">Child Harm (CSAM): Zero Tolerance</div>
                 <p className="text-[var(--text-muted)]">
                   Any child sexual abuse material, child exploitation, or content endangering minors. We enforce zero tolerance and report violations to law enforcement immediately.
                 </p>
@@ -190,7 +191,7 @@ export default function TermsPage() {
               5. Storage Limits &amp; Temporary Workspaces
             </h2>
             <p className="text-[var(--text-muted)]">
-              FileShare is designed for quick collaboration, live Markdown editing, and fast file sharing—not permanent cloud storage or long-term archiving.
+              FileShare is designed for quick collaboration, live Markdown editing, and fast file sharing, not permanent cloud storage or long-term archiving.
             </p>
             <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-[var(--text-muted)]">
               <li><strong>500 MB per file limit:</strong> You can upload individual files up to 500 MB. Larger files are rejected automatically.</li>
@@ -247,25 +248,7 @@ export default function TermsPage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-[var(--border-color)] py-8 bg-[var(--header-bg)]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
-          <p>© 2026 FileShare (SHP Technology). Compliant with Indian Information Technology Act, 2000.</p>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <Link href="/" className="hover:text-[var(--text-main)] transition-colors">Home</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/cookies" className="hover:text-[var(--text-main)] transition-colors">Cookies</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/refund" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

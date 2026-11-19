@@ -15,7 +15,7 @@ import { getArticleBySlug, getAllArticles } from "@/lib/articles";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { AdSenseScript } from "@/components/ads/AdSenseScript";
 import { AdBanner } from "@/components/ads/AdBanner";
-import { CookieSettingsButton } from "@/components/ui/CookieConsent";
+import { Footer } from "@/components/Footer";
 import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 import { ADSENSE_SLOTS } from "@/lib/ads";
 
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!article) {
     return {
-      title: "Article Not Found — FileShare",
+      title: "Article Not Found | FileShare",
       robots: {
         index: false,
         follow: false,
@@ -333,33 +333,7 @@ export default async function ArticlePage({ params }: Props) {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-[var(--border-color)] py-8 bg-[var(--header-bg)]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
-          <p>© 2026 FileShare (SHP Technology). High-velocity collaborative workspaces &amp; secure file vaults.</p>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <Link href="/" className="hover:text-[var(--text-main)] transition-colors">Home</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/about" className="hover:text-[var(--text-main)] transition-colors">About</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/guide" className="hover:text-[var(--text-main)] transition-colors">Guide</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/resources" className="hover:text-[var(--text-main)] transition-colors">Resources</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy Policy</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms &amp; Conditions</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/cookies" className="hover:text-[var(--text-main)] transition-colors">Cookie Policy</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/refund" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
-            <span className="hidden sm:inline">•</span>
-            <CookieSettingsButton />
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

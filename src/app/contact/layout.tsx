@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     canonical: `${appUrl}/contact`,
   },
   openGraph: {
-    title: "Contact Us & Support — FileShare",
+    title: "Contact Us & Support | FileShare",
     description: "Get in touch with the FileShare team for technical inquiries, DMCA notices, and support.",
     url: `${appUrl}/contact`,
     siteName: "FileShare",
@@ -18,14 +18,14 @@ export const metadata: Metadata = {
     type: "website",
     images: getDefaultOgImages(
       appUrl,
-      "FileShare Contact & Support — Real-Time Notes & File Sharing Vault"
+      "FileShare Contact & Support | Real-Time Notes & File Sharing Vault"
     ),
   },
   twitter: {
     card: "summary_large_image",
     site: "@SandeshPat007",
     creator: "@SandeshPat007",
-    title: "Contact Us & Support — FileShare",
+    title: "Contact Us & Support | FileShare",
     description: "Get in touch with the FileShare team for technical inquiries, DMCA notices, and user support.",
     images: [`${appUrl}/og-image.png`],
   },

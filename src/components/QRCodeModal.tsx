@@ -14,7 +14,8 @@ interface QRCodeModalProps {
 
 export function QRCodeModal({ open, onClose, slug }: QRCodeModalProps) {
   const [copied, setCopied] = useState(false);
-  const url = typeof window !== "undefined" ? `${window.location.origin}/s/${slug}` : `/s/${slug}`;
+  const prefix = typeof window !== "undefined" && window.location.pathname.startsWith("/projects") ? "/projects" : "/s";
+  const url = typeof window !== "undefined" ? `${window.location.origin}${prefix}/${slug}` : `${prefix}/${slug}`;
 
   async function handleCopy() {
     const ok = await copyToClipboard(url);

@@ -14,20 +14,20 @@ import {
 } from "lucide-react";
 import { AdSenseScript } from "@/components/ads/AdSenseScript";
 import { AdBanner } from "@/components/ads/AdBanner";
-import { CookieSettingsButton } from "@/components/ui/CookieConsent";
+import { Footer } from "@/components/Footer";
 import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 import { ADSENSE_SLOTS } from "@/lib/ads";
 
 const appUrl = getAppUrl();
 
 export const metadata: Metadata = {
-  title: "About Us — Architecture & Privacy",
+  title: "About Us | Architecture & Privacy",
   description: "Learn why FileShare was created: our mission, how it works, our privacy values, and what makes it different.",
   alternates: {
     canonical: `${appUrl}/about`,
   },
   openGraph: {
-    title: "About Us — Architecture & Privacy",
+    title: "About Us | Architecture & Privacy",
     description: "Learn why FileShare was created: our mission, how it works, and our privacy values.",
     url: `${appUrl}/about`,
     siteName: "FileShare",
@@ -35,14 +35,14 @@ export const metadata: Metadata = {
     type: "website",
     images: getDefaultOgImages(
       appUrl,
-      "About FileShare — Mission, Architecture & Privacy Values"
+      "About FileShare: Mission, Architecture & Privacy Values"
     ),
   },
   twitter: {
     card: "summary_large_image",
     site: "@SandeshPat007",
     creator: "@SandeshPat007",
-    title: "About Us — Architecture & Privacy",
+    title: "About Us | Architecture & Privacy",
     description: "Learn why FileShare was created: our mission, how it works, and our privacy values.",
     images: [`${appUrl}/og-image.png`],
   },
@@ -56,7 +56,7 @@ export default function AboutPage() {
         "@type": "AboutPage",
         "@id": `${appUrl}/about#webpage`,
         "url": `${appUrl}/about`,
-        "name": "About FileShare — Engineering Mission, Architecture & Privacy Values",
+        "name": "About FileShare: Engineering Mission, Architecture & Privacy Values",
         "description": "Learn why FileShare was created: our mission, how it works, our privacy values, and what makes it different.",
         "isPartOf": {
           "@type": "WebSite",
@@ -207,25 +207,25 @@ export default function AboutPage() {
               We keep the architecture lightweight and reliable so your workspaces load instantly and update without lag:
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm text-[var(--text-muted)]">
-              <div className="p-4 rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)]">
-                <div className="font-bold text-[var(--text-main)] mb-1">Instant Live Sync</div>
-                <p>When you type, your changes appear on every other open tab in real time — no manual refresh needed, and very light on data.</p>
-              </div>
+              <article className="p-4 rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)]">
+                <h3 className="font-bold text-[var(--text-main)] mb-1">Instant Live Sync</h3>
+                <p>When you type, your changes appear on every other open tab in real time with no manual refresh needed and very light data usage.</p>
+              </article>
 
-              <div className="p-4 rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)]">
-                <div className="font-bold text-[var(--text-main)] mb-1">Hybrid Database</div>
+              <article className="p-4 rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)]">
+                <h3 className="font-bold text-[var(--text-main)] mb-1">Hybrid Database</h3>
                 <p>Powered by PostgreSQL for high-concurrency cloud hosting and SQLite for local speed, keeping operations fast and dependable.</p>
-              </div>
+              </article>
 
-              <div className="p-4 rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)]">
-                <div className="font-bold text-[var(--text-main)] mb-1">500 MB Vault Storage</div>
+              <article className="p-4 rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)]">
+                <h3 className="font-bold text-[var(--text-main)] mb-1">500 MB Vault Storage</h3>
                 <p>Uploads stream safely to Backblaze B2 cloud storage with local disk fallbacks, supporting partial downloads and fast resume.</p>
-              </div>
+              </article>
 
-              <div className="p-4 rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)]">
-                <div className="font-bold text-[var(--text-main)] mb-1">Passphrase Protection</div>
-                <p>Passwords are safely scrambled before we store them — we can never read them back. Your login session lasts only while your browser tab is open.</p>
-              </div>
+              <article className="p-4 rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)]">
+                <h3 className="font-bold text-[var(--text-main)] mb-1">Passphrase Protection</h3>
+                <p>Passwords are safely scrambled before we store them so we can never read them back. Your login session lasts only while your browser tab is open.</p>
+              </article>
             </div>
           </section>
 
@@ -306,31 +306,7 @@ export default function AboutPage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-[var(--border-color)] py-8 bg-[var(--header-bg)]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
-          <p>© 2026 FileShare (SHP Technology). Built by Sandesh Patel in Jabalpur, India.</p>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <Link href="/" className="hover:text-[var(--text-main)] transition-colors">Home</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/guide" className="hover:text-[var(--text-main)] transition-colors">Guide</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/resources" className="hover:text-[var(--text-main)] transition-colors">Resources</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy Policy</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms &amp; Conditions</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/cookies" className="hover:text-[var(--text-main)] transition-colors">Cookie Policy</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/refund" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
-            <span className="hidden sm:inline">•</span>
-            <CookieSettingsButton />
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

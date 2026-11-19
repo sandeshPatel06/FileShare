@@ -21,12 +21,16 @@ import {
   Pin,
   X,
   ExternalLink,
+  ChevronDown,
+  Smartphone,
+  Users,
+  Share2,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
+import { Footer } from "@/components/Footer";
 import { ARTICLES } from "@/lib/articles";
-import { CookieSettingsButton } from "@/components/ui/CookieConsent";
 import { useRecentSpaces } from "@/hooks/useRecentSpaces";
 import { generateSlug } from "@/lib/slugGenerator";
 
@@ -34,9 +38,8 @@ interface LandingPageProps {
   defaultSlug: string;
 }
 
-export function LandingPage({ defaultSlug }: LandingPageProps) {
+export function LandingPage({}: LandingPageProps) {
   const router = useRouter();
-  const [customSlug, setCustomSlug] = useState("");
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
   const [showRecentModal, setShowRecentModal] = useState(false);
   const { recentSpaces, removeRecentSpace, togglePin, clearRecentSpaces } = useRecentSpaces();
@@ -52,7 +55,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
       if (res.ok) {
         const data = await res.json();
         if (data.slug) {
-          router.push(`/s/${data.slug}`);
+          router.push(`/projects/${data.slug}`);
           return;
         }
       }
@@ -60,20 +63,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
       // Fallback to client-generated slug if offline / API error
     }
     const fallback = generateSlug(prefix);
-    router.push(`/s/${fallback}`);
-  };
-
-  const handleCustomSlugSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = customSlug.trim();
-    if (!trimmed) {
-      // If user submits empty input, create a guaranteed fresh workspace
-      void handleCreateNewSpace();
-      return;
-    }
-    const target = trimmed.toLowerCase().replace(/[^a-z0-9-]/g, "-");
-    setActiveSlug(target);
-    router.push(`/s/${target}`);
+    router.push(`/projects/${fallback}`);
   };
 
   const featuredWorkspaces = [
@@ -111,6 +101,13 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
 
           <div className="flex items-center gap-2 sm:gap-2.5">
             <ThemeToggle />
+            <Button
+              onClick={() => router.push("/projects")}
+              className="!px-3 sm:!px-4 !py-1.5 !rounded-md text-xs !font-semibold bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white min-h-[36px]"
+              iconRight={<ArrowRight className="w-3.5 h-3.5" />}
+            >
+              Try Now
+            </Button>
           </div>
         </div>
       </header>
@@ -126,7 +123,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
                 <CheckCircle2 className="w-3.5 h-3.5 shrink-0" aria-hidden="true" /> No Sign-Up Needed
               </span>
               <span className="hidden sm:inline text-[var(--border-color)] select-none" aria-hidden="true">•</span>
-              <span className="text-[var(--accent-primary)] flex items-center gap-1.5 font-medium whitespace-nowrap">
+              <span className="text-[var(--accent-text)] flex items-center gap-1.5 font-medium whitespace-nowrap">
                 <Zap className="w-3.5 h-3.5 shrink-0" aria-hidden="true" /> Instant Live Sync
               </span>
               <span className="hidden sm:inline text-[var(--border-color)] select-none" aria-hidden="true">•</span>
@@ -135,82 +132,40 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[var(--text-main)] mb-3 sm:mb-4 leading-tight sm:leading-tight">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[var(--text-main)] mb-3 sm:mb-4 leading-tight sm:leading-tight text-balance">
               Free Online Notepad &amp; Instant File Sharing
             </h1>
 
-            <p className="max-w-2xl mx-auto text-xs sm:text-sm md:text-base text-[var(--text-muted)] mb-4 sm:mb-5 leading-normal sm:leading-relaxed">
+            <p className="max-w-[65ch] mx-auto text-xs sm:text-sm md:text-base text-[var(--text-muted)] mb-4 sm:mb-5 leading-normal sm:leading-relaxed text-pretty">
               Write live Markdown notes, sketch diagrams, and share files up to 500MB with anyone through a single link. No account, forms, or passwords required.
             </p>
 
-            {/* Workspace Launcher Action Form */}
-            <div className="max-w-md mx-auto bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl sm:rounded-2xl p-3.5 sm:p-4 md:p-5 shadow-sm">
-              <form onSubmit={handleCustomSlugSubmit} className="flex flex-col sm:flex-row gap-2">
-                <div className="relative flex-1 min-w-0">
-                  <label htmlFor="landing-custom-slug" className="sr-only">
-                    Workspace name or link
-                  </label>
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-mono text-[var(--text-muted)] select-none">
-                    /s/
-                  </span>
-                  <input
-                    id="landing-custom-slug"
-                    name="slug"
-                    type="text"
-                    value={customSlug}
-                    onChange={(e) => setCustomSlug(e.target.value)}
-                    placeholder={defaultSlug}
-                    aria-label="Enter a custom workspace name, or leave empty for a random one"
-                    className="w-full pl-8 pr-3 py-2 min-h-[42px] sm:min-h-[44px] text-xs sm:text-sm rounded-lg bg-[var(--input-bg)] border border-[var(--border-color)] text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-primary)] font-mono transition-colors"
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  disabled={Boolean(activeSlug)}
-                  aria-label="Open or create workspace"
-                  className="!px-4 sm:!px-5 !py-2 min-h-[42px] sm:min-h-[44px] !rounded-lg !font-semibold text-xs sm:text-sm bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white shrink-0"
-                  icon={activeSlug ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : undefined}
-                  iconRight={!activeSlug ? <ArrowRight className="w-3.5 h-3.5" /> : undefined}
-                >
-                  {activeSlug ? "Opening..." : customSlug.trim() ? "Open Space" : "Random Space"}
-                </Button>
-              </form>
-
-              <div className="mt-2.5 pt-2.5 border-t border-[var(--border-color)] flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--text-muted)]">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {recentSpaces.length > 0 && (
-                    <Button
-                      type="button"
-                      size="xs"
-                      variant="ghost"
-                      onClick={() => setShowRecentModal(true)}
-                      className="!px-2.5 !py-1 !rounded-md inline-flex items-center gap-1.5 text-[var(--text-main)] hover:bg-[var(--hover-overlay)] border border-[var(--border-color)] hover:border-[var(--accent-primary)]/50 min-h-[32px] sm:min-h-[36px]"
-                      icon={<Clock className="w-3.5 h-3.5 text-[var(--accent-primary)]" />}
-                    >
-                      Recent ({recentSpaces.length})
-                    </Button>
-                  )}
-                </div>
-
-                <span className="text-[11px] sm:text-xs text-[var(--text-muted)]">500MB limit per file</span>
+            {/* Hero Main Action Card */}
+            <div className="max-w-md mx-auto bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl sm:rounded-2xl p-5 sm:p-6 shadow-sm text-center space-y-4">
+              <div className="space-y-1.5">
+                <h2 className="text-base sm:text-lg font-bold text-[var(--text-main)] text-balance">
+                  Start working together in seconds
+                </h2>
+                <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed text-pretty">
+                  Create notes, sketch diagrams, and share files up to 500MB with anyone. Zero sign-up, zero installation.
+                </p>
               </div>
 
-              {/* Form Consent Notice (GDPR & DPDP Act 2023) */}
-              <p className="mt-2.5 text-[11px] sm:text-xs text-[var(--text-muted)] text-center leading-normal">
-                By opening or joining a workspace, you agree to our{" "}
-                <Link href="/terms" className="underline hover:text-[var(--text-main)]">
-                  Terms
-                </Link>
-                ,{" "}
-                <Link href="/privacy" className="underline hover:text-[var(--text-main)]">
-                  Privacy Policy
-                </Link>
-                , and{" "}
-                <Link href="/cookies" className="underline hover:text-[var(--text-main)]">
-                  Cookie Policy
-                </Link>
-                .
-              </p>
+              <Button
+                onClick={() => router.push("/projects")}
+                className="w-full !py-3 min-h-[46px] !rounded-lg !font-semibold text-sm bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white flex items-center justify-center gap-2"
+                iconRight={<ArrowRight className="w-4 h-4" />}
+              >
+                Try Now
+              </Button>
+
+              <div className="pt-3 border-t border-[var(--border-color)] flex items-center justify-center gap-3 text-[11px] font-mono text-[var(--text-muted)]">
+                <span>100% Free</span>
+                <span aria-hidden="true">•</span>
+                <span>No Account Needed</span>
+                <span aria-hidden="true">•</span>
+                <span>Instant Setup</span>
+              </div>
             </div>
 
             {/* Modal Dialog for Recent Workspaces */}
@@ -272,7 +227,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
                           aria-label={item.pinned ? "Unpin workspace" : "Pin workspace to top"}
                           className={`shrink-0 p-1 rounded transition-colors cursor-pointer ${
                             item.pinned
-                              ? "text-[var(--accent-primary)]"
+                              ? "text-[var(--accent-text)]"
                               : "text-[var(--text-muted)] opacity-0 group-hover:opacity-100"
                           }`}
                         >
@@ -283,10 +238,10 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
                         <div className="flex-1 min-w-0 text-left">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <span className="font-mono font-semibold text-xs text-[var(--text-main)] truncate">
-                              /s/{item.slug}
+                              /projects/{item.slug}
                             </span>
                             {item.pinned && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--accent-primary)]/15 text-[var(--accent-primary)] font-medium shrink-0">
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--accent-primary)]/15 text-[var(--accent-text)] font-medium shrink-0">
                                 Pinned
                               </span>
                             )}
@@ -296,10 +251,10 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
 
                         {/* Open link */}
                         <Link
-                          href={`/s/${item.slug}`}
+                          href={`/projects/${item.slug}`}
                           onClick={() => setShowRecentModal(false)}
-                          title={`Open /s/${item.slug}`}
-                          className="shrink-0 flex items-center gap-1 text-[11px] font-semibold text-[var(--accent-primary)] hover:underline py-1 px-1.5"
+                          title={`Open /projects/${item.slug}`}
+                          className="shrink-0 flex items-center gap-1 text-[11px] font-semibold text-[var(--accent-text)] hover:underline py-1 px-1.5"
                         >
                           Open
                           <ExternalLink className="w-3 h-3" />
@@ -325,7 +280,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
             {/* Quick Link to Knowledge Base */}
             <div className="mt-3 sm:mt-4 text-xs text-[var(--text-muted)] flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-center">
               <span>New to FileShare?</span>
-              <Link href="/guide" className="text-[var(--accent-primary)] hover:underline inline-flex items-center gap-1 font-medium min-h-[32px] sm:min-h-[36px]">
+              <Link href="/guide" className="text-[var(--accent-text)] hover:underline inline-flex items-center gap-1 font-medium min-h-[32px] sm:min-h-[36px]">
                 Read the Complete User Guide <ArrowRight className="w-3 h-3" aria-hidden="true" />
               </Link>
             </div>
@@ -336,7 +291,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
         <section className="py-8 sm:py-12 md:py-14 max-w-6xl mx-auto px-4 sm:px-6">
           <header className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-2 sm:mb-3">
-              How It Works
+              Three-Step Workflow
             </h2>
             <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
               Start working together in seconds with three simple steps.
@@ -351,7 +306,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
                 </span>
                 <h3 className="text-sm sm:text-base font-bold mb-1.5 sm:mb-2 text-[var(--text-main)]">1. Choose a Name</h3>
                 <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                  Type any custom link like <code className="px-1.5 py-0.5 rounded bg-[var(--bg-main)] border border-[var(--border-color)] font-mono text-[var(--accent-primary)]">/s/notes</code> or click Random Space. Your workspace opens right away.
+                  Type any custom link like <code className="px-1.5 py-0.5 rounded bg-[var(--bg-main)] border border-[var(--border-color)] font-mono text-[var(--accent-text)]">/s/notes</code> or click Random Space. Your workspace opens right away.
                 </p>
               </article>
             </li>
@@ -382,12 +337,94 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
           </ol>
         </section>
 
-        {/* Feature Grid */}
+        {/* Real-World Use Cases */}
+        <section className="py-8 sm:py-12 md:py-14 max-w-6xl mx-auto px-4 sm:px-6">
+          <header className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] mb-2.5 sm:mb-3">
+              <Share2 className="w-3.5 h-3.5 text-[var(--accent-text)]" aria-hidden="true" />
+              <span>Everyday Use Cases</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-2 sm:mb-3 text-balance">
+              Built for Fast Real-World Productivity
+            </h2>
+            <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed text-pretty">
+              Whether swapping files between devices or writing live meeting notes, FileShare gets it done without friction.
+            </p>
+          </header>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            <article className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 flex flex-col justify-between hover:border-[var(--accent-primary)] transition-colors">
+              <div>
+                <div className="w-9 h-9 rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-text)] border border-[var(--accent-primary)]/20 flex items-center justify-center mb-3">
+                  <Smartphone className="w-5 h-5" aria-hidden="true" />
+                </div>
+                <h3 className="text-sm font-bold text-[var(--text-main)] mb-1.5">Phone to PC Transfer</h3>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  Need to send a photo, code snippet, or APK from your smartphone to your laptop? Scan the QR code, drop the file, and download it instantly on PC.
+                </p>
+              </div>
+              <div className="pt-3 mt-3 border-t border-[var(--border-color)] flex items-center gap-1.5 text-[11px] font-mono text-[var(--text-muted)]">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[var(--status-success-text)] shrink-0" />
+                <span>No apps or cables needed</span>
+              </div>
+            </article>
+
+            <article className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 flex flex-col justify-between hover:border-[var(--accent-primary)] transition-colors">
+              <div>
+                <div className="w-9 h-9 rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-text)] border border-[var(--accent-primary)]/20 flex items-center justify-center mb-3">
+                  <Users className="w-5 h-5" aria-hidden="true" />
+                </div>
+                <h3 className="text-sm font-bold text-[var(--text-main)] mb-1.5">Live Meeting Notes</h3>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  Take notes during calls or interviews. Send the link to teammates and everyone sees edits in real time with zero login walls or permission requests.
+                </p>
+              </div>
+              <div className="pt-3 mt-3 border-t border-[var(--border-color)] flex items-center gap-1.5 text-[11px] font-mono text-[var(--text-muted)]">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[var(--status-success-text)] shrink-0" />
+                <span>Millisecond live sync</span>
+              </div>
+            </article>
+
+            <article className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 flex flex-col justify-between hover:border-[var(--accent-primary)] transition-colors">
+              <div>
+                <div className="w-9 h-9 rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-text)] border border-[var(--accent-primary)]/20 flex items-center justify-center mb-3">
+                  <FolderUp className="w-5 h-5" aria-hidden="true" />
+                </div>
+                <h3 className="text-sm font-bold text-[var(--text-main)] mb-1.5">500MB Quick File Drop</h3>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  Hit an email attachment limit? Drop large ZIPs, videos, PDFs, or design assets up to 500MB and send a single direct link that opens anywhere.
+                </p>
+              </div>
+              <div className="pt-3 mt-3 border-t border-[var(--border-color)] flex items-center gap-1.5 text-[11px] font-mono text-[var(--text-muted)]">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[var(--status-success-text)] shrink-0" />
+                <span>Direct browser downloads</span>
+              </div>
+            </article>
+
+            <article className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 flex flex-col justify-between hover:border-[var(--accent-primary)] transition-colors">
+              <div>
+                <div className="w-9 h-9 rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-text)] border border-[var(--accent-primary)]/20 flex items-center justify-center mb-3">
+                  <Lock className="w-5 h-5" aria-hidden="true" />
+                </div>
+                <h3 className="text-sm font-bold text-[var(--text-main)] mb-1.5">Private Client Handoff</h3>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  Sharing sensitive API tokens, server configs, or client deliverables? Set a workspace password so only authorized parties can unlock the content.
+                </p>
+              </div>
+              <div className="pt-3 mt-3 border-t border-[var(--border-color)] flex items-center gap-1.5 text-[11px] font-mono text-[var(--text-muted)]">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[var(--status-success-text)] shrink-0" />
+                <span>Bcrypt encrypted lock</span>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        {/* Workspace Capabilities */}
         <section className="py-8 sm:py-12 md:py-14 bg-[var(--bg-surface)] border-t border-b border-[var(--border-color)]">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <header className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
               <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-2 sm:mb-3">
-                Everything You Need
+                Built-in Workspace Tools
               </h2>
               <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
                 A fast, distraction-free workspace built for quick notes and easy file sharing.
@@ -397,7 +434,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
             <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 list-none p-0 m-0">
               <li>
                 <article className="h-full bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 hover:border-[var(--accent-primary)] transition-colors">
-                  <Zap className="w-5 h-5 text-[var(--accent-primary)] mb-2" aria-hidden="true" />
+                  <Zap className="w-5 h-5 text-[var(--accent-text)] mb-2" aria-hidden="true" />
                   <h3 className="text-sm font-bold mb-1 text-[var(--text-main)]">Instant Live Sync</h3>
                   <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                     Notes and uploads update instantly on every screen without needing to refresh the page.
@@ -407,7 +444,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
 
               <li>
                 <article className="h-full bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 hover:border-[var(--accent-primary)] transition-colors">
-                  <FolderUp className="w-5 h-5 text-[var(--accent-primary)] mb-2" aria-hidden="true" />
+                  <FolderUp className="w-5 h-5 text-[var(--accent-text)] mb-2" aria-hidden="true" />
                   <h3 className="text-sm font-bold mb-1 text-[var(--text-main)]">500MB File Sharing</h3>
                   <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                     Upload documents, images, videos, zip archives, and code files up to 500MB each.
@@ -417,7 +454,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
 
               <li>
                 <article className="h-full bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 hover:border-[var(--accent-primary)] transition-colors">
-                  <Wand2 className="w-5 h-5 text-[var(--accent-primary)] mb-2" aria-hidden="true" />
+                  <Wand2 className="w-5 h-5 text-[var(--accent-text)] mb-2" aria-hidden="true" />
                   <h3 className="text-sm font-bold mb-1 text-[var(--text-main)]">One-Click Formatter</h3>
                   <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                     Clean up spacing, headers, and task lists in one click without altering your code blocks.
@@ -427,7 +464,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
 
               <li>
                 <article className="h-full bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 hover:border-[var(--accent-primary)] transition-colors">
-                  <Lock className="w-5 h-5 text-[var(--accent-primary)] mb-2" aria-hidden="true" />
+                  <Lock className="w-5 h-5 text-[var(--accent-text)] mb-2" aria-hidden="true" />
                   <h3 className="text-sm font-bold mb-1 text-[var(--text-main)]">Password Lock</h3>
                   <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                     Protect confidential notes and files with an optional password only you and your team know.
@@ -437,7 +474,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
 
               <li>
                 <article className="h-full bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 hover:border-[var(--accent-primary)] transition-colors">
-                  <QrCode className="w-5 h-5 text-[var(--accent-primary)] mb-2" aria-hidden="true" />
+                  <QrCode className="w-5 h-5 text-[var(--accent-text)] mb-2" aria-hidden="true" />
                   <h3 className="text-sm font-bold mb-1 text-[var(--text-main)]">Mobile QR Handoff</h3>
                   <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                     Scan the built-in QR code with your phone camera to take your workspace anywhere instantly.
@@ -447,7 +484,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
 
               <li>
                 <article className="h-full bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 hover:border-[var(--accent-primary)] transition-colors">
-                  <Globe className="w-5 h-5 text-[var(--accent-primary)] mb-2" aria-hidden="true" />
+                  <Globe className="w-5 h-5 text-[var(--accent-text)] mb-2" aria-hidden="true" />
                   <h3 className="text-sm font-bold mb-1 text-[var(--text-main)]">No Sign-Up Needed</h3>
                   <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                     No email, no forms, and no setup. Open any link in your browser and start working right away.
@@ -458,11 +495,11 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
           </div>
         </section>
 
-        {/* Feature Comparison Matrix */}
+        {/* Platform Comparison Matrix */}
         <section className="py-8 sm:py-12 md:py-14 max-w-5xl mx-auto px-4 sm:px-6">
           <header className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-2 sm:mb-3">
-              How FileShare Compares
+              Platform Comparison
             </h2>
             <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
               See how FileShare compares to traditional cloud drives and paste tools.
@@ -471,11 +508,11 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
 
           <div className="overflow-x-auto max-w-full bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl shadow-sm">
             <table className="w-full min-w-[640px] text-left text-xs sm:text-sm">
-              <caption className="sr-only">Feature comparison: FileShare vs Cloud Drives vs Standard Pastebin</caption>
+              <caption className="sr-only">Platform comparison: FileShare vs Cloud Drives vs Standard Pastebin</caption>
               <thead>
                 <tr className="border-b border-[var(--border-color)] bg-[var(--bg-main)]">
-                  <th scope="col" className="p-2.5 sm:p-3.5 md:p-4 font-bold text-[var(--text-main)]">Feature</th>
-                  <th scope="col" className="p-2.5 sm:p-3.5 md:p-4 font-bold text-[var(--accent-primary)]">FileShare</th>
+                  <th scope="col" className="p-2.5 sm:p-3.5 md:p-4 font-bold text-[var(--text-main)]">Capability</th>
+                  <th scope="col" className="p-2.5 sm:p-3.5 md:p-4 font-bold text-[var(--accent-text)]">FileShare</th>
                   <th scope="col" className="p-2.5 sm:p-3.5 md:p-4 font-medium text-[var(--text-muted)]">Cloud Drives (Google Drive)</th>
                   <th scope="col" className="p-2.5 sm:p-3.5 md:p-4 font-medium text-[var(--text-muted)]">Standard Pastebin</th>
                 </tr>
@@ -527,19 +564,19 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
           <header className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
             <div>
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] mb-2.5 sm:mb-3">
-                <BookOpen className="w-3.5 h-3.5 text-[var(--accent-primary)]" aria-hidden="true" />
+                <BookOpen className="w-3.5 h-3.5 text-[var(--accent-text)]" aria-hidden="true" />
                 <span>Knowledge Base</span>
               </div>
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[var(--text-main)]">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[var(--text-main)] text-balance">
                 Helpful Guides &amp; Tips
               </h2>
-              <p className="text-xs sm:text-sm text-[var(--text-muted)] mt-1">
+              <p className="text-xs sm:text-sm text-[var(--text-muted)] mt-1 text-pretty">
                 Read quick tutorials on Markdown tricks, shortcuts, and productive workflows.
               </p>
             </div>
             <Link
               href="/resources"
-              className="text-xs sm:text-sm font-semibold text-[var(--accent-primary)] hover:underline inline-flex items-center gap-1 min-h-[36px]"
+              className="text-xs sm:text-sm font-semibold text-[var(--accent-text)] hover:underline inline-flex items-center gap-1 min-h-[36px]"
             >
               View All 8 Articles <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </Link>
@@ -553,15 +590,15 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
               >
                 <div>
                   <div className="flex items-center justify-between text-xs text-[var(--text-muted)] font-mono mb-2">
-                    <span className="text-[var(--accent-primary)] font-medium">{article.category}</span>
+                    <span className="text-[var(--accent-text)] font-medium">{article.category}</span>
                     <span>{article.readTime}</span>
                   </div>
-                  <h3 className="text-sm sm:text-base font-bold text-[var(--text-main)] group-hover:text-[var(--accent-primary)] transition-colors mb-2">
+                  <h3 className="text-sm sm:text-base font-bold text-[var(--text-main)] group-hover:text-[var(--accent-text)] transition-colors mb-2 text-balance">
                     <Link href={`/resources/${article.slug}`}>
                       {article.title}
                     </Link>
                   </h3>
-                  <p className="text-xs text-[var(--text-muted)] leading-relaxed line-clamp-3 mb-4">
+                  <p className="text-xs text-[var(--text-muted)] leading-relaxed line-clamp-3 mb-4 text-pretty">
                     {article.description}
                   </p>
                 </div>
@@ -569,7 +606,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
                   <span className="text-[var(--text-muted)] font-mono">{article.date}</span>
                   <Link
                     href={`/resources/${article.slug}`}
-                    className="font-semibold text-[var(--accent-primary)] inline-flex items-center gap-1 group-hover:gap-1.5 transition-all py-1"
+                    className="font-semibold text-[var(--accent-text)] inline-flex items-center gap-1 group-hover:gap-1.5 transition-all py-1"
                   >
                     Read Guide <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
                   </Link>
@@ -579,11 +616,11 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
           </div>
         </section>
 
-        {/* Featured Public Workspaces */}
+        {/* Starter Public Workspaces */}
         <section className="py-6 sm:py-8 bg-[var(--bg-surface)] border-t border-b border-[var(--border-color)]">
           <div className="max-w-4xl mx-auto px-4 sm:px-6">
             <h3 className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider text-center mb-3 sm:mb-4">
-              Try a Starter Space
+              Starter Workspaces
             </h3>
             <nav aria-label="Starter public workspaces" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
               {featuredWorkspaces.map((item) => {
@@ -598,7 +635,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
                     icon={<span className="text-lg" aria-hidden="true">{item.icon}</span>}
                     iconRight={
                       isItemActive ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--accent-primary)]" />
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--accent-text)]" />
                       ) : (
                         <ArrowRight className="w-3.5 h-3.5 text-[var(--text-muted)]" />
                       )
@@ -608,7 +645,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
                       <div className="font-semibold text-xs truncate text-[var(--text-main)]">
                         {item.title}
                       </div>
-                      <div className="text-[11px] font-mono text-[var(--text-muted)]">New /s/{item.prefix}-... space</div>
+                      <div className="text-[11px] font-mono text-[var(--text-muted)]">New /projects/{item.prefix}-...</div>
                     </div>
                   </Button>
                 );
@@ -617,136 +654,96 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
           </div>
         </section>
 
-        {/* Frequently Asked Questions (FAQ) */}
-        <section className="py-8 sm:py-12 md:py-14 max-w-4xl mx-auto px-4 sm:px-6">
-          <header className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
+        {/* Common Questions & Answers Accordion */}
+        <section className="py-8 sm:py-12 md:py-14 max-w-3xl mx-auto px-4 sm:px-6">
+          <header className="text-center max-w-[65ch] mx-auto mb-6 sm:mb-8">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] mb-2.5 sm:mb-3">
-              <HelpCircle className="w-3.5 h-3.5 text-[var(--accent-primary)]" aria-hidden="true" />
+              <HelpCircle className="w-3.5 h-3.5 text-[var(--accent-text)]" aria-hidden="true" />
               <span>Questions &amp; Answers</span>
             </div>
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-2 sm:mb-3">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-2 sm:mb-3 text-balance">
               Frequently Asked Questions
             </h2>
-            <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
-              Simple answers to common questions about FileShare.
+            <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed text-pretty">
+              Everything you need to know about FileShare workspaces, real-time collaboration, and security.
             </p>
           </header>
 
-          <dl className="space-y-3 sm:space-y-4">
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5">
-              <dt className="text-sm font-bold text-[var(--text-main)] mb-1.5 sm:mb-2">
-                Is FileShare free to use, and do I need to register?
-              </dt>
-              <dd className="text-xs text-[var(--text-muted)] leading-relaxed">
+          <div className="space-y-3">
+            <details className="group bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 transition-colors open:border-[var(--accent-primary)]/60">
+              <summary className="flex items-center justify-between gap-3 text-sm font-bold text-[var(--text-main)] cursor-pointer select-none list-none outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded">
+                <span>Is FileShare free to use, and do I need to register?</span>
+                <ChevronDown className="w-4 h-4 shrink-0 text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200" aria-hidden="true" />
+              </summary>
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed pt-2.5 text-pretty">
                 Yes, FileShare is 100% free with zero registration required. There are no forms to fill out, no email confirmations, and no subscriptions. You can start typing or uploading immediately.
-              </dd>
-            </div>
+              </p>
+            </details>
 
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5">
-              <dt className="text-sm font-bold text-[var(--text-main)] mb-1.5 sm:mb-2">
-                What is the file size upload limit?
-              </dt>
-              <dd className="text-xs text-[var(--text-muted)] leading-relaxed">
-                You can upload files up to 500 MB each. FileShare supports multi-file uploads including videos, zip archives, images, PDFs, and code files.
-              </dd>
-            </div>
+            <details className="group bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 transition-colors open:border-[var(--accent-primary)]/60">
+              <summary className="flex items-center justify-between gap-3 text-sm font-bold text-[var(--text-main)] cursor-pointer select-none list-none outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded">
+                <span>What is the file size upload limit?</span>
+                <ChevronDown className="w-4 h-4 shrink-0 text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200" aria-hidden="true" />
+              </summary>
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed pt-2.5 text-pretty">
+                You can upload files up to 500 MB each. FileShare supports multi-file uploads including videos, zip archives, images, PDFs, audio, and code files.
+              </p>
+            </details>
 
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5">
-              <dt className="text-sm font-bold text-[var(--text-main)] mb-1.5 sm:mb-2">
-                How does real-time synchronization work?
-              </dt>
-              <dd className="text-xs text-[var(--text-muted)] leading-relaxed">
+            <details className="group bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 transition-colors open:border-[var(--accent-primary)]/60">
+              <summary className="flex items-center justify-between gap-3 text-sm font-bold text-[var(--text-main)] cursor-pointer select-none list-none outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded">
+                <span>How does real-time synchronization work?</span>
+                <ChevronDown className="w-4 h-4 shrink-0 text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200" aria-hidden="true" />
+              </summary>
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed pt-2.5 text-pretty">
                 FileShare uses instant live sync so changes appear across all connected browsers in milliseconds. When anyone edits notes or uploads a file, it shows up automatically without refreshing.
-              </dd>
-            </div>
+              </p>
+            </details>
 
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5">
-              <dt className="text-sm font-bold text-[var(--text-main)] mb-1.5 sm:mb-2">
-                Can I protect my workspace with a password?
-              </dt>
-              <dd className="text-xs text-[var(--text-muted)] leading-relaxed">
+            <details className="group bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 transition-colors open:border-[var(--accent-primary)]/60">
+              <summary className="flex items-center justify-between gap-3 text-sm font-bold text-[var(--text-main)] cursor-pointer select-none list-none outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded">
+                <span>Can I protect my workspace with a password?</span>
+                <ChevronDown className="w-4 h-4 shrink-0 text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200" aria-hidden="true" />
+              </summary>
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed pt-2.5 text-pretty">
                 Yes. Click Lock Space in the top bar to set a password. Anyone visiting the link will need to enter your password to view or edit notes and files.
-              </dd>
-            </div>
+              </p>
+            </details>
 
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5">
-              <dt className="text-sm font-bold text-[var(--text-main)] mb-1.5 sm:mb-2">
-                How do I open my workspace on mobile devices?
-              </dt>
-              <dd className="text-xs text-[var(--text-muted)] leading-relaxed">
+            <details className="group bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 transition-colors open:border-[var(--accent-primary)]/60">
+              <summary className="flex items-center justify-between gap-3 text-sm font-bold text-[var(--text-main)] cursor-pointer select-none list-none outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded">
+                <span>How do I open my workspace on mobile devices?</span>
+                <ChevronDown className="w-4 h-4 shrink-0 text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200" aria-hidden="true" />
+              </summary>
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed pt-2.5 text-pretty">
                 Click the QR code button in the top bar. Scan it with your phone&apos;s camera to instantly open and edit your workspace on mobile.
-              </dd>
-            </div>
+              </p>
+            </details>
 
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5">
-              <dt className="text-sm font-bold text-[var(--text-main)] mb-1.5 sm:mb-2">
-                How is FileShare different from Pastebin, Google Drive, or WeTransfer?
-              </dt>
-              <dd className="text-xs text-[var(--text-muted)] leading-relaxed">
+            <details className="group bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 transition-colors open:border-[var(--accent-primary)]/60">
+              <summary className="flex items-center justify-between gap-3 text-sm font-bold text-[var(--text-main)] cursor-pointer select-none list-none outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded">
+                <span>How is FileShare different from Pastebin, Google Drive, or WeTransfer?</span>
+                <ChevronDown className="w-4 h-4 shrink-0 text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200" aria-hidden="true" />
+              </summary>
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed pt-2.5 text-pretty">
                 Unlike Pastebin, FileShare syncs your typing live, renders rich Markdown diagrams, and supports 500MB file uploads. Unlike Google Drive or WeTransfer, there is no account to create, no email addresses needed, and workspaces open instantly with a link.
-              </dd>
-            </div>
+              </p>
+            </details>
 
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5">
-              <dt className="text-sm font-bold text-[var(--text-main)] mb-1.5 sm:mb-2">
-                Can I write Markdown and render Mermaid diagrams?
-              </dt>
-              <dd className="text-xs text-[var(--text-muted)] leading-relaxed">
+            <details className="group bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 transition-colors open:border-[var(--accent-primary)]/60">
+              <summary className="flex items-center justify-between gap-3 text-sm font-bold text-[var(--text-main)] cursor-pointer select-none list-none outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded">
+                <span>Can I write Markdown and render Mermaid diagrams?</span>
+                <ChevronDown className="w-4 h-4 shrink-0 text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200" aria-hidden="true" />
+              </summary>
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed pt-2.5 text-pretty">
                 Yes. FileShare supports GitHub Flavored Markdown (headings, task lists, tables, syntax-highlighted code blocks) and renders Mermaid flowcharts and diagrams automatically in real time.
-              </dd>
-            </div>
-          </dl>
+              </p>
+            </details>
+          </div>
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-[var(--header-bg)] border-t border-[var(--border-color)] py-6 sm:py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col gap-3 sm:gap-4 text-xs text-[var(--text-muted)]">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
-            <div className="flex items-center gap-1.5 font-medium">
-              <Shield className="w-3.5 h-3.5 text-[var(--accent-primary)] shrink-0" aria-hidden="true" />
-              <span>FileShare: Real-Time Notes &amp; File Vault</span>
-            </div>
-            <nav aria-label="Footer Navigation" className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-              <Link href="/about" className="py-1 hover:text-[var(--text-main)] transition-colors">About</Link>
-              <span className="text-[var(--border-color)] select-none" aria-hidden="true">•</span>
-              <Link href="/guide" className="py-1 hover:text-[var(--text-main)] transition-colors">User Guide</Link>
-              <span className="text-[var(--border-color)] select-none" aria-hidden="true">•</span>
-              <Link href="/resources" className="py-1 hover:text-[var(--text-main)] transition-colors">Resources</Link>
-              <span className="text-[var(--border-color)] select-none" aria-hidden="true">•</span>
-              <Link href="/contact" className="py-1 hover:text-[var(--text-main)] transition-colors">Contact</Link>
-              <span className="text-[var(--border-color)] select-none" aria-hidden="true">•</span>
-              <Link href="/privacy" className="py-1 hover:text-[var(--text-main)] transition-colors">Privacy Policy</Link>
-              <span className="text-[var(--border-color)] select-none" aria-hidden="true">•</span>
-              <Link href="/terms" className="py-1 hover:text-[var(--text-main)] transition-colors">Terms &amp; Conditions</Link>
-              <span className="text-[var(--border-color)] select-none" aria-hidden="true">•</span>
-              <Link href="/cookies" className="py-1 hover:text-[var(--text-main)] transition-colors">Cookie Policy</Link>
-              <span className="text-[var(--border-color)] select-none" aria-hidden="true">•</span>
-              <Link href="/refund" className="py-1 hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
-              <span className="text-[var(--border-color)] select-none" aria-hidden="true">•</span>
-              <CookieSettingsButton />
-              <span className="text-[var(--border-color)] select-none" aria-hidden="true">•</span>
-              <a
-                href="https://github.com/sandeshPatel06/file-share"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 py-1 hover:text-[var(--text-main)] transition-colors"
-                aria-label="FileShare on GitHub (opens in new tab)"
-              >
-                <svg className="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
-                </svg>
-                <span>GitHub</span>
-              </a>
-            </nav>
-          </div>
-
-          <div className="pt-3 border-t border-[var(--border-color)] flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-center sm:text-left text-[var(--text-muted)] break-words">
-            <p>Operated by <strong>SHP Technology</strong> • Founder: Sandesh Patel • Jabalpur, Madhya Pradesh 482001, India</p>
-            <p>GDPR &amp; India DPDP Act 2023 Compliant • Free Web Utility</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

@@ -36,7 +36,8 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
   }, [showMoreMenu]);
 
   async function copyLink() {
-    const url = `${window.location.origin}/s/${slug}`;
+    const prefix = typeof window !== "undefined" && window.location.pathname.startsWith("/projects") ? "/projects" : "/s";
+    const url = `${window.location.origin}${prefix}/${slug}`;
     const ok = await copyToClipboard(url);
     if (ok) {
       setCopied(true);

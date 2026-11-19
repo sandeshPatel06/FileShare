@@ -2,9 +2,9 @@
  * Adaptive font tiers — pick the best font payload for the user's network.
  *
  * Tier order (top → bottom):
- *   "full"     — Plus Jakarta Sans (400–800) + JetBrains Mono (400–700). Best
+ *   "full"     — Instrument Sans (400–700) + JetBrains Mono (400–700). Best
  *                rendering, biggest download. Fast networks only.
- *   "balanced" — Same families, core weights only (Sans 400/700/800,
+ *   "balanced" — Same families, core weights only (Sans 400/700,
  *                Mono 400/700). Missing weights are synthesized by the
  *                browser. Medium networks / low-end devices.
  *   "lite"     — System font stack, zero webfont bytes. Slow networks,
@@ -21,9 +21,9 @@ export type FontTier = "full" | "balanced" | "lite";
 export const FONT_TIER_ORDER: FontTier[] = ["full", "balanced", "lite"];
 
 const TIER_STYLESHEETS: Record<Exclude<FontTier, "lite">, string> = {
-  full: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap",
+  full: "https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap",
   balanced:
-    "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=JetBrains+Mono:wght@400;700&display=swap",
+    "https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap",
 };
 
 export function googleFontsUrl(tier: FontTier): string | null {

@@ -116,7 +116,7 @@ export function Modal({
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-xs overflow-y-auto overscroll-contain animate-fade-in"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-black/80 overflow-y-auto overscroll-contain animate-fade-in"
       onClick={onClose}
     >
       {/* Modal Dialog Box */}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CreditCard, CheckCircle2, ShieldAlert, ArrowLeft, Mail, RefreshCcw } from "lucide-react";
+import { Footer } from "@/components/Footer";
 import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 
 const appUrl = getAppUrl();
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
     canonical: `${appUrl}/refund`,
   },
   openGraph: {
-    title: "Refund Policy — FileShare",
+    title: "Refund Policy | FileShare",
     description: "Read the transparent Refund and Cancellation terms for FileShare.",
     url: `${appUrl}/refund`,
     siteName: "FileShare",
@@ -20,14 +21,14 @@ export const metadata: Metadata = {
     type: "website",
     images: getDefaultOgImages(
       appUrl,
-      "FileShare — Refund & Cancellation Policy"
+      "FileShare: Refund & Cancellation Policy"
     ),
   },
   twitter: {
     card: "summary_large_image",
     site: "@SandeshPat007",
     creator: "@SandeshPat007",
-    title: "Refund Policy — FileShare",
+    title: "Refund Policy | FileShare",
     description: "Read the transparent Refund and Cancellation terms for FileShare.",
     images: [`${appUrl}/og-image.png`],
   },
@@ -89,7 +90,7 @@ export default function RefundPolicyPage() {
               1. 100% Free Utility (No Paid Tiers)
             </h2>
             <p className="text-[var(--text-muted)]">
-              FileShare is entirely free. All core features—instant workspace creation, real-time Markdown notes, AI copilot formatting, Mermaid diagrams, password protection, and file sharing up to 500 MB per file—are free to use.
+              FileShare is entirely free. All core features (instant workspace creation, real-time Markdown notes, one-click formatting, diagrams, password protection, and file sharing up to 500 MB per file) are free to use.
             </p>
             <p className="text-[var(--text-muted)]">
               We do not collect credit cards, debit cards, or subscription fees. Because you are never charged to use FileShare, refunds do not apply to regular usage.
@@ -149,25 +150,7 @@ export default function RefundPolicyPage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-[var(--border-color)] py-8 bg-[var(--header-bg)]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
-          <p>© 2026 FileShare (SHP Technology). All rights reserved.</p>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <Link href="/" className="hover:text-[var(--text-main)] transition-colors">Home</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/cookies" className="hover:text-[var(--text-main)] transition-colors">Cookies</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/refund" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

@@ -54,7 +54,7 @@ async function verifyTopTier(): Promise<boolean> {
   try {
     if (!("fonts" in document)) return true;
     const load = Promise.all([
-      document.fonts.load('700 16px "Plus Jakarta Sans"'),
+      document.fonts.load('700 16px "Instrument Sans"'),
       document.fonts.load('400 16px "JetBrains Mono"'),
     ]);
     const timeout = new Promise<null>((resolve) =>

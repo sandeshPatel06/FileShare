@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { FileText, BookOpen, Clock, Tag, ArrowRight, ShieldCheck, Sparkles, Compass } from "lucide-react";
 import { getAllArticles } from "@/lib/articles";
-import { CookieSettingsButton } from "@/components/ui/CookieConsent";
+import { Footer } from "@/components/Footer";
 import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 
 const appUrl = getAppUrl();
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     canonical: `${appUrl}/resources`,
   },
   openGraph: {
-    title: "Knowledge Hub & Guides — FileShare",
+    title: "Knowledge Hub & Guides | FileShare",
     description: "Explore comprehensive guides on collaborative note-taking, file sharing, security, and developer productivity.",
     url: `${appUrl}/resources`,
     siteName: "FileShare",
@@ -22,14 +22,14 @@ export const metadata: Metadata = {
     type: "website",
     images: getDefaultOgImages(
       appUrl,
-      "FileShare Knowledge Hub — Engineering Resources & Guides"
+      "FileShare Knowledge Hub: Engineering Resources & Guides"
     ),
   },
   twitter: {
     card: "summary_large_image",
     site: "@SandeshPat007",
     creator: "@SandeshPat007",
-    title: "Knowledge Hub & Guides — FileShare",
+    title: "Knowledge Hub & Guides | FileShare",
     description: "Explore in-depth engineering articles on real-time collaborative note-taking, secure file vaults, modern Markdown syntax, and privacy-first remote productivity.",
     images: [`${appUrl}/og-image.png`],
   },
@@ -142,33 +142,7 @@ export default function ResourcesPage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-[var(--border-color)] py-8 bg-[var(--header-bg)]">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
-          <p>© 2026 FileShare (SHP Technology). High-velocity collaborative workspaces &amp; secure file vaults.</p>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <Link href="/" className="hover:text-[var(--text-main)] transition-colors">Home</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/about" className="hover:text-[var(--text-main)] transition-colors">About</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/guide" className="hover:text-[var(--text-main)] transition-colors">User Guide</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/resources" className="hover:text-[var(--text-main)] transition-colors">Resources</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy Policy</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms &amp; Conditions</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/cookies" className="hover:text-[var(--text-main)] transition-colors">Cookie Policy</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/refund" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
-            <span className="hidden sm:inline">•</span>
-            <CookieSettingsButton />
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

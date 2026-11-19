@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Cookie, ShieldCheck, Settings, CheckCircle2, Lock, Eye, ArrowLeft } from "lucide-react";
 import { CookieSettingsButton } from "@/components/ui/CookieConsent";
+import { Footer } from "@/components/Footer";
 import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 
 const appUrl = getAppUrl();
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
     canonical: `${appUrl}/cookies`,
   },
   openGraph: {
-    title: "Cookie Policy — FileShare",
+    title: "Cookie Policy | FileShare",
     description: "Learn about the cookies and storage technologies used by FileShare.",
     url: `${appUrl}/cookies`,
     siteName: "FileShare",
@@ -21,14 +22,14 @@ export const metadata: Metadata = {
     type: "website",
     images: getDefaultOgImages(
       appUrl,
-      "FileShare — Cookie Policy & Storage Technologies"
+      "FileShare: Cookie Policy & Storage Technologies"
     ),
   },
   twitter: {
     card: "summary_large_image",
     site: "@SandeshPat007",
     creator: "@SandeshPat007",
-    title: "Cookie Policy — FileShare",
+    title: "Cookie Policy | FileShare",
     description: "Learn about the cookies and storage technologies used by FileShare.",
     images: [`${appUrl}/og-image.png`],
   },
@@ -227,25 +228,7 @@ export default function CookiePolicyPage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-[var(--border-color)] py-8 bg-[var(--header-bg)]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
-          <p>© 2026 FileShare (SHP Technology). Engineered for speed, privacy, and accessibility.</p>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <Link href="/" className="hover:text-[var(--text-main)] transition-colors">Home</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/cookies" className="hover:text-[var(--text-main)] transition-colors">Cookies</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/refund" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
-            <span className="hidden sm:inline">•</span>
-            <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

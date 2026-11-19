@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const canonicalUrl = `${appUrl}/s/${slug}`;
 
   return {
-    title: `${slug} — Live Workspace`,
+    title: `${slug} | Live Workspace`,
     description: `Collaborate live in real-time at /s/${slug}. Instant markdown editing and file sharing vault.`,
     robots: {
       index: false,
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       canonical: canonicalUrl,
     },
     openGraph: {
-      title: `${slug} — FileShare Live Space`,
+      title: `${slug} | FileShare Live Space`,
       description: `Real-time collaborative text and file sharing workspace at /s/${slug}.`,
       url: canonicalUrl,
       siteName: "FileShare",
@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: "summary_large_image",
       site: "@SandeshPat007",
       creator: "@SandeshPat007",
-      title: `${slug} — FileShare Live Space`,
+      title: `${slug} | FileShare Live Space`,
       description: `Collaborate live in real-time at /s/${slug}.`,
       images: [`${appUrl}/og-image.png`],
     },

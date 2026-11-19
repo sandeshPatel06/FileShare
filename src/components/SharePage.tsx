@@ -6,7 +6,7 @@ import { FilePanel } from "@/components/FilePanel";
 import { PasswordGate } from "@/components/PasswordGate";
 import { PasswordModal } from "@/components/PasswordModal";
 import Link from "next/link";
-import { PanelRightClose, FolderOpen, ChevronUp } from "lucide-react";
+import { PanelRightClose, FolderOpen, ChevronUp, UploadCloud } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useRecentSpaces } from "@/hooks/useRecentSpaces";
 import { FloatingMenu } from "@/components/ui/FloatingMenu";
@@ -54,6 +54,42 @@ export function SharePage({ pageData }: SharePageProps) {
   const [showLegalMenu, setShowLegalMenu]     = useState(false);
   const legalMenuButtonRef = useRef<HTMLButtonElement>(null);
   const { addRecentSpace }                    = useRecentSpaces();
+  const [globalDragging, setGlobalDragging]   = useState(false);
+  const dragCounter                           = useRef(0);
+
+  const handleGlobalDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    dragCounter.current += 1;
+    if (e.dataTransfer.types && Array.from(e.dataTransfer.types).includes("Files")) {
+      setGlobalDragging(true);
+    }
+  };
+
+  const handleGlobalDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+  };
+
+  const handleGlobalDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    dragCounter.current -= 1;
+    if (dragCounter.current <= 0) {
+      dragCounter.current = 0;
+      setGlobalDragging(false);
+    }
+  };
+
+  const handleGlobalDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    dragCounter.current = 0;
+    setGlobalDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      setUserPanelToggle(true);
+      window.dispatchEvent(
+        new CustomEvent("fileshare:drop-upload", { detail: e.dataTransfer.files })
+      );
+    }
+  };
 
   useEffect(() => {
     if (slug) {
@@ -124,8 +160,31 @@ export function SharePage({ pageData }: SharePageProps) {
   return (
     <div
       id="workspace-shell"
+      onDragEnter={handleGlobalDragEnter}
+      onDragOver={handleGlobalDragOver}
+      onDragLeave={handleGlobalDragLeave}
+      onDrop={handleGlobalDrop}
       className="flex flex-col h-screen h-dvh max-h-dvh flex-1 min-h-0 w-full max-w-full overflow-hidden overscroll-none bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-200 relative"
     >
+      {/* Global Drag & Drop Overlay */}
+      {globalDragging && (
+        <div
+          className="absolute inset-0 z-50 bg-[var(--bg-main)]/90 backdrop-blur-sm border-2 border-dashed border-[var(--accent-primary)] rounded-lg flex flex-col items-center justify-center gap-3 p-6 pointer-events-none transition-all"
+          aria-hidden="true"
+        >
+          <div className="w-16 h-16 rounded-2xl bg-[var(--accent-primary)]/15 border border-[var(--accent-primary)]/30 flex items-center justify-center text-[var(--accent-text)] animate-bounce">
+            <UploadCloud size={32} />
+          </div>
+          <div className="text-center">
+            <h3 className="text-base sm:text-lg font-bold text-[var(--text-main)]">
+              Drop files anywhere to upload
+            </h3>
+            <p className="text-xs sm:text-sm text-[var(--text-muted)] mt-1">
+              Supports any file format up to 500 MB per file
+            </p>
+          </div>
+        </div>
+      )}
       {/* Top Header Navigation */}
       <header className="h-11 sm:h-12 min-h-11 sm:min-h-12 max-h-11 sm:max-h-12 px-2 sm:px-3 bg-[var(--header-bg)] border-b border-[var(--border-color)] flex items-center shrink-0 w-full min-w-0 max-w-full z-[60] transition-colors duration-200 overflow-hidden">
         <SlugBar
@@ -201,7 +260,7 @@ export function SharePage({ pageData }: SharePageProps) {
 
       <footer className="border-t border-[var(--border-color)] bg-[var(--header-bg)] h-7 min-h-7 max-h-7 py-0 px-2 sm:px-3 shrink-0 text-[10px] sm:text-xs text-[var(--text-muted)] flex flex-nowrap items-center justify-center sm:justify-between gap-1.5 sm:gap-2 z-20 font-medium overflow-hidden w-full min-w-0 max-w-full select-none">
         <div className="hidden sm:flex items-center gap-1.5 min-w-0 max-w-full flex-1 overflow-hidden">
-          <span className="truncate min-w-0">Workspace: <code className="font-mono font-semibold text-[var(--text-main)] truncate max-w-[45vw] sm:max-w-[280px] inline-block align-bottom">/s/{slug}</code></span>
+          <span className="truncate min-w-0">Workspace: <code className="font-mono font-semibold text-[var(--text-main)] truncate max-w-[45vw] sm:max-w-[280px] inline-block align-bottom">{typeof window !== "undefined" && window.location.pathname.startsWith("/projects") ? "/projects" : "/s"}/{slug}</code></span>
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap min-w-0 max-w-full whitespace-nowrap overflow-x-auto no-scrollbar">
           <Link href="/guide" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors py-0.5 shrink-0">User Guide</Link>

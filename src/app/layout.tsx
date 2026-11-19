@@ -115,7 +115,7 @@ export const metadata: Metadata = {
     type: "website",
     images: getDefaultOgImages(
       appUrl,
-      "FileShare — Real-Time Notes & File Sharing Vault"
+      "FileShare: Real-Time Notes & File Sharing Vault"
     ),
   },
   twitter: {
@@ -217,6 +217,94 @@ export default function RootLayout({
           "addressCountry": "IN",
         },
       },
+      {
+        "@type": "FAQPage",
+        "@id": `${appUrl}/#faq`,
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Is FileShare free to use, and do I need to register?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, FileShare is 100% free with zero registration required. There are no forms to fill out, no email confirmations, and no subscriptions. You can start typing or uploading immediately.",
+            },
+          },
+          {
+            "@type": "Question",
+            "name": "What is the file size upload limit?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "You can upload files up to 500 MB each. FileShare supports multi-file uploads including videos, zip archives, images, PDFs, and code files.",
+            },
+          },
+          {
+            "@type": "Question",
+            "name": "How does real-time synchronization work?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "FileShare uses instant live sync so changes appear across all connected browsers in milliseconds. When anyone edits notes or uploads a file, it shows up automatically without refreshing.",
+            },
+          },
+          {
+            "@type": "Question",
+            "name": "Can I protect my workspace with a password?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Click Lock Space in the top bar to set a password. Anyone visiting the link will need to enter your password to view or edit notes and files.",
+            },
+          },
+          {
+            "@type": "Question",
+            "name": "How do I open my workspace on mobile devices?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Click the QR code button in the top bar. Scan it with your phone's camera to instantly open and edit your workspace on mobile.",
+            },
+          },
+          {
+            "@type": "Question",
+            "name": "How is FileShare different from Pastebin, Google Drive, or WeTransfer?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Unlike Pastebin, FileShare syncs your typing live, renders rich Markdown diagrams, and supports 500MB file uploads. Unlike Google Drive or WeTransfer, there is no account to create, no email addresses needed, and workspaces open instantly with a link.",
+            },
+          },
+          {
+            "@type": "Question",
+            "name": "Can I write Markdown and render Mermaid diagrams?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. FileShare supports GitHub Flavored Markdown (headings, task lists, tables, syntax-highlighted code blocks) and renders Mermaid flowcharts and diagrams automatically in real time.",
+            },
+          },
+        ],
+      },
+      {
+        "@type": "HowTo",
+        "@id": `${appUrl}/#howto`,
+        "name": "How to Collaborate on Notes and Share Files Instantly Without an Account",
+        "description": "Create an instant real-time Markdown notepad and upload files up to 500MB with zero sign-up.",
+        "step": [
+          {
+            "@type": "HowToStep",
+            "name": "Open a Workspace",
+            "text": "Go to /projects to pick a custom name or click Random Space to launch an instant workspace.",
+            "url": `${appUrl}/projects`,
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Take Notes & Upload Files",
+            "text": "Write live Markdown notes with formatting and drag-and-drop files up to 500MB into your workspace vault.",
+            "url": `${appUrl}`,
+          },
+          {
+            "@type": "HowToStep",
+            "name": "Share or Protect",
+            "text": "Share the URL with peers, scan the QR code to open on mobile, or set an optional password to lock your workspace.",
+            "url": `${appUrl}`,
+          },
+        ],
+      },
     ],
   };
 
@@ -232,7 +320,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         {/*
-          Network-aware font bootstrap — runs synchronously pre-paint:
+          Network-aware font bootstrap: runs synchronously pre-paint:
           1. Reuses the cached tier (24h TTL) when fresh.
           2. Else classifies via Network Information API (sync, zero bytes).
           3. Top tier ("full") first when the network allows it.
@@ -242,7 +330,7 @@ export default function RootLayout({
         */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var FULL="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap";var BAL="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=JetBrains+Mono:wght@400;700&display=swap";var c=navigator.connection||{};var t=null;try{var s=localStorage.getItem("fs-font-tier"),ts=+localStorage.getItem("fs-font-tier-ts");if((s==="full"||s==="balanced"||s==="lite")&&Date.now()-ts<864e5)t=s;}catch(e){}var tier=t;if(!tier){if(c.saveData||c.effectiveType==="slow-2g"||c.effectiveType==="2g"||(typeof c.downlink==="number"&&c.downlink<0.8))tier="lite";else if(c.effectiveType==="3g"||(typeof c.downlink==="number"&&c.downlink<2.5)||(typeof c.rtt==="number"&&c.rtt>400)||(typeof navigator.deviceMemory==="number"&&navigator.deviceMemory<=2)||(typeof navigator.hardwareConcurrency==="number"&&navigator.hardwareConcurrency<=2))tier="balanced";else tier="full";}document.documentElement.dataset.fontTier=tier;var url=tier==="full"?FULL:(tier==="balanced"?BAL:null);if(url){var l=document.createElement("link");l.id="adaptive-font-css";l.rel="stylesheet";l.href=url;l.media="print";l.onload=function(){l.media="all";};document.head.appendChild(l);setTimeout(function(){l.media="all";},3000);}}catch(e){}})();`,
+            __html: `(function(){try{var FULL="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap";var BAL="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap";var c=navigator.connection||{};var t=null;try{var s=localStorage.getItem("fs-font-tier"),ts=+localStorage.getItem("fs-font-tier-ts");if((s==="full"||s==="balanced"||s==="lite")&&Date.now()-ts<864e5)t=s;}catch(e){}var tier=t;if(!tier){if(c.saveData||c.effectiveType==="slow-2g"||c.effectiveType==="2g"||(typeof c.downlink==="number"&&c.downlink<0.8))tier="lite";else if(c.effectiveType==="3g"||(typeof c.downlink==="number"&&c.downlink<2.5)||(typeof c.rtt==="number"&&c.rtt>400)||(typeof navigator.deviceMemory==="number"&&navigator.deviceMemory<=2)||(typeof navigator.hardwareConcurrency==="number"&&navigator.hardwareConcurrency<=2))tier="balanced";else tier="full";}document.documentElement.dataset.fontTier=tier;var url=tier==="full"?FULL:(tier==="balanced"?BAL:null);if(url){var l=document.createElement("link");l.id="adaptive-font-css";l.rel="stylesheet";l.href=url;l.media="print";l.onload=function(){l.media="all";};document.head.appendChild(l);setTimeout(function(){l.media="all";},3000);}}catch(e){}})();`,
           }}
         />
         <Script

@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     type: "website",
     images: getDefaultOgImages(
       appUrl,
-      "FileShare Logo — Real-Time Notes & File Vault"
+      "FileShare Logo: Real-Time Notes & File Vault"
     ),
   },
   twitter: {

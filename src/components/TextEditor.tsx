@@ -5,7 +5,8 @@ import {
   List, ListOrdered, CheckSquare, Quote, Code, Table, Sparkles,
   CheckCircle2, Loader2, Upload, Layout, Eye, Columns,
   Maximize2, Minimize2, Download, Printer, FileText, FileCode,
-  Image as ImageIcon, FileSpreadsheet, ChevronDown, Check, FileJson, Archive, AlertTriangle
+  Image as ImageIcon, FileSpreadsheet, ChevronDown, Check, FileJson, Archive, AlertTriangle,
+  Copy
 } from "lucide-react";
 import { usePageContent } from "@/hooks/usePageContent";
 import { showToast } from "@/components/ui/Toast";
@@ -13,6 +14,7 @@ import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { exportAllAsZip } from "@/lib/exportZip";
+import { copyToClipboard } from "@/lib/clipboard";
 import { createPortal } from "react-dom";
 import { computePosition, flip, shift, offset } from "@floating-ui/dom";
 import { FloatingMenu } from "@/components/ui/FloatingMenu";
@@ -49,7 +51,7 @@ const TEMPLATES = [
     id: "journal",
     title: "📔 Daily Work Log",
     description: "Today's wins, learnings, blockers, and notes",
-    content: `# 📔 Work Log — ${new Date().toLocaleDateString()}\n\n---\n\n## 🏆 Key Accomplishments\n- Accomplishment 1\n- Accomplishment 2\n\n---\n\n## 💡 Learnings & Insights\n- Insight 1\n- Insight 2\n\n---\n\n## 🚧 Current Blockers\n- None\n\n---\n\n## 🎯 Tomorrow's Priorities\n- [ ] Priority 1\n- [ ] Priority 2\n`,
+    content: `# 📔 Work Log: ${new Date().toLocaleDateString()}\n\n---\n\n## 🏆 Key Accomplishments\n- Accomplishment 1\n- Accomplishment 2\n\n---\n\n## 💡 Learnings & Insights\n- Insight 1\n- Insight 2\n\n---\n\n## 🚧 Current Blockers\n- None\n\n---\n\n## 🎯 Tomorrow's Priorities\n- [ ] Priority 1\n- [ ] Priority 2\n`,
   },
 ];
 
@@ -94,7 +96,7 @@ function smartMerge(local: string, remote: string): string {
 
   if (!diffText) return local;
 
-  return `${local.trimEnd()}\n\n<!-- ── Collaborator Remote Update ── -->\n${diffText}\n`;
+  return `${local.trimEnd()}\n\n<!-- Collaborator Remote Update -->\n${diffText}\n`;
 }
 
 export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
@@ -124,6 +126,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
   const [displayContent, setDisplayContent] = useState(initialContent);
   const [uploading, setUploading]           = useState(false);
   const [zenMode, setZenMode]               = useState(false);
+  const [copied, setCopied]                 = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showOutline, setShowOutline]       = useState(false);
@@ -156,7 +159,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     }
   }, [serverContent, conflict]);
 
-  // Immediate save helper for conflict resolutions
+  // Immediate save helper for conflict resolutions & Cmd+S
   const pushImmediate = useCallback(
     async (val: string) => {
       if (debounceTimer.current) {
@@ -235,27 +238,6 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     }
   };
 
-  // Keyboard shortcut for Zen Mode exit & export menu click-away
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        if (zenMode) setZenMode(false);
-        if (showExportMenu) setShowExportMenu(false);
-      }
-    }
-    function handleClickOutside(e: MouseEvent) {
-      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target as Node)) {
-        setShowExportMenu(false);
-      }
-    }
-    window.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [zenMode, showExportMenu]);
-
   // Debounced auto-save push to API
   const pushUpdate = useCallback(
     (val: string) => {
@@ -295,6 +277,96 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     },
     [slug, token, touchLocalEdit, syncLocalContent, clientId]
   );
+
+  // Markdown Document Auto-Format (Cmd/Ctrl+Shift+F)
+  const handleAICopilotFormat = useCallback(() => {
+    if (!displayContent.trim()) {
+      showToast("Write notes first before formatting", "info");
+      return;
+    }
+
+    const lines = displayContent.split(/\r?\n/);
+    let inCodeBlock = false;
+    const formattedLines: string[] = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+
+      if (line.trim().startsWith("```")) {
+        inCodeBlock = !inCodeBlock;
+        formattedLines.push(line.trimEnd());
+        continue;
+      }
+
+      if (inCodeBlock) {
+        formattedLines.push(line.trimEnd());
+        continue;
+      }
+
+      let trimmed = line.trimEnd();
+      trimmed = trimmed.replace(/^(#{1,6})([^#\s])/g, "$1 $2");
+      trimmed = trimmed.replace(/^(\s*)[*+]\s+/g, "$1- ");
+      trimmed = trimmed.replace(/^(\s*)-\s*([^\s\-[\]])/g, "$1- $2");
+      trimmed = trimmed.replace(/^(\s*)-\s*\[([ xX])\]\s*([^\s])/g, "$1- [$2] $3");
+      trimmed = trimmed.replace(/^(\s*\d+\.)([^\s])/g, "$1 $2");
+      trimmed = trimmed.replace(/^(\s*>)([^\s>])/g, "$1 $2");
+      trimmed = trimmed.replace(/([a-zA-Z0-9_)]),(?=[a-zA-Z0-9_(])/g, "$1, ");
+
+      formattedLines.push(trimmed);
+    }
+
+    let cleanedText = formattedLines.join("\n").replace(/\n{3,}/g, "\n\n");
+    if (!cleanedText.endsWith("\n")) {
+      cleanedText += "\n";
+    }
+
+    setDisplayContent(cleanedText);
+    pushUpdate(cleanedText);
+    showToast("Markdown document formatted cleanly", "success");
+  }, [displayContent, pushUpdate]);
+
+  // Copy to clipboard helper
+  const handleCopyContent = useCallback(async () => {
+    if (!displayContent) {
+      showToast("Document is empty", "info");
+      return;
+    }
+    const ok = await copyToClipboard(displayContent);
+    if (ok) {
+      setCopied(true);
+      showToast("Markdown copied to clipboard", "success");
+      setTimeout(() => setCopied(false), 2000);
+    } else {
+      showToast("Failed to copy to clipboard", "error");
+    }
+  }, [displayContent]);
+
+  // Global keyboard shortcuts (Cmd/Ctrl+Shift+F format, Cmd/Ctrl+S save, Esc exit zen/export)
+  useEffect(() => {
+    function handleGlobalKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        if (zenMode) setZenMode(false);
+        if (showExportMenu) setShowExportMenu(false);
+      } else if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === "f" || e.key === "F")) {
+        e.preventDefault();
+        handleAICopilotFormat();
+      } else if ((e.metaKey || e.ctrlKey) && (e.key === "s" || e.key === "S")) {
+        e.preventDefault();
+        pushImmediate(displayContent);
+      }
+    }
+    function handleClickOutside(e: MouseEvent) {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target as Node)) {
+        setShowExportMenu(false);
+      }
+    }
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      window.removeEventListener("keydown", handleGlobalKeyDown);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [zenMode, showExportMenu, displayContent, handleAICopilotFormat, pushImmediate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;
@@ -449,6 +521,27 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
         e.preventDefault();
         setSlashMenu({ open: false, filter: "", activeIndex: 0, slashIndex: 0 });
       }
+      return;
+    }
+
+    // Shortcut inside textarea: Cmd/Ctrl+Shift+F (Format document)
+    if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === "f" || e.key === "F")) {
+      e.preventDefault();
+      handleAICopilotFormat();
+      return;
+    }
+
+    // Shortcut inside textarea: Cmd/Ctrl+S (Save notes immediately)
+    if ((e.metaKey || e.ctrlKey) && (e.key === "s" || e.key === "S")) {
+      e.preventDefault();
+      pushImmediate(displayContent);
+      return;
+    }
+
+    // Tab indents by 2 spaces
+    if (e.key === "Tab" && !e.shiftKey) {
+      e.preventDefault();
+      applyFormat("  ");
     }
   };
 
@@ -577,53 +670,6 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     } finally {
       setUploading(false);
     }
-  };
-
-  // AI Copilot Auto Format Assistant
-  const handleAICopilotFormat = () => {
-    if (!displayContent.trim()) {
-      showToast("Type notes first for AI Copilot to format", "info");
-      return;
-    }
-
-    const lines = displayContent.split(/\r?\n/);
-    let inCodeBlock = false;
-    const formattedLines: string[] = [];
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-
-      if (line.trim().startsWith("```")) {
-        inCodeBlock = !inCodeBlock;
-        formattedLines.push(line.trimEnd());
-        continue;
-      }
-
-      if (inCodeBlock) {
-        formattedLines.push(line.trimEnd());
-        continue;
-      }
-
-      let trimmed = line.trimEnd();
-      trimmed = trimmed.replace(/^(#{1,6})([^#\s])/g, "$1 $2");
-      trimmed = trimmed.replace(/^(\s*)[*+]\s+/g, "$1- ");
-      trimmed = trimmed.replace(/^(\s*)-\s*([^\s\-[\]])/g, "$1- $2");
-      trimmed = trimmed.replace(/^(\s*)-\s*\[([ xX])\]\s*([^\s])/g, "$1- [$2] $3");
-      trimmed = trimmed.replace(/^(\s*\d+\.)([^\s])/g, "$1 $2");
-      trimmed = trimmed.replace(/^(\s*>)([^\s>])/g, "$1 $2");
-      trimmed = trimmed.replace(/([a-zA-Z0-9_)]),(?=[a-zA-Z0-9_(])/g, "$1, ");
-
-      formattedLines.push(trimmed);
-    }
-
-    let cleanedText = formattedLines.join("\n").replace(/\n{3,}/g, "\n\n");
-    if (!cleanedText.endsWith("\n")) {
-      cleanedText += "\n";
-    }
-
-    setDisplayContent(cleanedText);
-    pushUpdate(cleanedText);
-    showToast("Markdown document formatted with AI Copilot!", "success");
   };
 
   // Insert Template Content
@@ -1026,8 +1072,8 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     });
 
   return (
-    <div className={`
-      flex flex-col h-full w-full bg-[var(--bg-main)] transition-all duration-200 overflow-hidden select-none
+    <section className={`
+      flex flex-col h-full w-full bg-[var(--bg-main)] transition-colors duration-150 overflow-hidden select-none
       ${zenMode ? "fixed inset-0 z-[9999] bg-[var(--bg-main)]" : "relative"}
     `}>
       {/* Hidden File Input */}
@@ -1039,17 +1085,31 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
         className="hidden"
       />
 
-      {/* Sleek IDE Top Toolbar (100% Width) */}
-       <div className="relative z-30 flex flex-col sm:flex-row items-stretch sm:items-center px-2.5 py-1.5 border-b border-[var(--border-color)] bg-[var(--bg-surface)] shrink-0 gap-1 sm:gap-2 select-none min-h-[44px] w-full min-w-0 max-w-full">
+      {/* Floating Zen Mode Exit Pill */}
+      {zenMode && (
+        <button
+          type="button"
+          onClick={() => setZenMode(false)}
+          className="fixed bottom-4 right-4 z-50 px-3 py-1.5 rounded-full bg-[var(--bg-surface)] border border-[var(--border-color)] text-xs text-[var(--text-muted)] hover:text-[var(--text-main)] shadow-lg transition-all flex items-center gap-1.5 font-mono cursor-pointer"
+          title="Exit Zen Mode (Esc)"
+        >
+          <Minimize2 size={12} />
+          <span>Exit Zen (Esc)</span>
+        </button>
+      )}
+
+      {/* Sleek IDE Top Toolbar */}
+      <header className="relative z-30 flex flex-col sm:flex-row items-stretch sm:items-center px-2.5 py-1.5 border-b border-[var(--border-color)] bg-[var(--bg-surface)] shrink-0 gap-1.5 select-none min-h-[44px] w-full min-w-0 max-w-full">
         {/* Left: Markdown Format Icons Toolbar */}
-        <div className="flex items-center gap-1.5 flex-nowrap flex-none w-full sm:flex-1 overflow-x-auto no-scrollbar py-0.5 min-w-0 max-w-full max-sm:[&_button]:min-h-[36px] max-sm:[&_button]:min-w-[36px]">
-          <div className="flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)]">
+        <div className="flex items-center gap-1.5 flex-nowrap flex-none w-full sm:flex-1 overflow-x-auto no-scrollbar py-0.5 min-w-0 max-w-full">
+          {/* Headings */}
+          <div className="flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)] shrink-0">
             <button
               type="button"
               onClick={() => applyFormat("# ")}
               title="Heading 1 (#)"
               aria-label="Heading 1"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-xs font-black text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-xs font-black text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <Heading1 size={15} />
             </button>
@@ -1058,7 +1118,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
               onClick={() => applyFormat("## ")}
               title="Heading 2 (##)"
               aria-label="Heading 2"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-xs font-black text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-xs font-black text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <Heading2 size={15} />
             </button>
@@ -1067,21 +1127,22 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
               onClick={() => applyFormat("### ")}
               title="Heading 3 (###)"
               aria-label="Heading 3"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-xs font-black text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-xs font-black text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <Heading3 size={15} />
             </button>
           </div>
 
-          <div className="w-px h-5 bg-[var(--border-color)] mx-0.5" />
+          <div className="w-px h-4 bg-[var(--border-color)] mx-0.5 shrink-0" />
 
-          <div className="flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)]">
+          {/* Inline styles */}
+          <div className="flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)] shrink-0">
             <button
               type="button"
               onClick={() => applyFormat("**", "**")}
               title="Bold (**text**)"
               aria-label="Bold"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <Bold size={15} />
             </button>
@@ -1090,7 +1151,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
               onClick={() => applyFormat("*", "*")}
               title="Italic (*text*)"
               aria-label="Italic"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <Italic size={15} />
             </button>
@@ -1099,21 +1160,22 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
               onClick={() => applyFormat("~~", "~~")}
               title="Strikethrough (~~text~~)"
               aria-label="Strikethrough"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <Strikethrough size={15} />
             </button>
           </div>
 
-          <div className="w-px h-5 bg-[var(--border-color)] mx-0.5" />
+          <div className="w-px h-4 bg-[var(--border-color)] mx-0.5 shrink-0" />
 
-          <div className="flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)]">
+          {/* Lists */}
+          <div className="flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)] shrink-0">
             <button
               type="button"
               onClick={() => applyFormat("- ")}
               title="Unordered List (-)"
               aria-label="Unordered List"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <List size={15} />
             </button>
@@ -1122,7 +1184,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
               onClick={() => applyFormat("1. ")}
               title="Numbered List (1.)"
               aria-label="Numbered List"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <ListOrdered size={15} />
             </button>
@@ -1131,21 +1193,22 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
               onClick={() => applyFormat("- [ ] ")}
               title="Task Checkbox (- [ ])"
               aria-label="Task Checkbox"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <CheckSquare size={15} />
             </button>
           </div>
 
-          <div className="w-px h-5 bg-[var(--border-color)] mx-0.5" />
+          <div className="w-px h-4 bg-[var(--border-color)] mx-0.5 shrink-0" />
 
-          <div className="flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)]">
+          {/* Blocks */}
+          <div className="flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)] shrink-0">
             <button
               type="button"
               onClick={() => applyFormat("> ")}
               title="Blockquote (>)"
               aria-label="Blockquote"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <Quote size={15} />
             </button>
@@ -1154,7 +1217,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
               onClick={() => applyFormat("```\n", "\n```")}
               title="Code Block (```)"
               aria-label="Code Block"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <Code size={15} />
             </button>
@@ -1163,37 +1226,37 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
               onClick={() => applyFormat("| Header 1 | Header 2 |\n| :--- | :--- |\n| Cell 1 | Cell 2 |\n")}
               title="Insert Table"
               aria-label="Insert Table"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <Table size={15} />
             </button>
           </div>
         </div>
 
-        {/* Right: AI Assistant, Templates, Export, Zen, & View Controls */}
-        <div className="flex items-center justify-end gap-1 sm:gap-1.5 flex-nowrap flex-none w-full sm:w-auto min-w-0 sm:shrink-0 ml-0 sm:ml-auto overflow-x-auto max-w-full no-scrollbar max-sm:[&_button]:min-h-[36px] max-sm:[&_button]:min-w-[36px]">
+        {/* Right: Actions, Templates, Export, Zen & View Controls */}
+        <div className="flex items-center justify-end gap-1 sm:gap-1.5 flex-nowrap flex-none w-full sm:w-auto min-w-0 sm:shrink-0 ml-0 sm:ml-auto overflow-x-auto max-w-full no-scrollbar">
           {/* Starter Templates Button */}
           <button
             type="button"
             onClick={() => setShowTemplateModal(true)}
             aria-label="Open starter templates gallery"
-            className="flex items-center gap-1.5 px-2.5 py-1.5 min-h-[44px] sm:min-h-[36px] rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] transition-all text-xs font-bold cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 min-h-[44px] sm:min-h-[32px] rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] hover:border-[var(--accent-primary)]/50 transition-all text-xs font-semibold cursor-pointer shrink-0"
             title="Starter Templates Gallery"
           >
-            <FileText size={14} className="text-[var(--accent-indigo)]" />
+            <FileText size={14} className="text-[var(--accent-primary)]" />
             <span className="hidden lg:inline">Templates</span>
           </button>
 
-          {/* AI Copilot Button */}
+          {/* Clean Markdown Formatting Assistant */}
           <button
             type="button"
             onClick={handleAICopilotFormat}
-            aria-label="AI Copilot: auto-format document"
-            className="flex items-center gap-1.5 px-2.5 py-1.5 min-h-[44px] sm:min-h-[36px] rounded-lg bg-[var(--badge-bg)] border border-[var(--badge-border)] text-[var(--accent-indigo)] hover:bg-[var(--accent-primary)]/15 transition-all text-xs font-bold cursor-pointer shadow-sm"
-            title="AI Copilot: Auto-format document"
+            aria-label="Format document (markdown clean-up)"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 min-h-[44px] sm:min-h-[32px] rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] hover:border-[var(--accent-primary)]/50 transition-all text-xs font-semibold cursor-pointer shrink-0"
+            title="Format Document (Cmd/Ctrl+Shift+F)"
           >
-            <Sparkles size={14} className="text-[var(--accent-indigo)] animate-pulse" />
-            <span className="hidden sm:inline">AI Format</span>
+            <Sparkles size={14} className="text-[var(--accent-primary)]" />
+            <span className="hidden sm:inline">Format</span>
           </button>
 
           {/* Outline / ToC Toggle */}
@@ -1202,14 +1265,25 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
             onClick={() => setShowOutline(prev => !prev)}
             aria-label="Toggle document outline"
             aria-pressed={showOutline}
-            className={`min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-lg border transition-all cursor-pointer ${
+            className={`min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-lg border transition-all cursor-pointer shrink-0 ${
               showOutline 
-                ? "bg-[var(--accent-primary)] border-[var(--accent-primary)] text-white" 
-                : "bg-[var(--badge-bg)] border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)]"
+                ? "bg-[var(--accent-primary)] border-[var(--accent-primary)] text-white shadow-xs" 
+                : "bg-[var(--bg-card)] border-[var(--border-color)] text-[var(--text-main)] hover:border-[var(--accent-primary)]/50"
             }`}
             title="Toggle Document Outline"
           >
             <ListOrdered size={14} />
+          </button>
+
+          {/* Quick Copy to Clipboard Button */}
+          <button
+            type="button"
+            onClick={handleCopyContent}
+            aria-label="Copy markdown to clipboard"
+            className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] hover:border-[var(--accent-primary)]/50 transition-all cursor-pointer shrink-0"
+            title="Copy Markdown to Clipboard"
+          >
+            {copied ? <Check size={14} className="text-[var(--status-success-text)]" /> : <Copy size={14} />}
           </button>
 
           {/* Attach File Button */}
@@ -1218,86 +1292,94 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
             aria-label="Attach file to notes"
-            className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] transition-all cursor-pointer"
+            className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] hover:border-[var(--accent-primary)]/50 transition-all cursor-pointer shrink-0 disabled:opacity-50"
             title="Attach file to notes"
           >
             <Upload size={14} />
           </button>
 
-          {/* Rich Export Menu Dropdown */}
-          <div className="relative" ref={exportMenuRef}>
+          {/* Export Menu Dropdown */}
+          <div className="relative shrink-0" ref={exportMenuRef}>
             <button
               type="button"
               onClick={() => setShowExportMenu((v) => !v)}
               aria-label="Export document options"
               aria-expanded={showExportMenu}
-              className="px-2.5 sm:px-3 py-1.5 min-h-[44px] sm:min-h-[36px] rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] transition-all cursor-pointer flex items-center gap-1.5 text-xs font-extrabold shadow-sm"
+              className="px-2.5 sm:px-3 py-1.5 min-h-[44px] sm:min-h-[32px] rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] hover:border-[var(--accent-primary)]/50 transition-all cursor-pointer flex items-center gap-1.5 text-xs font-semibold shrink-0"
               title="Export Document Options"
             >
-              <Download size={14} className="text-[var(--accent-indigo)]" />
+              <Download size={14} className="text-[var(--accent-primary)]" />
               <span className="hidden min-[400px]:inline sm:inline">Export</span>
               <ChevronDown size={13} className={`transition-transform duration-200 ${showExportMenu ? "rotate-180" : ""}`} />
             </button>
-             {showExportMenu && (
-               <FloatingMenu open={showExportMenu} anchorRef={exportMenuRef} placement="bottom-end" className="w-56 max-w-[calc(100vw-1rem)] rounded-xl bg-[var(--modal-bg)] border border-[var(--border-color)] shadow-2xl p-1 animate-slide-down text-xs font-bold">
+            {showExportMenu && (
+              <FloatingMenu open={showExportMenu} anchorRef={exportMenuRef} placement="bottom-end" className="w-56 max-w-[calc(100vw-1rem)] rounded-xl bg-[var(--modal-bg)] border border-[var(--border-color)] shadow-xl p-1 text-xs font-medium">
                 <button
                   type="button"
                   onClick={handleExportAllZip}
-                  className="w-full text-left px-3 py-2 rounded-lg bg-[var(--badge-bg)] hover:bg-[var(--accent-primary)]/15 border border-[var(--badge-border)] flex items-center gap-2 text-[var(--accent-primary)] cursor-pointer font-extrabold mb-1 min-h-[44px] sm:min-h-[36px]"
+                  className="w-full text-left px-3 py-2 rounded-lg bg-[var(--badge-bg)] hover:bg-[var(--accent-primary)]/15 border border-[var(--badge-border)] flex items-center gap-2 text-[var(--accent-primary)] cursor-pointer font-bold mb-1 min-h-[40px] sm:min-h-[32px]"
                 >
-                  <Archive size={15} className="text-[var(--accent-primary)]" />
+                  <Archive size={14} className="text-[var(--accent-primary)]" />
                   <span>Export All (ZIP Archive)</span>
                 </button>
                 <button
                   type="button"
-                  onClick={handleExportMarkdown}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[44px] sm:min-h-[36px]"
+                  onClick={handleCopyContent}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[40px] sm:min-h-[32px]"
                 >
-                  <FileText size={15} className="text-[var(--accent-indigo)]" />
+                  <Copy size={14} className="text-[var(--accent-primary)]" />
+                  <span>Copy to Clipboard</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExportMarkdown}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[40px] sm:min-h-[32px]"
+                >
+                  <FileText size={14} className="text-[var(--accent-primary)]" />
                   <span>Markdown (.md)</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleExportHTML}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[44px] sm:min-h-[36px]"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[40px] sm:min-h-[32px]"
                 >
-                  <FileCode size={15} className="text-[var(--accent-sky)]" />
+                  <FileCode size={14} className="text-[var(--accent-cyan)]" />
                   <span>HTML Document</span>
                 </button>
                 <button
                   type="button"
                   onClick={handlePrintPDF}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[44px] sm:min-h-[36px]"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[40px] sm:min-h-[32px]"
                 >
-                  <Printer size={15} className="text-[var(--accent-indigo)]" />
+                  <Printer size={14} className="text-[var(--accent-primary)]" />
                   <span>PDF Document</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleExportImage}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[44px] sm:min-h-[36px]"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[40px] sm:min-h-[32px]"
                 >
-                  <ImageIcon size={15} className="text-[var(--status-success-text)]" />
+                  <ImageIcon size={14} className="text-[var(--status-success-text)]" />
                   <span>Image (.png)</span>
                 </button>
                 <div className="my-1 border-t border-[var(--border-color)]" />
                 <button
                   type="button"
                   onClick={handleExportText}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[44px] sm:min-h-[36px]"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[40px] sm:min-h-[32px]"
                 >
-                  <FileSpreadsheet size={15} className="text-[var(--text-muted)]" />
+                  <FileSpreadsheet size={14} className="text-[var(--text-muted)]" />
                   <span>Plain Text (.txt)</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleExportJSON}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[44px] sm:min-h-[36px]"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[40px] sm:min-h-[32px]"
                 >
                   <FileJson size={15} className="text-[var(--status-danger-text)]" />
                   <span>JSON Dataset (.json)</span>
                 </button>
-               </FloatingMenu>
+              </FloatingMenu>
             )}
           </div>
 
@@ -1305,63 +1387,72 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
           <button
             type="button"
             onClick={() => setZenMode(!zenMode)}
-            aria-label={zenMode ? "Exit zen mode" : "Enter zen focus writing mode"}
+            aria-label={zenMode ? "Exit zen mode" : "Enter zen focus mode"}
             aria-pressed={zenMode}
-            className={`min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-lg border transition-all cursor-pointer ${
+            className={`min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-lg border transition-all cursor-pointer shrink-0 ${
               zenMode
-                ? "bg-[var(--accent-indigo)] dark:text-[#0d1117] text-white border-[var(--accent-indigo)] shadow-sm"
-                : "bg-[var(--badge-bg)] text-[var(--text-main)] border-[var(--border-color)] hover:bg-[var(--border-color)]"
+                ? "bg-[var(--accent-primary)] text-white border-[var(--accent-primary)] shadow-xs"
+                : "bg-[var(--bg-card)] text-[var(--text-main)] border-[var(--border-color)] hover:border-[var(--accent-primary)]/50"
             }`}
-            title={zenMode ? "Exit Zen Mode (Esc)" : "Zen Focus Writing Mode"}
+            title={zenMode ? "Exit Zen Mode (Esc)" : "Zen Focus Mode"}
           >
             {zenMode ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
           </button>
 
           {/* View Mode Toggle Segmented Control */}
-          <div className="flex items-center p-0.5 rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)]">
+          <div className="inline-flex items-center p-0.5 rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] shrink-0" role="group" aria-label="Editor view mode">
             <button
               type="button"
               onClick={() => setViewMode("write")}
-              aria-label="Write mode"
+              aria-label="Raw markdown mode"
               aria-pressed={viewMode === "write"}
-              className={`min-h-[44px] min-w-[44px] p-2 sm:min-h-[36px] sm:min-w-[36px] sm:p-1.5 flex items-center justify-center rounded-md transition-colors cursor-pointer ${
-                viewMode === "write" ? "bg-[var(--accent-primary)] text-white shadow-sm" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
+              className={`min-h-[44px] min-w-[44px] px-2.5 sm:min-h-[32px] sm:min-w-[32px] sm:px-2 flex items-center gap-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                viewMode === "write"
+                  ? "bg-[var(--accent-primary)] text-white shadow-xs"
+                  : "text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/5"
               }`}
-              title="Write Mode"
+              title="Raw Mode"
             >
               <Layout size={14} />
+              <span className="hidden md:inline">Raw</span>
             </button>
             <button
               type="button"
               onClick={() => setViewMode("split")}
               aria-label="Split view mode"
               aria-pressed={viewMode === "split"}
-              className={`min-h-[44px] min-w-[44px] p-2 sm:min-h-[36px] sm:min-w-[36px] sm:p-1.5 flex items-center justify-center rounded-md transition-colors cursor-pointer hidden sm:flex ${
-                viewMode === "split" ? "bg-[var(--accent-primary)] text-white shadow-sm" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
+              className={`min-h-[44px] min-w-[44px] px-2.5 sm:min-h-[32px] sm:min-w-[32px] sm:px-2 hidden sm:flex items-center gap-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                viewMode === "split"
+                  ? "bg-[var(--accent-primary)] text-white shadow-xs"
+                  : "text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/5"
               }`}
               title="Split View"
             >
               <Columns size={14} />
+              <span className="hidden md:inline">Split</span>
             </button>
             <button
               type="button"
               onClick={() => setViewMode("preview")}
               aria-label="Preview mode"
               aria-pressed={viewMode === "preview"}
-              className={`min-h-[44px] min-w-[44px] p-2 sm:min-h-[36px] sm:min-w-[36px] sm:p-1.5 flex items-center justify-center rounded-md transition-colors cursor-pointer ${
-                viewMode === "preview" ? "bg-[var(--accent-primary)] text-white shadow-sm" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
+              className={`min-h-[44px] min-w-[44px] px-2.5 sm:min-h-[32px] sm:min-w-[32px] sm:px-2 flex items-center gap-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                viewMode === "preview"
+                  ? "bg-[var(--accent-primary)] text-white shadow-xs"
+                  : "text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/5"
               }`}
               title="Preview Mode"
             >
               <Eye size={14} />
+              <span className="hidden md:inline">Preview</span>
             </button>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Soft Conflict Notification Banner */}
       {conflict && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 px-3 py-2 bg-amber-500/10 border-b border-amber-500/30 text-xs shrink-0 select-none animate-slide-down">
+        <aside className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 px-3 py-2 bg-amber-500/10 border-b border-amber-500/30 text-xs shrink-0 select-none animate-slide-down">
           <div className="flex items-center gap-2">
             <AlertTriangle size={15} className="text-amber-500 dark:text-amber-400 shrink-0" />
             <span className="text-[var(--text-main)] font-semibold">
@@ -1372,30 +1463,30 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
             <button
               type="button"
               onClick={handleTakeMine}
-              className="px-3 py-1.5 min-h-[44px] sm:min-h-[36px] rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--border-color)]/60 border border-[var(--border-color)] text-[var(--text-main)] font-bold text-xs cursor-pointer shadow-sm transition-colors"
+              className="px-3 py-1.5 min-h-[44px] sm:min-h-[32px] rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--border-color)]/60 border border-[var(--border-color)] text-[var(--text-main)] font-semibold text-xs cursor-pointer shadow-xs transition-colors"
             >
               Keep Mine
             </button>
             <button
               type="button"
               onClick={handleTakeRemote}
-              className="px-3 py-1.5 min-h-[44px] sm:min-h-[36px] rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-700 dark:text-amber-300 font-extrabold text-xs cursor-pointer shadow-sm transition-colors"
+              className="px-3 py-1.5 min-h-[44px] sm:min-h-[32px] rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-700 dark:text-amber-300 font-bold text-xs cursor-pointer shadow-xs transition-colors"
             >
               Accept Remote
             </button>
             <button
               type="button"
               onClick={handleMerge}
-              className="px-3 py-1.5 min-h-[44px] sm:min-h-[36px] rounded-lg bg-[var(--badge-bg)] hover:bg-[var(--border-color)]/60 border border-[var(--badge-border)] text-[var(--text-main)] font-bold text-xs cursor-pointer shadow-sm transition-colors"
+              className="px-3 py-1.5 min-h-[44px] sm:min-h-[32px] rounded-lg bg-[var(--badge-bg)] hover:bg-[var(--border-color)]/60 border border-[var(--badge-border)] text-[var(--text-main)] font-semibold text-xs cursor-pointer shadow-xs transition-colors"
             >
               Append Below
             </button>
           </div>
-        </div>
+        </aside>
       )}
 
       {/* Main Workspace Canvas (Full Width & Height, Zero Outer Padding) */}
-      <div className="flex-1 min-h-0 flex overflow-hidden relative bg-[var(--bg-main)]">
+      <main className="flex-1 min-h-0 flex overflow-hidden relative bg-[var(--bg-main)]">
         {loading ? (
           <div className="w-full space-y-4 animate-pulse p-4 sm:p-6">
             {[85, 70, 92, 60, 78].map((w, i) => (
@@ -1406,9 +1497,17 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
           <div className="w-full h-full flex min-h-0 max-w-full overflow-hidden">
             {/* Outline Sidebar Pane */}
             {showOutline && (
-              <div className="absolute sm:static z-20 w-64 max-w-[80vw] h-full min-w-0 flex flex-col bg-[var(--bg-surface)] border-r border-[var(--border-color)] overflow-hidden shrink-0 animate-fade-in shadow-xl sm:shadow-none">
+              <aside className="absolute sm:static z-20 w-64 max-w-[80vw] h-full min-w-0 flex flex-col bg-[var(--bg-surface)] border-r border-[var(--border-color)] overflow-hidden shrink-0 animate-fade-in shadow-xl sm:shadow-none">
                 <div className="px-3 py-2.5 border-b border-[var(--border-color)] flex items-center justify-between shrink-0">
-                  <span className="text-xs font-extrabold text-[var(--text-main)] uppercase tracking-wider">Outline</span>
+                  <span className="text-xs font-bold text-[var(--text-main)] uppercase tracking-wider">Outline</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowOutline(false)}
+                    className="sm:hidden text-xs text-[var(--text-muted)] hover:text-[var(--text-main)] p-1 cursor-pointer"
+                    aria-label="Close outline"
+                  >
+                    ✕
+                  </button>
                 </div>
                 <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-1">
                   {headings.length === 0 ? (
@@ -1428,7 +1527,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                             setShowOutline(false);
                           }
                         }}
-                        className={`block text-xs truncate hover:text-[var(--accent-indigo)] transition-colors cursor-pointer py-1 ${
+                        className={`block text-xs truncate hover:text-[var(--accent-primary)] transition-colors cursor-pointer py-1 ${
                           h.level === 1 ? "font-bold text-[var(--text-main)] mt-2" :
                           h.level === 2 ? "font-medium text-[var(--text-muted)] ml-3" :
                           "text-[var(--text-muted)] ml-6"
@@ -1440,7 +1539,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                     ))
                   )}
                 </div>
-              </div>
+              </aside>
             )}
 
             {/* Writer Pane */}
@@ -1450,11 +1549,11 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                   {/* Line Numbers Gutter */}
                   <div
                     ref={lineNumbersRef}
-                    className="select-none py-3 px-2 text-right font-mono text-sm text-[var(--text-subtle)] bg-[var(--bg-surface)]/50 border-r border-[var(--border-color)] shrink-0 overflow-hidden hidden sm:block min-w-[42px]"
+                    className="select-none py-3 px-2 text-right font-mono text-xs sm:text-sm text-[var(--text-subtle)] bg-[var(--bg-surface)]/60 border-r border-[var(--border-color)] shrink-0 overflow-hidden hidden sm:block min-w-[44px]"
                     aria-hidden="true"
                   >
                     {Array.from({ length: lineCount }, (_, i) => (
-                      <div key={i + 1} className="leading-relaxed sm:leading-[1.625rem] text-sm">
+                      <div key={i + 1} className="leading-6 text-xs sm:text-sm">
                         {i + 1}
                       </div>
                     ))}
@@ -1469,7 +1568,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                     onScroll={handleScroll}
                     placeholder="Type or paste Markdown here... (Type '/' for commands)"
                     aria-label="Notes markdown content editor"
-                    className="w-full flex-1 min-h-0 max-w-full resize-none bg-transparent text-[var(--text-main)] py-3 px-3 sm:px-4 outline-none font-mono text-base sm:text-sm leading-relaxed sm:leading-[1.625rem] placeholder-[var(--text-subtle)] overflow-y-auto overflow-x-hidden selection:bg-[var(--accent-indigo)]/20 relative z-10"
+                    className="w-full flex-1 min-h-0 max-w-full resize-none bg-transparent text-[var(--text-main)] py-3 px-3 sm:px-4 outline-none font-mono text-base sm:text-sm leading-6 placeholder-[var(--text-subtle)] overflow-y-auto overflow-x-hidden selection:bg-[var(--accent-primary)]/20 relative z-10"
                     spellCheck="false"
                   />
 
@@ -1480,11 +1579,11 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                         ref={slashMenuRef}
                         role="listbox"
                         aria-label="Slash commands suggestions"
-                        className="fixed w-64 max-w-[calc(100vw-1.5rem)] bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl shadow-2xl overflow-hidden z-50 animate-scale-in"
+                        className="fixed w-64 max-w-[calc(100vw-1.5rem)] bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl shadow-xl overflow-hidden z-50 animate-scale-in"
                         style={{ top: "-9999px", left: "-9999px" }}
                       >
                         <div className="px-3 py-1.5 border-b border-[var(--border-color)] bg-[var(--bg-card)] flex items-center justify-between select-none">
-                          <span className="text-[11px] font-extrabold uppercase text-[var(--text-muted)] tracking-wider">
+                          <span className="text-[11px] font-bold uppercase text-[var(--text-muted)] tracking-wider">
                             Basic Blocks
                           </span>
                           <span className="text-xs font-mono text-[var(--text-muted)]">
@@ -1508,7 +1607,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                               <div className={i === slashMenu.activeIndex ? "text-white" : "text-[var(--text-muted)]"}>
                                 {opt.icon}
                               </div>
-                              <span className="text-xs font-bold">{opt.label}</span>
+                              <span className="text-xs font-medium">{opt.label}</span>
                             </div>
                           ))}
                         </div>
@@ -1522,30 +1621,30 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
 
             {/* Formatted Markdown Live Preview Pane */}
             {(viewMode === "preview" || viewMode === "split") && (
-              <div className="flex-1 h-full min-h-0 min-w-0 flex flex-col bg-[var(--bg-card)] overflow-hidden">
-                <div ref={previewRef} className="flex-1 min-h-0 min-w-0 p-4 sm:p-6 md:p-8 overflow-y-auto overflow-x-hidden max-w-full lg:max-w-3xl lg:mx-auto scroll-smooth w-full">
+              <section className="flex-1 h-full min-h-0 min-w-0 flex flex-col bg-[var(--bg-main)] overflow-hidden">
+                <div ref={previewRef} className="flex-1 min-h-0 min-w-0 p-4 sm:p-6 md:p-8 overflow-y-auto overflow-x-hidden max-w-full lg:max-w-4xl lg:mx-auto scroll-smooth w-full">
                   <MarkdownRenderer content={displayContent} onToggleTask={handleToggleTask} />
                 </div>
-              </div>
+              </section>
             )}
           </div>
         )}
-      </div>
+      </main>
 
-      {/* Bottom Status Bar (Markdown Viewer Style) */}
-      <div className="h-7 min-h-7 px-2 sm:px-3 bg-[var(--bg-surface)] border-t border-[var(--border-color)] text-[11px] leading-none text-[var(--text-muted)] flex items-center justify-between gap-2 font-mono select-none shrink-0 overflow-hidden">
-        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 overflow-hidden whitespace-nowrap">
-          <span>⏱️ {readTime} Min Read</span>
-          <span className="hidden sm:inline">·</span>
-          <span className="hidden sm:inline">📝 {wordCount} Words</span>
-          <span>·</span>
-          <span>🔤 {charCount} Chars</span>
-          <span className="hidden md:inline">·</span>
-          <span className="hidden md:inline">📄 {lineCount} Lines</span>
+      {/* Bottom Status Bar (IDE Utility Style) */}
+      <footer className="h-7 min-h-7 px-2.5 sm:px-3 bg-[var(--bg-surface)] border-t border-[var(--border-color)] text-[11px] leading-none text-[var(--text-muted)] flex items-center justify-between gap-2 font-mono select-none shrink-0 overflow-hidden">
+        <div className="flex items-center gap-2 min-w-0 overflow-hidden whitespace-nowrap">
+          <span>{readTime} min read</span>
+          <span className="text-[var(--border-color)]">·</span>
+          <span>{wordCount.toLocaleString()} words</span>
+          <span className="text-[var(--border-color)]">·</span>
+          <span>{charCount.toLocaleString()} chars</span>
+          <span className="hidden sm:inline text-[var(--border-color)]">·</span>
+          <span className="hidden sm:inline">{lineCount.toLocaleString()} lines</span>
           {totalTasks > 0 && (
             <>
-              <span className="hidden md:inline">·</span>
-              <span className="hidden md:flex items-center gap-1" title={`${completedCount} of ${totalTasks} tasks completed`}>
+              <span className="hidden md:inline text-[var(--border-color)]">·</span>
+              <span className="hidden md:flex items-center gap-1.5" title={`${completedCount} of ${totalTasks} tasks completed`}>
                 <CheckSquare size={12} className={completedCount === totalTasks ? "text-[var(--status-success-text)]" : ""} />
                 <div className="w-12 h-1 bg-[var(--border-color)] rounded-full overflow-hidden flex">
                   <div 
@@ -1553,62 +1652,62 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                     style={{ width: `${taskProgress}%` }}
                   />
                 </div>
-                <span className="text-[10px] font-bold">{taskProgress}%</span>
+                <span className="text-[10px] font-semibold">{taskProgress}%</span>
               </span>
             </>
           )}
         </div>
 
-        <div ref={statusEl} data-status="idle" className="flex items-center gap-1.5 shrink-0 max-w-[45%]">
+        <div ref={statusEl} data-status="idle" className="flex items-center gap-2 shrink-0">
           {/* Active Collaborators Presence Badge */}
           <div
-            className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[var(--status-success-bg)] border border-[var(--status-success-border)] text-[10px] text-[var(--status-success-text)] font-bold"
+            className="flex items-center gap-1.5 px-1.5 py-0.5 rounded-full bg-[var(--status-success-bg)] border border-[var(--status-success-border)] text-[10px] text-[var(--status-success-text)] font-semibold"
             title={`${collaboratorCount} active browser session${collaboratorCount === 1 ? '' : 's'} connected to this workspace`}
           >
-            <span className="w-1 h-1 rounded-full bg-[var(--status-success-text)] animate-pulse" />
-            <span>{collaboratorCount} Live</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--status-success-text)] animate-pulse" />
+            <span>{collaboratorCount} live</span>
           </div>
 
-          <div className="[div[data-status='saving']_&]:flex hidden items-center gap-1 text-[10px] text-[var(--badge-text)] font-bold">
-            <Loader2 size={12} className="animate-spin text-[var(--accent-indigo)]" />
-            <span className="hidden sm:inline">Syncing…</span>
+          <div className="[div[data-status='saving']_&]:flex hidden items-center gap-1 text-[10px] text-[var(--text-muted)] font-medium">
+            <Loader2 size={12} className="animate-spin text-[var(--accent-primary)]" />
+            <span className="hidden sm:inline">Saving…</span>
           </div>
-          <div className="[div[data-status='saved']_&]:flex hidden items-center gap-1 text-[10px] text-[var(--status-success-text)] font-bold">
+          <div className="[div[data-status='saved']_&]:flex hidden items-center gap-1 text-[10px] text-[var(--status-success-text)] font-medium">
             <CheckCircle2 size={12} />
-            <span className="hidden sm:inline">All changes saved</span>
+            <span className="hidden sm:inline">Saved</span>
           </div>
-          <div className="[div[data-status='idle']_&]:flex hidden items-center gap-1 text-[10px] text-[var(--text-muted)]">
-            <Sparkles size={12} className="text-[var(--accent-indigo)]" />
-            <span className="hidden sm:inline">Auto-sync active</span>
+          <div className="[div[data-status='idle']_&]:flex hidden items-center gap-1 text-[10px] text-[var(--text-subtle)]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--border-color)]" />
+            <span className="hidden sm:inline">Synced</span>
           </div>
         </div>
-      </div>
+      </footer>
 
       {/* Starter Templates Modal */}
       <Modal open={showTemplateModal} onClose={() => setShowTemplateModal(false)} title="Starter Markdown Templates" maxWidth="max-w-md">
         <div className="grid grid-cols-1 gap-2.5 pt-0.5">
           {TEMPLATES.map((tmpl) => (
-            <div
+            <article
               key={tmpl.id}
               onClick={() => insertTemplate(tmpl.content)}
-              className="group p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] hover:shadow-md transition-all cursor-pointer flex flex-col gap-1"
+              className="group p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--accent-primary)]/60 transition-all cursor-pointer flex flex-col gap-1"
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs sm:text-sm font-extrabold text-[var(--text-main)] group-hover:text-[var(--accent-indigo)] transition-colors">
+                <span className="text-xs sm:text-sm font-bold text-[var(--text-main)] group-hover:text-[var(--accent-primary)] transition-colors">
                   {tmpl.title}
                 </span>
                 <Button size="xs" variant="secondary" icon={<Check size={11} />}>
                   Insert
                 </Button>
               </div>
-              <p className="text-xs text-[var(--text-muted)] font-medium leading-relaxed">
+              <p className="text-xs text-[var(--text-muted)] font-normal leading-relaxed">
                 {tmpl.description}
               </p>
-            </div>
+            </article>
           ))}
         </div>
       </Modal>
-    </div>
+    </section>
   );
 }
 

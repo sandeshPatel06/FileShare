@@ -88,6 +88,22 @@ export function CookieConsent() {
     return () => window.removeEventListener("open_cookie_preferences", handleReopen);
   }, []);
 
+  // Close customize modal on Escape key and lock body scroll
+  useEffect(() => {
+    if (!isCustomizeOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsCustomizeOpen(false);
+      }
+    };
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = "";
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isCustomizeOpen]);
+
   const saveConsent = (prefs: CookiePreferences) => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
@@ -137,23 +153,22 @@ export function CookieConsent() {
       {/* 1. Low-profile, Non-intrusive Bottom Banner */}
       {!isCustomizeOpen ? (
         <aside
-          role="dialog"
-          aria-labelledby="cookie-banner-title"
-          aria-describedby="cookie-banner-description"
-          className="fixed bottom-0 inset-x-0 z-50 px-3 py-2 sm:px-6 sm:py-3 bg-[var(--header-bg)]/95 backdrop-blur-md border-t border-[var(--border-color)] shadow-2xl animate-fade-in"
+          role="region"
+          aria-label="Cookie and Privacy Notice"
+          className="fixed bottom-0 inset-x-0 z-50 px-3 py-2.5 sm:px-6 sm:py-3.5 bg-[var(--header-bg)] border-t border-[var(--border-color)] shadow-lg animate-fade-in"
         >
-          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-2.5 sm:gap-4 min-w-0">
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4 min-w-0">
+            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
               <div className="p-1.5 sm:p-2 rounded-lg bg-[var(--badge-bg)] text-[var(--accent-primary)] shrink-0">
                 <Cookie className="w-4 h-4 sm:w-4.5 sm:h-4.5" aria-hidden="true" />
               </div>
               <div className="text-xs sm:text-[13px] text-[var(--text-muted)] leading-relaxed min-w-0 break-words">
-                <span id="cookie-banner-title" className="font-bold text-[var(--text-main)] mr-1">
+                <span className="font-semibold text-[var(--text-main)] mr-1">
                   Cookies & Privacy:
                 </span>
-                <span id="cookie-banner-description">
+                <span>
                   We use strictly necessary storage for workspace sync and optional analytics. Read our{" "}
-                  <Link href="/cookies" className="text-[var(--accent-primary)] underline hover:text-[var(--text-main)]">
+                  <Link href="/cookies" className="text-[var(--accent-primary)] underline hover:text-[var(--text-main)] transition-colors">
                     Cookie Policy
                   </Link>.
                 </span>
@@ -164,21 +179,21 @@ export function CookieConsent() {
               <button
                 type="button"
                 onClick={() => setIsCustomizeOpen(true)}
-                className="px-3 py-2 sm:px-3.5 text-xs font-semibold rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-main)] min-h-[44px] sm:min-h-[38px] w-full sm:w-auto whitespace-nowrap flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
+                className="px-3 py-2 sm:px-3.5 text-xs font-medium rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] min-h-[44px] sm:min-h-[36px] w-full sm:w-auto whitespace-nowrap flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
               >
                 Customize
               </button>
               <button
                 type="button"
                 onClick={handleRejectNonEssential}
-                className="px-3 py-2 sm:px-3.5 text-xs font-semibold rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-main)] min-h-[44px] sm:min-h-[38px] w-full sm:w-auto whitespace-nowrap flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
+                className="px-3 py-2 sm:px-3.5 text-xs font-medium rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] min-h-[44px] sm:min-h-[36px] w-full sm:w-auto whitespace-nowrap flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
               >
                 Reject Non-Essential
               </button>
               <button
                 type="button"
                 onClick={handleAcceptAll}
-                className="px-4 py-2 sm:px-4.5 text-xs font-semibold rounded-lg bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white shadow-sm min-h-[44px] sm:min-h-[38px] w-full sm:w-auto whitespace-nowrap flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
+                className="px-4 py-2 sm:px-4.5 text-xs font-medium rounded-lg bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white min-h-[44px] sm:min-h-[36px] w-full sm:w-auto whitespace-nowrap flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
               >
                 Accept All
               </button>
@@ -191,31 +206,35 @@ export function CookieConsent() {
           role="dialog"
           aria-modal="true"
           aria-labelledby="cookie-preferences-title"
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in overflow-hidden"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 animate-fade-in overflow-hidden"
+          onClick={() => setIsCustomizeOpen(false)}
         >
-          <div className="w-full max-w-[min(42rem,calc(100vw-1.5rem))] min-w-0 bg-[var(--modal-bg)] border border-[var(--border-color)] rounded-2xl shadow-2xl p-4 sm:p-6 space-y-4 my-auto max-h-[calc(100dvh-2rem)] overflow-y-auto overflow-x-hidden overscroll-contain">
-            <div className="flex items-center justify-between gap-3 border-b border-[var(--border-color)] pb-3 shrink-0 min-w-0">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-[min(42rem,calc(100vw-1.5rem))] min-w-0 bg-[var(--modal-bg)] border border-[var(--border-color)] rounded-2xl shadow-xl p-4 sm:p-6 space-y-4 my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden"
+          >
+            <header className="flex items-center justify-between gap-3 border-b border-[var(--border-color)] pb-3 shrink-0 min-w-0 select-none">
               <div className="flex items-center gap-2 min-w-0 flex-1">
                 <Settings className="w-5 h-5 text-[var(--accent-primary)] shrink-0" aria-hidden="true" />
-                <h2 id="cookie-preferences-title" className="font-bold text-sm sm:text-lg text-[var(--text-main)] min-w-0">
+                <h2 id="cookie-preferences-title" className="font-bold text-sm sm:text-base text-[var(--text-main)] min-w-0">
                   Manage Cookie & Tracking Preferences
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={() => setIsCustomizeOpen(false)}
-                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors cursor-pointer min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] flex items-center justify-center"
+                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]"
                 aria-label="Close customization modal"
               >
                 <X className="w-5 h-5" />
               </button>
-            </div>
+            </header>
 
-            <div className="grid grid-cols-1 gap-3 text-xs min-w-0 max-w-full">
+            <div className="grid grid-cols-1 gap-3 text-xs min-w-0 max-w-full overflow-y-auto overscroll-contain flex-1 pr-0.5">
               {/* Category 1: Strictly Necessary */}
-              <div className="p-3 sm:p-3.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-[var(--text-main)]">Strictly Necessary</span>
+              <article className="p-3 sm:p-3.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-1">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-semibold text-[var(--text-main)]">Strictly Necessary</span>
                   <span className="text-xs font-mono px-2 py-0.5 rounded bg-[var(--badge-bg)] text-[var(--accent-primary)]">
                     Always Active
                   </span>
@@ -223,13 +242,13 @@ export function CookieConsent() {
                 <p className="text-[var(--text-muted)] leading-relaxed">
                   Required for core workspace synchronization, JWT password gate verification, and theme preference persistence.
                 </p>
-              </div>
+              </article>
 
               {/* Category 2: Analytics Cookies */}
-              <div className="p-3 sm:p-3.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-[var(--text-main)]">Performance & Analytics</span>
-                  <label className="relative inline-flex items-center cursor-pointer">
+              <article className="p-3 sm:p-3.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-1">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-semibold text-[var(--text-main)]">Performance & Analytics</span>
+                  <label className="relative inline-flex items-center cursor-pointer select-none">
                     <input
                       type="checkbox"
                       checked={preferences.analytics}
@@ -237,19 +256,19 @@ export function CookieConsent() {
                       className="sr-only peer"
                       aria-label="Toggle analytics cookies"
                     />
-                    <div className="w-8 h-4 bg-[var(--border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--border-color)] after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[var(--accent-primary)]"></div>
+                    <div className="w-8 h-4 bg-[var(--border-color)] rounded-full peer peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--accent-primary)] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--border-color)] after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[var(--accent-primary)]"></div>
                   </label>
                 </div>
                 <p className="text-[var(--text-muted)] leading-relaxed">
                   Aggregated, anonymized visit counts and traffic sources via Google Analytics 4 with IP anonymization enabled.
                 </p>
-              </div>
+              </article>
 
               {/* Category 3: Advertising / Marketing */}
-              <div className="p-3 sm:p-3.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-[var(--text-main)]">Advertising & Partner</span>
-                  <label className="relative inline-flex items-center cursor-pointer">
+              <article className="p-3 sm:p-3.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-1">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-semibold text-[var(--text-main)]">Advertising & Partner</span>
+                  <label className="relative inline-flex items-center cursor-pointer select-none">
                     <input
                       type="checkbox"
                       checked={preferences.marketing}
@@ -257,16 +276,16 @@ export function CookieConsent() {
                       className="sr-only peer"
                       aria-label="Toggle advertising cookies"
                     />
-                    <div className="w-8 h-4 bg-[var(--border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--border-color)] after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[var(--accent-primary)]"></div>
+                    <div className="w-8 h-4 bg-[var(--border-color)] rounded-full peer peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--accent-primary)] peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--border-color)] after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[var(--accent-primary)]"></div>
                   </label>
                 </div>
                 <p className="text-[var(--text-muted)] leading-relaxed">
                   Permits Google AdSense cookies on editorial guide and article pages to serve relevant non-intrusive ads.
                 </p>
-              </div>
+              </article>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2 shrink-0 min-w-0">
+            <footer className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-3 shrink-0 min-w-0 border-t border-[var(--border-color)]">
               <span className="text-xs text-[var(--text-muted)]">
                 You can change these preferences at any time via the &quot;Cookie Preferences&quot; link in the footer.
               </span>
@@ -274,20 +293,20 @@ export function CookieConsent() {
                 <button
                   type="button"
                   onClick={handleRejectNonEssential}
-                  className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-main)] cursor-pointer min-h-[44px] sm:min-h-[38px] w-full sm:w-auto whitespace-nowrap flex items-center justify-center"
+                  className="px-3.5 py-2 text-xs font-medium rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] cursor-pointer min-h-[44px] sm:min-h-[36px] w-full sm:w-auto whitespace-nowrap flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]"
                 >
                   Reject Non-Essential
                 </button>
                 <button
                   type="button"
                   onClick={handleSaveCustom}
-                  className="px-4.5 py-2 text-xs font-semibold rounded-lg bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary-hover)] inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-sm min-h-[44px] sm:min-h-[38px] w-full sm:w-auto whitespace-nowrap"
+                  className="px-4.5 py-2 text-xs font-medium rounded-lg bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary-hover)] inline-flex items-center justify-center gap-1.5 cursor-pointer min-h-[44px] sm:min-h-[36px] w-full sm:w-auto whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]"
                 >
                   <Check className="w-3.5 h-3.5" />
                   Save Preferences
                 </button>
               </div>
-            </div>
+            </footer>
           </div>
         </div>
       )}
@@ -308,7 +327,7 @@ export function CookieSettingsButton() {
           window.dispatchEvent(new Event("open_cookie_preferences"));
         }
       }}
-      className="hover:text-[var(--text-main)] transition-colors underline cursor-pointer text-left"
+      className="hover:text-[var(--text-main)] transition-colors underline cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded"
     >
       Cookie Preferences
     </button>

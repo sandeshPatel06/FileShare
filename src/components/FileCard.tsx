@@ -22,25 +22,25 @@ function FileIcon({ filename, mimetype, size = 18 }: { filename: string; mimetyp
     return <ImageIcon size={size} className={`${cls} text-[var(--accent-sky)]`} />;
   }
   if (mimetype.startsWith("audio/") || ["MP3", "WAV", "OGG", "FLAC", "AAC", "M4A", "WMA"].includes(ext)) {
-    return <FileAudio size={size} className={`${cls} text-purple-500 dark:text-purple-400`} />;
+    return <FileAudio size={size} className={`${cls} text-[var(--accent-indigo)]`} />;
   }
   if (mimetype.startsWith("video/") || ["MP4", "WEBM", "MKV", "AVI", "MOV", "WMV", "FLV"].includes(ext)) {
     return <FileVideo size={size} className={`${cls} text-[var(--status-danger-text)]`} />;
   }
   if (mimetype === "application/pdf" || ext === "PDF") {
-    return <FileText size={size} className={`${cls} text-amber-500 dark:text-amber-400`} />;
+    return <FileText size={size} className={`${cls} text-[var(--accent-primary)]`} />;
   }
   if (["XLS", "XLSX", "CSV", "TSV", "ODS"].includes(ext) || mimetype.includes("spreadsheet") || mimetype.includes("excel") || mimetype === "text/csv") {
-    return <FileSpreadsheet size={size} className={`${cls} text-emerald-500 dark:text-emerald-400`} />;
+    return <FileSpreadsheet size={size} className={`${cls} text-[var(--status-success-text)]`} />;
   }
   if (["PPT", "PPTX", "KEY", "ODP"].includes(ext) || mimetype.includes("presentation") || mimetype.includes("powerpoint")) {
-    return <Presentation size={size} className={`${cls} text-orange-500 dark:text-orange-400`} />;
+    return <Presentation size={size} className={`${cls} text-[var(--text-muted)]`} />;
   }
   if (["DOC", "DOCX", "ODT", "RTF"].includes(ext) || mimetype.includes("wordprocessingml") || mimetype.includes("msword")) {
     return <FileText size={size} className={`${cls} text-[var(--accent-sky)]`} />;
   }
   if (["ZIP", "RAR", "7Z", "TAR", "GZ", "BZ2", "XZ"].includes(ext) || mimetype.includes("zip") || mimetype.includes("compressed") || mimetype.includes("archive")) {
-    return <FileArchive size={size} className={`${cls} text-purple-500 dark:text-purple-400`} />;
+    return <FileArchive size={size} className={`${cls} text-[var(--accent-indigo)]`} />;
   }
   if (
     mimetype.startsWith("text/") ||
@@ -53,7 +53,7 @@ function FileIcon({ filename, mimetype, size = 18 }: { filename: string; mimetyp
 
   if (ext) {
     return (
-      <span className="font-mono text-[11px] sm:text-xs font-extrabold text-[var(--accent-indigo)] tracking-tighter uppercase select-none">
+      <span className="font-mono text-[11px] font-bold text-[var(--accent-indigo)] tracking-tighter uppercase select-none">
         {ext.slice(0, 3)}
       </span>
     );
@@ -133,16 +133,16 @@ export function FileCard({ file, slug, token, layout = "list" }: FileCardProps) 
     <>
       {layout === "grid" ? (
         /* Grid Layout Card */
-        <div className="
-          group flex flex-col justify-between p-2.5 rounded-xl
+        <article className="
+          group flex flex-col justify-between p-2.5 rounded-md
           bg-[var(--bg-card)] border border-[var(--border-color)]
-          hover:border-[var(--accent-primary)] hover:shadow-md
-           transition-all duration-200 animate-fade-in min-w-0 max-w-full overflow-hidden h-full select-none max-sm:[&_button]:min-h-[36px] max-sm:[&_button]:min-w-[36px]
+          hover:border-[var(--accent-primary)]
+          transition-colors min-w-0 max-w-full overflow-hidden h-full select-none
         ">
           {/* Top Thumbnail / Preview Box */}
           <div
             onClick={() => setShowPreview(true)}
-            className="w-full h-24 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] group-hover:border-[var(--accent-primary)]/40 overflow-hidden flex items-center justify-center shrink-0 cursor-pointer transition-all relative"
+            className="w-full h-24 rounded bg-[var(--input-bg)] border border-[var(--border-color)] group-hover:border-[var(--accent-primary)]/40 overflow-hidden flex items-center justify-center shrink-0 cursor-pointer transition-colors relative"
           >
             {isImage && !imgError ? (
               /* eslint-disable-next-line @next/next/no-img-element */
@@ -152,7 +152,7 @@ export function FileCard({ file, slug, token, layout = "list" }: FileCardProps) 
                 onError={() => setImgError(true)}
                 decoding="async"
                 loading="lazy"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                className="w-full h-full object-cover"
               />
             ) : (
               <FileIcon filename={file.originalName} mimetype={file.mimetype} size={28} />
@@ -161,39 +161,39 @@ export function FileCard({ file, slug, token, layout = "list" }: FileCardProps) 
 
           {/* Middle File Info */}
           <div className="mt-2 min-w-0 max-w-full cursor-pointer" onClick={() => setShowPreview(true)}>
-            <p className="text-xs sm:text-sm font-bold text-[var(--text-main)] truncate max-w-full group-hover:text-[var(--accent-indigo)] transition-colors">
+            <p className="text-xs font-semibold text-[var(--text-main)] truncate max-w-full group-hover:text-[var(--accent-primary)] transition-colors">
               {file.originalName}
             </p>
-            <p className="text-xs text-[var(--text-muted)] mt-0.5 font-mono truncate max-w-full font-semibold">
+            <p className="text-[11px] text-[var(--text-muted)] mt-0.5 font-mono truncate max-w-full">
               {formatBytes(file.size)}
               {file.uploadedAt && <span> · {timeAgo(file.uploadedAt.seconds)}</span>}
             </p>
           </div>
 
           {/* Bottom Grid Actions */}
-          <div className="flex items-center justify-between gap-1.5 flex-wrap mt-2.5 pt-2 border-t border-[var(--border-color)] shrink-0">
-            <div className="hidden min-[400px]:flex items-center gap-0.5">
+          <div className="flex items-center justify-between gap-1 mt-2 pt-2 border-t border-[var(--border-color)] shrink-0">
+            <div className="flex items-center gap-1">
               <button
                 type="button"
                 onClick={() => setShowPreview(true)}
                 title="Preview"
                 aria-label={`Preview ${file.originalName}`}
-                className="p-2 min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                className="p-1 min-h-[44px] min-w-[44px] sm:min-h-[28px] sm:min-w-[28px] flex items-center justify-center rounded text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] transition-colors cursor-pointer"
               >
-                <Eye size={14} />
+                <Eye size={13} />
               </button>
               <button
                 type="button"
                 onClick={handleCopyUrl}
                 title="Copy link"
                 aria-label="Copy download link"
-                className="p-2 min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                className="p-1 min-h-[44px] min-w-[44px] sm:min-h-[28px] sm:min-w-[28px] flex items-center justify-center rounded text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] transition-colors cursor-pointer"
               >
-                {copiedUrl ? <Check size={14} className="text-[var(--status-success-text)]" /> : <Copy size={14} />}
+                {copiedUrl ? <Check size={13} className="text-[var(--status-success-text)]" /> : <Copy size={13} />}
               </button>
             </div>
 
-            <div className="flex items-center gap-0.5">
+            <div className="flex items-center gap-1">
               <a
                 href={fullDownloadUrl}
                 download={file.originalName}
@@ -201,29 +201,29 @@ export function FileCard({ file, slug, token, layout = "list" }: FileCardProps) 
                 rel="noopener noreferrer"
                 title="Download"
                 aria-label={`Download ${file.originalName}`}
-                className="p-2 min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] flex items-center justify-center rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] hover:bg-[var(--accent-primary)] hover:text-white transition-all cursor-pointer"
+                className="p-1 min-h-[44px] min-w-[44px] sm:min-h-[28px] sm:min-w-[28px] flex items-center justify-center rounded bg-[var(--badge-bg)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)] hover:text-white border border-[var(--badge-border)] transition-colors cursor-pointer"
               >
-                <Download size={14} />
+                <Download size={13} />
               </a>
               <button
                 type="button"
                 onClick={() => setShowConfirmDelete(true)}
                 title="Delete"
                 aria-label={`Delete ${file.originalName}`}
-                className="p-2 min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] flex items-center justify-center rounded-lg text-[var(--status-danger-text)] hover:bg-[var(--status-danger-bg)] transition-colors cursor-pointer"
+                className="p-1 min-h-[44px] min-w-[44px] sm:min-h-[28px] sm:min-w-[28px] flex items-center justify-center rounded text-[var(--status-danger-text)] hover:bg-[var(--status-danger-bg)] border border-transparent hover:border-[var(--status-danger-border)] transition-colors cursor-pointer"
               >
-                <Trash2 size={14} />
+                <Trash2 size={13} />
               </button>
             </div>
           </div>
-        </div>
+        </article>
       ) : (
         /* List Layout Item (Default) */
-        <div className="
-          group flex items-center justify-between gap-2.5 p-3 rounded-xl min-h-[50px]
+        <article className="
+          group flex items-center justify-between gap-2.5 px-3 py-2 rounded-md min-h-[48px]
           bg-[var(--bg-card)] border border-[var(--border-color)]
-          hover:border-[var(--border-glow)] hover:shadow-md
-           transition-all duration-200 animate-fade-in min-w-0 max-w-full overflow-hidden max-sm:[&_button]:min-h-[36px] max-sm:[&_button]:min-w-[36px]
+          hover:border-[var(--accent-primary)]
+          transition-colors min-w-0 max-w-full overflow-hidden
         ">
           {/* Left Side: Thumbnail / Icon & Metadata */}
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -231,7 +231,7 @@ export function FileCard({ file, slug, token, layout = "list" }: FileCardProps) 
               type="button"
               onClick={() => setShowPreview(true)}
               aria-label={`Preview ${file.originalName}`}
-              className="w-11 h-11 min-h-[44px] min-w-[44px] sm:w-10 sm:h-10 sm:min-h-[40px] sm:min-w-[40px] rounded-lg bg-[var(--badge-bg)] border border-[var(--badge-border)] hover:border-[var(--accent-primary)] flex items-center justify-center shrink-0 shadow-sm transition-all hover:scale-105 cursor-pointer overflow-hidden"
+              className="w-9 h-9 min-h-[36px] min-w-[36px] rounded bg-[var(--input-bg)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] flex items-center justify-center shrink-0 transition-colors cursor-pointer overflow-hidden"
               title="Click to preview file"
             >
               {isImage && !imgError ? (
@@ -242,7 +242,7 @@ export function FileCard({ file, slug, token, layout = "list" }: FileCardProps) 
                   onError={() => setImgError(true)}
                   decoding="async"
                   loading="lazy"
-                  className="w-full h-full object-cover rounded-lg"
+                  className="w-full h-full object-cover"
                 />
               ) : (
                 <FileIcon filename={file.originalName} mimetype={file.mimetype} />
@@ -250,10 +250,10 @@ export function FileCard({ file, slug, token, layout = "list" }: FileCardProps) 
             </button>
 
             <div className="min-w-0 max-w-full flex-1 cursor-pointer" onClick={() => setShowPreview(true)}>
-              <p className="text-xs sm:text-sm font-bold text-[var(--text-main)] truncate max-w-full group-hover:text-[var(--accent-indigo)] transition-colors">
+              <p className="text-xs font-semibold text-[var(--text-main)] truncate max-w-full group-hover:text-[var(--accent-primary)] transition-colors">
                 {file.originalName}
               </p>
-              <p className="text-xs text-[var(--text-muted)] mt-0.5 font-mono whitespace-nowrap truncate max-w-full font-semibold">
+              <p className="text-[11px] text-[var(--text-muted)] mt-0.5 font-mono whitespace-nowrap truncate max-w-full">
                 {formatBytes(file.size)}
                 {file.uploadedAt && (
                   <span className="text-[var(--text-muted)]" title={formatUserLocalDateTime(file.uploadedAt.seconds)}>
@@ -265,15 +265,15 @@ export function FileCard({ file, slug, token, layout = "list" }: FileCardProps) 
           </div>
 
           {/* Right Side: Action controls */}
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1 shrink-0">
             <button
               type="button"
               onClick={() => setShowPreview(true)}
               title="Preview file"
               aria-label={`Preview ${file.originalName}`}
-              className="p-2 min-h-[40px] min-w-[40px] sm:min-h-[36px] sm:min-w-[36px] hidden sm:flex items-center justify-center rounded-lg bg-[var(--badge-bg)] hover:bg-[var(--border-color)] border border-[var(--border-color)] text-[var(--text-main)] transition-all shadow-sm cursor-pointer"
+              className="p-1 min-h-[44px] min-w-[44px] sm:min-h-[28px] sm:min-w-[28px] hidden sm:flex items-center justify-center rounded text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] transition-colors cursor-pointer"
             >
-              <Eye size={14} />
+              <Eye size={13} />
             </button>
 
             <button
@@ -282,14 +282,14 @@ export function FileCard({ file, slug, token, layout = "list" }: FileCardProps) 
               title="Copy download link"
               aria-label="Copy download link"
               className={`
-                p-2 min-h-[40px] min-w-[40px] sm:min-h-[36px] sm:min-w-[36px] hidden sm:flex items-center justify-center rounded-lg border transition-all shadow-sm cursor-pointer
+                p-1 min-h-[44px] min-w-[44px] sm:min-h-[28px] sm:min-w-[28px] hidden sm:flex items-center justify-center rounded border transition-colors cursor-pointer
                 ${copiedUrl
                   ? "bg-[var(--status-success-bg)] text-[var(--status-success-text)] border-[var(--status-success-border)]"
-                  : "bg-[var(--badge-bg)] hover:bg-[var(--border-color)] border border-[var(--border-color)] text-[var(--text-main)]"
+                  : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-card-hover)]"
                 }
               `}
             >
-              {copiedUrl ? <Check size={14} className="text-[var(--status-success-text)]" /> : <Copy size={14} />}
+              {copiedUrl ? <Check size={13} className="text-[var(--status-success-text)]" /> : <Copy size={13} />}
             </button>
 
             <a
@@ -299,9 +299,9 @@ export function FileCard({ file, slug, token, layout = "list" }: FileCardProps) 
               rel="noopener noreferrer"
               title="Download file"
               aria-label={`Download ${file.originalName}`}
-              className="p-2 min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] flex items-center justify-center rounded-lg bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white transition-all shadow-sm border border-[var(--border-glow)] cursor-pointer"
+              className="p-1 min-h-[44px] min-w-[44px] sm:min-h-[28px] sm:min-w-[28px] flex items-center justify-center rounded bg-[var(--badge-bg)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)] hover:text-white border border-[var(--badge-border)] transition-colors cursor-pointer"
             >
-              <Download size={14} />
+              <Download size={13} />
             </a>
 
             <button
@@ -309,12 +309,12 @@ export function FileCard({ file, slug, token, layout = "list" }: FileCardProps) 
               onClick={() => setShowConfirmDelete(true)}
               title="Delete file"
               aria-label={`Delete ${file.originalName}`}
-              className="p-2 min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] flex items-center justify-center rounded-lg bg-[var(--status-danger-bg)] text-[var(--status-danger-text)] border border-[var(--status-danger-border)] hover:opacity-80 transition-all shadow-sm cursor-pointer"
+              className="p-1 min-h-[44px] min-w-[44px] sm:min-h-[28px] sm:min-w-[28px] flex items-center justify-center rounded text-[var(--status-danger-text)] hover:bg-[var(--status-danger-bg)] border border-transparent hover:border-[var(--status-danger-border)] transition-colors cursor-pointer"
             >
-              <Trash2 size={14} />
+              <Trash2 size={13} />
             </button>
           </div>
-        </div>
+        </article>
       )}
 
       <FilePreviewModal

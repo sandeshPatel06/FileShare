@@ -18,6 +18,7 @@ interface UploadProgressItem {
   loadedFormatted: string;
   totalFormatted: string;
   speedFormatted: string;
+  etaFormatted?: string;
 }
 
 type FileCategory = "all" | "images" | "docs" | "code" | "media";
@@ -36,6 +37,21 @@ function formatSpeed(bytesPerSec: number): string {
     return (bytesPerSec / (1024 * 1024)).toFixed(1) + " MB/s";
   }
   return Math.round(bytesPerSec / 1024) + " KB/s";
+}
+
+function formatEta(seconds: number): string {
+  if (seconds <= 0 || !isFinite(seconds)) return "";
+  if (seconds >= 3600) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    return `${h}h ${m}m left`;
+  }
+  if (seconds >= 60) {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}m ${s}s left`;
+  }
+  return `${Math.ceil(seconds)}s left`;
 }
 
 function matchCategory(file: FileItem, cat: FileCategory): boolean {
@@ -131,6 +147,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
         loadedFormatted: "0 Bytes",
         totalFormatted: formatBytes(file.size),
         speedFormatted: "Starting...",
+        etaFormatted: "",
       },
     }));
 
@@ -146,6 +163,8 @@ export function FilePanel({ slug, token }: FilePanelProps) {
             const percent = Math.min(99, Math.round((e.loaded / e.total) * 100));
             const elapsed = (Date.now() - startTime) / 1000 || 0.1;
             const speedBytesSec = e.loaded / elapsed;
+            const remainingBytes = Math.max(0, e.total - e.loaded);
+            const remainingSeconds = speedBytesSec > 0 ? remainingBytes / speedBytesSec : 0;
 
             setUploadProgress((prev) => ({
               ...prev,
@@ -156,6 +175,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
                 loadedFormatted: formatBytes(e.loaded),
                 totalFormatted: formatBytes(e.total),
                 speedFormatted: formatSpeed(speedBytesSec),
+                etaFormatted: formatEta(remainingSeconds),
               },
             }));
           }
@@ -172,6 +192,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
                 loadedFormatted: formatBytes(file.size),
                 totalFormatted: formatBytes(file.size),
                 speedFormatted: "Done",
+                etaFormatted: "",
               },
             }));
             showToast(`${file.name} uploaded successfully`, "success");
@@ -247,7 +268,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
   ];
 
   return (
-    <div className="flex flex-col h-full min-h-0 min-w-0 overflow-hidden bg-[var(--bg-surface)] transition-colors duration-200 select-none">
+    <aside aria-label="Vault files manager" className="flex flex-col h-full min-h-0 min-w-0 overflow-hidden bg-[var(--bg-surface)] transition-colors select-none">
       {/* Hidden File Input */}
       <input
         ref={inputRef}
@@ -262,45 +283,49 @@ export function FilePanel({ slug, token }: FilePanelProps) {
       />
 
       {/* Header Toolbar */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--border-color)] bg-[var(--bg-surface)] shrink-0 transition-colors duration-200 gap-2 min-h-[44px]">
-        <div className="flex items-center gap-1.5 text-[var(--text-main)] font-extrabold min-w-0 flex-1 truncate">
-          <FolderOpen size={16} className="text-[var(--accent-indigo)]" />
-          <span className="text-xs uppercase tracking-wider font-mono">Explorer</span>
+      <header className="flex items-center justify-between px-3 py-2 border-b border-[var(--border-color)] bg-[var(--bg-surface)] shrink-0 min-h-[44px] gap-2">
+        <div className="flex items-center gap-1.5 text-[var(--text-main)] min-w-0 flex-1 truncate">
+          <FolderOpen size={15} className="text-[var(--accent-primary)] shrink-0" />
+          <h2 className="text-xs uppercase tracking-wider font-mono font-bold text-[var(--text-main)]">
+            Vault
+          </h2>
           {files.length > 0 && (
-            <span className="px-2 py-0.5 rounded-full bg-[var(--badge-bg)] border border-[var(--badge-border)] text-[var(--badge-text)] text-xs font-extrabold ml-1 shrink-0 whitespace-nowrap">
+            <span className="px-1.5 py-0.5 rounded text-[11px] font-mono font-bold bg-[var(--badge-bg)] border border-[var(--badge-border)] text-[var(--badge-text)] ml-1 shrink-0 whitespace-nowrap">
               {files.length}
             </span>
           )}
         </div>
 
         {/* Actions: Download All as ZIP & View Layout */}
-        <div className="flex items-center gap-1.5 shrink-0 max-sm:[&_button]:min-h-[36px] max-sm:[&_button]:min-w-[36px]">
+        <div className="flex items-center gap-1.5 shrink-0">
           {files.length > 0 && (
             <button
               type="button"
               onClick={handleDownloadAllZip}
               disabled={downloadingZip}
               aria-label="Download all files as ZIP archive"
-              className="flex items-center gap-1.5 px-2.5 py-1.5 min-h-[36px] rounded-lg bg-[var(--badge-bg)] hover:bg-[var(--accent-primary)]/15 border border-[var(--badge-border)] text-[var(--accent-primary)] transition-all text-xs font-bold cursor-pointer disabled:opacity-70"
+              className="flex items-center gap-1.5 px-2.5 py-1 min-h-[44px] sm:min-h-[30px] rounded-md bg-[var(--badge-bg)] hover:bg-[var(--accent-primary)]/15 border border-[var(--badge-border)] text-[var(--accent-primary)] transition-colors text-xs font-semibold cursor-pointer disabled:opacity-60"
               title="Download all files as ZIP archive"
             >
               {downloadingZip ? (
-                <Loader2 size={14} className="animate-spin text-[var(--accent-primary)]" />
+                <Loader2 size={13} className="animate-spin text-[var(--accent-primary)]" />
               ) : (
-                <Download size={14} />
+                <Download size={13} />
               )}
               <span className="hidden sm:inline">{downloadingZip ? (zipStatus || "Zipping…") : "ZIP All"}</span>
             </button>
           )}
 
-          <div className="flex items-center p-0.5 rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)]">
+          <div className="flex items-center p-0.5 rounded-md bg-[var(--input-bg)] border border-[var(--border-color)]">
             <button
               type="button"
               onClick={() => setViewLayout("list")}
               aria-label="List view"
               aria-pressed={viewLayout === "list"}
-               className={`min-h-[36px] min-w-[36px] p-1.5 flex items-center justify-center rounded-md transition-colors cursor-pointer ${
-                viewLayout === "list" ? "bg-[var(--accent-primary)] text-white shadow-sm" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
+              className={`min-h-[44px] min-w-[44px] sm:min-h-[28px] sm:min-w-[28px] p-1 flex items-center justify-center rounded transition-colors cursor-pointer ${
+                viewLayout === "list"
+                  ? "bg-[var(--accent-primary)] text-white"
+                  : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
               }`}
               title="List View"
             >
@@ -311,8 +336,10 @@ export function FilePanel({ slug, token }: FilePanelProps) {
               onClick={() => setViewLayout("grid")}
               aria-label="Grid view"
               aria-pressed={viewLayout === "grid"}
-              className={`min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-1.5 flex items-center justify-center rounded-md transition-colors cursor-pointer ${
-                viewLayout === "grid" ? "bg-[var(--accent-primary)] text-white shadow-sm" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
+              className={`min-h-[44px] min-w-[44px] sm:min-h-[28px] sm:min-w-[28px] p-1 flex items-center justify-center rounded transition-colors cursor-pointer ${
+                viewLayout === "grid"
+                  ? "bg-[var(--accent-primary)] text-white"
+                  : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
               }`}
               title="Grid View"
             >
@@ -320,25 +347,25 @@ export function FilePanel({ slug, token }: FilePanelProps) {
             </button>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Search Bar & Category Filter Pills */}
       {files.length > 0 && (
-        <div className="px-2.5 pt-2 pb-1.5 shrink-0 space-y-2 border-b border-[var(--border-color)]/40">
+        <section aria-label="Search and category filters" className="px-3 pt-2 pb-2 shrink-0 space-y-2 border-b border-[var(--border-color)]">
           <div className="relative flex items-center">
             <Search size={14} className="absolute left-2.5 text-[var(--text-muted)] pointer-events-none" />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search files…"
-              className="w-full pl-8 pr-10 py-2 bg-[var(--input-bg)] border border-[var(--border-color)] focus:border-[var(--accent-primary)] rounded-lg text-base sm:text-sm font-mono text-[var(--text-main)] placeholder-[var(--text-subtle)] outline-none transition-all font-semibold min-h-[44px]"
+              className="w-full pl-8 pr-9 py-1.5 bg-[var(--input-bg)] border border-[var(--border-color)] focus:border-[var(--accent-primary)] rounded-md text-xs font-mono text-[var(--text-main)] placeholder-[var(--text-muted)] outline-none transition-colors min-h-[44px] sm:min-h-[32px]"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
                 aria-label="Clear search"
-                className="absolute right-1.5 text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center rounded-md"
+                className="absolute right-1 text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer min-h-[44px] min-w-[44px] sm:min-h-[28px] sm:min-w-[28px] flex items-center justify-center rounded"
               >
                 <X size={13} />
               </button>
@@ -346,7 +373,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
           </div>
 
           {/* Category Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
             {categories.map((cat) => (
               <button
                 type="button"
@@ -354,10 +381,10 @@ export function FilePanel({ slug, token }: FilePanelProps) {
                 onClick={() => setActiveCategory(cat.id)}
                 aria-pressed={activeCategory === cat.id}
                 className={`
-                  px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer whitespace-nowrap border min-h-[44px] sm:min-h-[36px] flex items-center
+                  px-2.5 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer whitespace-nowrap border min-h-[44px] sm:min-h-[28px] flex items-center
                   ${activeCategory === cat.id
-                    ? "bg-[var(--accent-primary)] text-white border-[var(--accent-primary)] shadow-sm"
-                    : "bg-[var(--badge-bg)] text-[var(--text-muted)] hover:text-[var(--text-main)] border-[var(--border-color)]"
+                    ? "bg-[var(--accent-primary)] text-white border-[var(--accent-primary)]"
+                    : "bg-[var(--bg-surface)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] border-[var(--border-color)]"
                   }
                 `}
               >
@@ -365,138 +392,186 @@ export function FilePanel({ slug, token }: FilePanelProps) {
               </button>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Panel Scrollable Content — single scroll node */}
+      {/* Panel Scrollable Content: single scroll node */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden overscroll-contain p-2.5 space-y-2.5 min-h-0 min-w-0 max-w-full">
         {/* Compact drop zone container (only when files already exist in space) */}
         {files.length > 0 && (
           <div
+            role="button"
+            tabIndex={0}
             onDragOver={onDragOver}
             onDragLeave={onDragLeave}
             onDrop={onDrop}
             onClick={() => inputRef.current?.click()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                inputRef.current?.click();
+              }
+            }}
+            aria-label="Upload files (drop files here or click to browse)"
             className={`
-              relative flex items-center justify-between gap-3 px-3.5 py-2.5 min-h-[44px]
-              rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer group shadow-sm
+              relative flex items-center justify-between gap-3 px-3 py-2 min-h-[44px]
+              rounded-md border border-dashed transition-colors cursor-pointer
               ${dragging
-                ? "border-[var(--accent-primary)] bg-[var(--badge-bg)] scale-[1.01]"
-                : "border-[var(--border-color)] hover:border-[var(--accent-primary)] bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)]"
+                ? "border-[var(--accent-primary)] bg-[var(--badge-bg)]"
+                : "border-[var(--border-color)] hover:border-[var(--accent-primary)] bg-[var(--input-bg)]/50 hover:bg-[var(--bg-card-hover)]"
               }
             `}
           >
-            <div className="flex items-center gap-2">
-              <div className="p-1 rounded-md bg-[var(--badge-bg)] text-[var(--accent-indigo)]">
-                <UploadCloud size={16} />
-              </div>
-              <span className="text-xs font-bold text-[var(--text-main)]">
-                {dragging ? "Drop files to upload" : "Upload new file"}
+            <div className="flex items-center gap-2 min-w-0">
+              <UploadCloud size={15} className={dragging ? "text-[var(--accent-primary)]" : "text-[var(--text-muted)]"} />
+              <span className="text-xs font-medium text-[var(--text-main)] truncate">
+                {dragging ? "Release to drop files" : "Drop files to upload, or browse"}
               </span>
             </div>
-            <span className="text-xs text-[var(--accent-indigo)] font-bold underline underline-offset-2">
-              Browse
+            <span className="text-[11px] font-mono text-[var(--text-muted)] shrink-0">
+              ≤ 500 MB
             </span>
           </div>
         )}
 
         {/* Real-time Upload Progress Items */}
         {Object.values(uploadProgress).map((item) => (
-          <div key={item.id} className="flex flex-col gap-2 p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--accent-primary)] animate-fade-in shadow-md min-w-0 max-w-full overflow-hidden">
+          <article
+            key={item.id}
+            aria-label={`Uploading ${item.name}`}
+            className="flex flex-col gap-2 p-2.5 rounded-md bg-[var(--bg-card)] border border-[var(--border-color)] min-w-0 max-w-full overflow-hidden"
+          >
             <div className="flex items-center justify-between gap-2 min-w-0 max-w-full">
               <div className="flex items-center gap-2 min-w-0 flex-1">
-                <FileUp size={15} className="text-[var(--accent-primary)] animate-bounce shrink-0" />
-                <span className="text-xs font-bold text-[var(--text-main)] truncate min-w-0 max-w-full flex-1">{item.name}</span>
+                {item.percent < 100 ? (
+                  <Loader2 size={14} className="animate-spin text-[var(--accent-primary)] shrink-0" />
+                ) : (
+                  <FileUp size={14} className="text-[var(--accent-primary)] shrink-0" />
+                )}
+                <span className="text-xs font-mono font-medium text-[var(--text-main)] truncate min-w-0 flex-1">
+                  {item.name}
+                </span>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-xs font-mono font-extrabold text-[var(--accent-primary)]">
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="px-1.5 py-0.5 rounded text-[11px] font-mono font-bold bg-[var(--badge-bg)] text-[var(--badge-text)] border border-[var(--badge-border)]">
                   {item.percent}%
                 </span>
                 <button
                   type="button"
                   onClick={() => cancelUpload(item.id)}
                   title="Cancel upload"
-                  className="p-2 min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] flex items-center justify-center shrink-0 rounded text-[var(--text-muted)] hover:text-[var(--status-danger-text)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                  aria-label={`Cancel upload for ${item.name}`}
+                  className="p-1 min-h-[44px] min-w-[44px] sm:min-h-[28px] sm:min-w-[28px] flex items-center justify-center rounded text-[var(--text-muted)] hover:text-[var(--status-danger-text)] hover:bg-[var(--status-danger-bg)] transition-colors cursor-pointer"
                 >
                   <X size={13} />
                 </button>
               </div>
             </div>
 
-            <div className="w-full h-1.5 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden">
+            {/* Progress Bar Track and Indicator */}
+            <div className="w-full h-1.5 bg-[var(--input-bg)] border border-[var(--border-color)] rounded-full overflow-hidden">
               <div
-                className="h-full bg-[var(--accent-primary)] rounded-full transition-all duration-200"
+                className="h-full bg-[var(--accent-primary)] rounded-full transition-all duration-150 ease-out"
                 style={{ width: `${item.percent}%` }}
               />
             </div>
 
-            <div className="flex items-center justify-between gap-2 text-xs font-mono text-[var(--text-muted)]">
-              <span className="truncate min-w-0">{item.loadedFormatted} / {item.totalFormatted}</span>
-              <span className="font-bold text-[var(--accent-primary)] shrink-0 whitespace-nowrap">{item.speedFormatted}</span>
+            {/* Metrics */}
+            <div className="flex items-center justify-between gap-2 text-[11px] font-mono text-[var(--text-muted)]">
+              <span className="truncate min-w-0">
+                {item.loadedFormatted} / {item.totalFormatted}
+              </span>
+              <span className="font-semibold text-[var(--text-main)] shrink-0 whitespace-nowrap">
+                {item.speedFormatted}
+                {item.etaFormatted ? ` · ${item.etaFormatted}` : ""}
+              </span>
             </div>
-          </div>
+          </article>
         ))}
 
         {/* Files Display (List vs Grid) */}
         {loading ? (
           <div className="space-y-2">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-14 skeleton rounded-xl" />
+              <div key={i} className="h-12 skeleton rounded-md" />
             ))}
           </div>
         ) : filteredFiles.length === 0 && Object.keys(uploadProgress).length === 0 ? (
           files.length === 0 ? (
             /* Single unified empty-state upload dropzone */
             <div
+              role="button"
+              tabIndex={0}
               onDragOver={onDragOver}
               onDragLeave={onDragLeave}
               onDrop={onDrop}
               onClick={() => inputRef.current?.click()}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  inputRef.current?.click();
+                }
+              }}
+              aria-label="Upload files (drag and drop here or click to browse)"
               className={`
-                text-center py-8 sm:py-10 px-4 border-2 border-dashed rounded-2xl transition-all cursor-pointer group shadow-sm
+                text-center p-6 sm:p-8 rounded-lg border border-dashed transition-colors cursor-pointer
                 ${dragging
-                  ? "border-[var(--accent-primary)] bg-[var(--badge-bg)] scale-[1.01]"
-                  : "border-[var(--border-color)] hover:border-[var(--accent-primary)] bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)]"
+                  ? "border-[var(--accent-primary)] bg-[var(--badge-bg)]"
+                  : "border-[var(--border-color)] hover:border-[var(--accent-primary)] bg-[var(--input-bg)]/40 hover:bg-[var(--bg-card-hover)]/40"
                 }
               `}
             >
               <div className={`
-                w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3 transition-all duration-200 border
+                w-10 h-10 rounded-md border flex items-center justify-center mx-auto mb-3 transition-colors
                 ${dragging
-                  ? "bg-[var(--badge-bg)] border-[var(--accent-primary)] scale-110"
-                  : "bg-[var(--badge-bg)] border-[var(--badge-border)] group-hover:scale-110 text-[var(--accent-indigo)] shadow-sm"
+                  ? "bg-[var(--badge-bg)] border-[var(--accent-primary)] text-[var(--accent-primary)]"
+                  : "bg-[var(--bg-card)] border-[var(--border-color)] text-[var(--text-muted)]"
                 }
               `}>
-                <UploadCloud size={24} className="text-[var(--accent-indigo)]" />
+                <UploadCloud size={20} />
               </div>
-              <p className={`text-xs sm:text-sm font-extrabold transition-colors ${dragging ? "text-[var(--accent-primary)]" : "text-[var(--text-main)]"}`}>
-                {dragging ? "Drop files to upload" : "Drag & drop files here"}
+              <p className={`text-sm font-semibold transition-colors ${dragging ? "text-[var(--accent-primary)]" : "text-[var(--text-main)]"}`}>
+                {dragging ? "Release to drop files" : "Drop files to upload"}
               </p>
-              <p className="text-xs text-[var(--text-muted)] mt-1 font-medium max-w-xs mx-auto">
-                Upload documents, images, audio, video or code up to 500 MB per file
+              <p className="text-xs text-[var(--text-muted)] mt-1 font-mono">
+                Max 500 MB per file · Streamed direct to vault
               </p>
-              <span className="inline-flex items-center min-h-[40px] mt-3.5 px-4 py-2.5 rounded-lg text-xs font-bold bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white shadow-sm transition-colors">
-                Select Files to Upload
-              </span>
+              <div className="mt-4">
+                <span className="inline-flex items-center justify-center min-h-[44px] sm:min-h-[36px] px-4 py-2 rounded-md text-xs font-semibold bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white transition-colors">
+                  Browse Files
+                </span>
+              </div>
             </div>
           ) : (
             /* Filter/Search empty state (files exist, but none match filter) */
-            <div className="text-center py-8 px-4 border border-dashed border-[var(--border-color)] rounded-xl bg-[var(--bg-card)]">
-              <FolderOpen size={24} className="mx-auto text-[var(--text-muted)] mb-2" />
-              <p className="text-xs font-bold text-[var(--text-main)]">No matching files found</p>
-              <p className="text-xs text-[var(--text-muted)] mt-1 font-medium max-w-xs mx-auto">
-                Try clearing your search or category filters
+            <div className="text-center py-8 px-4 border border-dashed border-[var(--border-color)] rounded-md bg-[var(--bg-card)]/40">
+              <FolderOpen size={20} className="mx-auto text-[var(--text-muted)] mb-2" />
+              <p className="text-xs font-semibold text-[var(--text-main)]">No matching files found</p>
+              <p className="text-xs text-[var(--text-muted)] mt-1 font-mono">
+                Try adjusting search query or category filter
               </p>
+              {(searchQuery || activeCategory !== "all") && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setActiveCategory("all");
+                  }}
+                  className="mt-3 inline-flex items-center px-2.5 py-1 rounded-md border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] text-xs font-mono transition-colors min-h-[44px] sm:min-h-[28px] cursor-pointer"
+                >
+                  Clear filters
+                </button>
+              )}
             </div>
           )
         ) : (
-          <div className={viewLayout === "grid" ? "grid grid-cols-1 min-[420px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-2 min-w-0 max-w-full" : "space-y-2 min-w-0 max-w-full"}>
+          <div className={viewLayout === "grid" ? "grid grid-cols-1 min-[420px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-2 min-w-0 max-w-full" : "space-y-1.5 min-w-0 max-w-full"}>
             {filteredFiles.map((f) => (
               <FileCard key={f.fileId} file={f} slug={slug} token={token} layout={viewLayout} />
             ))}
           </div>
         )}
       </div>
-    </div>
+    </aside>
   );
 }

@@ -26,7 +26,6 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
   const moreMenuButtonRef = useRef<HTMLButtonElement>(null);
 
   // Dismiss the mobile More menu on Escape for keyboard users
-  // (outside taps are already covered by the backdrop catcher).
   useEffect(() => {
     if (!showMoreMenu) return;
     function handleKeyDown(e: KeyboardEvent) {
@@ -41,30 +40,38 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
     const ok = await copyToClipboard(url);
     if (ok) {
       setCopied(true);
-      showToast("Shareable link copied!", "success");
+      showToast("Workspace link copied to clipboard", "success");
       setTimeout(() => setCopied(false), 2000);
     } else {
-      showToast("Could not copy link", "error");
+      showToast("Failed to copy link", "error");
     }
   }
 
   return (
-    <div className="flex items-center justify-between gap-1 sm:gap-2 w-full min-w-0 max-w-full h-full select-none overflow-visible">
+    <nav aria-label="Workspace toolbar" className="flex items-center justify-between gap-1 sm:gap-2.5 w-full min-w-0 max-w-full h-full select-none overflow-visible">
       {/* Workspace Brand & Interactive Workspace Pill */}
-      <div className="flex items-center gap-1 sm:gap-3 min-w-0 shrink flex-1 overflow-hidden">
+      <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 shrink flex-1 overflow-hidden">
         {/* Brand Logo & Name */}
         <Link
           href="/"
-          className="relative group flex items-center gap-1.5 shrink-0 cursor-pointer no-underline"
+          className="group flex items-center gap-1.5 sm:gap-2 shrink-0 cursor-pointer no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded-lg"
           title="FileShare Home"
         >
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl overflow-hidden p-[1.5px] bg-gradient-to-tr from-[var(--accent-primary)] via-[var(--accent-indigo)] to-[var(--accent-cyan)] shadow-md group-hover:scale-105 transition-transform duration-200">
-            <div className="w-full h-full rounded-[9px] sm:rounded-[10px] overflow-hidden bg-[var(--bg-surface)]">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl overflow-hidden p-[1.5px] bg-[var(--accent-primary)] shadow-xs transition-opacity group-hover:opacity-90 shrink-0">
+            <div className="w-full h-full rounded-[6px] sm:rounded-[9px] overflow-hidden bg-[var(--bg-surface)] flex items-center justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="FileShare Logo" width={32} height={32} decoding="async" fetchPriority="high" className="w-full h-full object-cover" />
+              <img
+                src="/logo.png"
+                alt="FileShare Logo"
+                width={32}
+                height={32}
+                decoding="async"
+                fetchPriority="high"
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
-          <span className="font-extrabold text-sm sm:text-base tracking-tight text-[var(--text-main)] hidden sm:inline group-hover:text-[var(--accent-indigo)] transition-colors">
+          <span className="font-bold text-sm sm:text-base tracking-tight text-[var(--text-main)] hidden sm:inline group-hover:text-[var(--accent-primary)] transition-colors">
             FileShare
           </span>
         </Link>
@@ -73,30 +80,28 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
         <button
           type="button"
           onClick={() => setShowRenameModal(true)}
-          title="Click to edit workspace URL"
-          aria-label="Click to edit workspace URL"
-          className="group/pill flex items-center gap-1 h-11 sm:h-9 px-2 sm:px-3 rounded-xl bg-[var(--badge-bg)] hover:bg-[var(--border-color)]/60 border border-[var(--border-color)] hover:border-[var(--accent-indigo)]/40 transition-all duration-200 cursor-pointer min-w-0 shrink max-w-full shadow-sm"
+          title={`Edit workspace: ${slug}`}
+          aria-label={`Workspace slug: ${slug}. Click to rename or manage.`}
+          className="group/pill flex items-center gap-1.5 h-8 sm:h-9 px-2 sm:px-3 rounded-lg sm:rounded-xl bg-[var(--bg-surface)] hover:bg-[var(--bg-card-hover)] border border-[var(--border-color)] hover:border-[var(--accent-primary)]/50 active:scale-95 transition-colors cursor-pointer min-w-0 shrink max-w-full"
         >
-          <span className="text-xs sm:text-sm font-extrabold text-[var(--text-main)] group-hover/pill:text-[var(--accent-indigo)] truncate max-w-[55px] min-[360px]:max-w-[85px] min-[400px]:max-w-[140px] sm:max-w-[240px] font-mono tracking-tight transition-colors">
+          <span className="text-xs sm:text-sm font-semibold text-[var(--text-main)] group-hover/pill:text-[var(--accent-primary)] truncate max-w-[65px] min-[360px]:max-w-[100px] min-[400px]:max-w-[160px] sm:max-w-[260px] font-mono tracking-tight transition-colors">
             {slug}
           </span>
-          <span className="p-0.5 rounded-md text-[var(--text-muted)] group-hover/pill:text-[var(--accent-indigo)] group-hover/pill:bg-[var(--accent-indigo)]/10 transition-all shrink-0">
-            <Pencil size={12} />
-          </span>
+          <Pencil size={12} className="text-[var(--text-muted)] group-hover/pill:text-[var(--accent-primary)] transition-colors shrink-0" aria-hidden="true" />
         </button>
       </div>
 
-      {/* Header Actions Toolbar — tight mobile gaps so 320px viewports fit */}
-      <div className="flex items-center gap-1 sm:gap-2.5 shrink-0 ml-auto">
-        {/* QR button: compact icon on mobile, labeled control on desktop */}
+      {/* Header Actions Toolbar */}
+      <div className="flex items-center gap-1 sm:gap-2 shrink-0 ml-auto" role="toolbar" aria-label="Workspace actions">
+        {/* Desktop QR Code Button */}
         <button
           type="button"
           onClick={() => setShowQR(true)}
-          className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center shrink-0 rounded-xl bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] active:scale-95 transition-all shadow-sm cursor-pointer min-h-[36px] min-w-[36px] sm:min-h-[40px] sm:min-w-[40px]"
-          title="Show QR Code"
-          aria-label="Show QR Code"
+          className="hidden sm:flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center shrink-0 rounded-lg sm:rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] active:scale-95 transition-colors cursor-pointer min-h-[36px] min-w-[36px] sm:min-h-[40px] sm:min-w-[40px]"
+          title="Show workspace QR code"
+          aria-label="Show workspace QR code"
         >
-          <QrCode size={18} />
+          <QrCode size={17} aria-hidden="true" />
         </button>
 
         {/* Copy Link Button */}
@@ -104,34 +109,42 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
           type="button"
           onClick={copyLink}
           className={`
-            h-9 w-9 sm:h-10 sm:w-auto px-0 sm:px-3.5 flex items-center justify-center gap-1.5 rounded-xl text-xs sm:text-sm font-bold active:scale-95 transition-all duration-200 border shadow-sm cursor-pointer shrink-0 min-h-[36px] min-w-[36px] sm:min-h-[40px] sm:min-w-[40px]
+            h-9 w-9 sm:h-10 sm:w-auto px-0 sm:px-3 flex items-center justify-center gap-1.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium active:scale-95 transition-colors border cursor-pointer shrink-0 min-h-[36px] min-w-[36px] sm:min-h-[40px] sm:min-w-[40px]
             ${copied
               ? "bg-[var(--status-success-bg)] text-[var(--status-success-text)] border-[var(--status-success-border)]"
-              : "bg-[var(--badge-bg)] text-[var(--text-main)] hover:bg-[var(--border-color)] border-[var(--border-color)]"
+              : "bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] border-[var(--border-color)]"
             }
           `}
-          title="Copy workspace link"
-          aria-label="Copy workspace link"
+          title={copied ? "Link copied to clipboard" : "Copy workspace link"}
+          aria-label={copied ? "Link copied to clipboard" : "Copy workspace link"}
         >
-          {copied ? <CheckCheck size={18} className="text-[var(--status-success-text)]" /> : <Copy size={18} />}
+          {copied ? (
+            <CheckCheck size={16} className="text-[var(--status-success-text)] shrink-0" aria-hidden="true" />
+          ) : (
+            <Copy size={16} className="text-[var(--text-muted)] shrink-0" aria-hidden="true" />
+          )}
           <span className="hidden sm:inline">{copied ? "Copied!" : "Copy Link"}</span>
         </button>
 
-        {/* Password Lock Button */}
+        {/* Password Protection Button */}
         <button
           type="button"
           onClick={onLockClick}
-          title={isProtected ? "Protected with password" : "Set protection password"}
-          aria-label={isProtected ? "Protected with password" : "Set protection password"}
+          title={isProtected ? "Workspace is password protected (click to manage)" : "Set workspace password"}
+          aria-label={isProtected ? "Workspace is password protected" : "Set workspace password"}
           className={`
-            h-9 w-9 sm:h-10 sm:w-auto px-0 sm:px-3.5 flex items-center justify-center gap-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 border shadow-sm cursor-pointer shrink-0 min-h-[36px] min-w-[36px] sm:min-h-[40px] sm:min-w-[40px]
+            h-9 w-9 sm:h-10 sm:w-auto px-0 sm:px-3 flex items-center justify-center gap-1.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-colors border cursor-pointer shrink-0 min-h-[36px] min-w-[36px] sm:min-h-[40px] sm:min-w-[40px]
             ${isProtected
-              ? "bg-[var(--badge-bg)] text-[var(--badge-text)] border-[var(--badge-border)]"
-              : "bg-[var(--badge-bg)] text-[var(--text-main)] hover:bg-[var(--border-color)] border-[var(--border-color)]"
+              ? "bg-[var(--badge-bg)] text-[var(--badge-text)] border-[var(--badge-border)] hover:brightness-105"
+              : "bg-[var(--bg-surface)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] border-[var(--border-color)]"
             }
           `}
         >
-          {isProtected ? <Lock size={18} className="text-[var(--badge-text)]" /> : <Unlock size={18} />}
+          {isProtected ? (
+            <Lock size={16} className="text-[var(--badge-text)] shrink-0" aria-hidden="true" />
+          ) : (
+            <Unlock size={16} className="shrink-0" aria-hidden="true" />
+          )}
           <span className="hidden sm:inline">{isProtected ? "Protected" : "Protect"}</span>
         </button>
 
@@ -140,16 +153,16 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
           href="https://github.com/sandeshPatel06/file-share"
           target="_blank"
           rel="noopener noreferrer"
-          className="hidden md:flex h-10 w-10 items-center justify-center shrink-0 rounded-xl bg-[var(--badge-bg)] border border-[var(--border-color)] hover:bg-[var(--border-color)] hover:scale-105 transition-all shadow-sm cursor-pointer min-h-[40px] min-w-[40px]"
-          title="View GitHub Repository"
-          aria-label="View GitHub Repository"
+          className="hidden md:flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center shrink-0 rounded-lg sm:rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] hover:bg-[var(--bg-card-hover)] transition-colors cursor-pointer min-h-[36px] min-w-[36px] sm:min-h-[40px] sm:min-w-[40px]"
+          title="View GitHub repository"
+          aria-label="View GitHub repository"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/github-icon.svg" alt="GitHub Repository" width={18} height={18} className="w-4.5 h-4.5 object-contain" />
+          <img src="/github-icon.svg" alt="" width={18} height={18} className="w-4.5 h-4.5 object-contain" />
         </a>
 
         {/* Desktop Theme Toggle */}
-        <div className="hidden sm:block">
+        <div className="hidden sm:flex items-center shrink-0">
           <ThemeToggle />
         </div>
 
@@ -162,17 +175,23 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
             aria-label="More workspace tools"
             aria-expanded={showMoreMenu}
             title="More workspace tools"
-             className="h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center shrink-0 rounded-xl bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] active:scale-95 transition-all shadow-sm cursor-pointer min-h-[36px] min-w-[36px] sm:min-h-[40px] sm:min-w-[40px]"
+            className="h-9 w-9 flex items-center justify-center shrink-0 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] active:scale-95 transition-colors cursor-pointer min-h-[36px] min-w-[36px]"
           >
-            <MoreVertical size={18} />
+            <MoreVertical size={16} aria-hidden="true" />
           </button>
-           {showMoreMenu && (
-             <>
+          {showMoreMenu && (
+            <>
               <div
-                 className="fixed inset-0 z-[61]"
+                className="fixed inset-0 z-[61]"
                 onClick={() => setShowMoreMenu(false)}
+                aria-hidden="true"
               />
-               <FloatingMenu open={showMoreMenu} anchorRef={moreMenuButtonRef} placement="bottom-end" className="w-48 max-w-[calc(100vw-1rem)] rounded-xl bg-[var(--modal-bg)] border border-[var(--border-color)] shadow-2xl p-1.5 flex flex-col gap-1 text-xs font-bold animate-slide-down">
+              <FloatingMenu
+                open={showMoreMenu}
+                anchorRef={moreMenuButtonRef}
+                placement="bottom-end"
+                className="w-48 max-w-[calc(100vw-1rem)] rounded-xl bg-[var(--modal-bg)] border border-[var(--border-color)] shadow-xl p-1.5 flex flex-col gap-0.5 text-xs font-medium z-[62]"
+              >
                 <button
                   type="button"
                   onClick={() => {
@@ -180,26 +199,26 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
                     setShowQR(true);
                   }}
                   aria-label="Show QR code"
-                  className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2.5 text-[var(--text-main)] cursor-pointer min-h-[44px]"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-[var(--bg-card-hover)] flex items-center gap-2.5 text-[var(--text-main)] cursor-pointer min-h-[40px] transition-colors"
                 >
-                  <QrCode size={16} className="text-[var(--accent-indigo)]" />
+                  <QrCode size={16} className="text-[var(--accent-primary)] shrink-0" aria-hidden="true" />
                   <span>Show QR Code</span>
                 </button>
-                 <div className="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 min-h-[44px]">
-                   <span className="text-[var(--text-main)]">Theme Mode</span>
-                   <ThemeToggle />
-                 </div>
-                 <a
+                <div className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-[var(--bg-card-hover)] min-h-[40px] transition-colors">
+                  <span className="text-[var(--text-main)]">Theme Mode</span>
+                  <ThemeToggle />
+                </div>
+                <a
                   href="https://github.com/sandeshPatel06/file-share"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2.5 text-[var(--text-main)] cursor-pointer min-h-[44px]"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-[var(--bg-card-hover)] flex items-center gap-2.5 text-[var(--text-main)] cursor-pointer min-h-[40px] transition-colors"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/github-icon.svg" alt="GitHub" width={16} height={16} className="w-4 h-4 object-contain" />
-                   <span>GitHub Project</span>
-                 </a>
-               </FloatingMenu>
+                  <img src="/github-icon.svg" alt="" width={16} height={16} className="w-4 h-4 object-contain shrink-0" />
+                  <span>GitHub Project</span>
+                </a>
+              </FloatingMenu>
             </>
           )}
         </div>
@@ -210,17 +229,17 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
             type="button"
             onClick={onToggleFilePanel}
             aria-pressed={filePanelOpen}
-            title={filePanelOpen ? "Hide File Explorer" : "Show File Explorer"}
-            aria-label={filePanelOpen ? "Hide File Explorer" : "Show File Explorer"}
+            title={filePanelOpen ? "Close file vault" : "Open file vault"}
+            aria-label={filePanelOpen ? "Close file vault" : "Open file vault"}
             className={`
-               h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center shrink-0 rounded-xl border transition-all shadow-sm cursor-pointer min-h-[36px] min-w-[36px] sm:min-h-[40px] sm:min-w-[40px]
+              h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center shrink-0 rounded-lg sm:rounded-xl border transition-colors cursor-pointer min-h-[36px] min-w-[36px] sm:min-h-[40px] sm:min-w-[40px]
               ${filePanelOpen
-                ? "bg-[var(--accent-indigo)]/15 text-[var(--accent-indigo)] border-[var(--accent-indigo)]/40 hover:bg-[var(--accent-indigo)]/25"
-                : "bg-[var(--badge-bg)] text-[var(--text-main)] border-[var(--border-color)] hover:bg-[var(--border-color)]"
+                ? "bg-[var(--accent-primary)]/15 text-[var(--accent-primary)] border-[var(--accent-primary)]/40 hover:bg-[var(--accent-primary)]/25"
+                : "bg-[var(--bg-surface)] text-[var(--text-muted)] hover:text-[var(--text-main)] border-[var(--border-color)] hover:bg-[var(--bg-card-hover)]"
               }
             `}
           >
-            {filePanelOpen ? <PanelRightClose size={18} /> : <PanelRightOpen size={18} />}
+            {filePanelOpen ? <PanelRightClose size={17} aria-hidden="true" /> : <PanelRightOpen size={17} aria-hidden="true" />}
           </button>
         )}
       </div>
@@ -238,6 +257,6 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
         slug={slug}
         token={token}
       />
-    </div>
+    </nav>
   );
 }

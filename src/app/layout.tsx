@@ -156,7 +156,7 @@ export default function RootLayout({
         "url": appUrl,
         "name": "FileShare",
         "alternateName": ["FileShare Online", "FileShare Notepad", "FileShare Vault"],
-        "description": "Free instant real-time collaborative notepad and secure 500MB ephemeral file sharing vault with zero registration.",
+        "description": "Free instant real-time collaborative notepad and secure 500MB file sharing with zero registration.",
         "publisher": {
           "@id": `${appUrl}/#organization`,
         },
@@ -186,11 +186,11 @@ export default function RootLayout({
         },
         "featureList": [
           "Zero registration instant anonymous workspaces",
-          "Real-time live collaborative Markdown editing with SSE sync",
+          "Real-time live collaborative Markdown editing with instant sync",
           "Instant file upload vault supporting files up to 500MB",
           "Automatic Mermaid syntax diagram rendering",
           "AI Copilot one-click Markdown syntax formatting",
-          "Salted bcrypt password protection with JWT token verification",
+          "Secure password protection for private workspaces",
           "Dynamic QR code generator for instant PC to phone handoff",
           "Dark and light theme support",
         ],

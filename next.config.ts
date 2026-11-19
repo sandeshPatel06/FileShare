@@ -27,6 +27,9 @@ const defaultOrigins = [
 ];
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: __dirname,
+  },
   // Allow all dev origins from environment variable & default LAN subnets to prevent HMR cross-origin reloads
   allowedDevOrigins: Array.from(new Set([
     ...defaultOrigins,

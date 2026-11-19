@@ -88,6 +88,15 @@ export function CookieConsent() {
     return () => window.removeEventListener("open_cookie_preferences", handleReopen);
   }, []);
 
+  // Lock body scroll when the full-screen dialog is open
+  useEffect(() => {
+    if (rawConsent === "" || rawConsent !== null) return;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [rawConsent]);
+
   // Close customize modal on Escape key and lock body scroll
   useEffect(() => {
     if (!isCustomizeOpen) return;
@@ -149,103 +158,130 @@ export function CookieConsent() {
   if (!isOpen) return null;
 
   return (
-    <>
-      {/* 1. Low-profile, Non-intrusive Bottom Banner */}
-      {!isCustomizeOpen ? (
-        <aside
-          role="region"
-          aria-label="Cookie and Privacy Notice"
-          className="fixed bottom-0 inset-x-0 z-50 px-3 py-2.5 sm:px-6 sm:py-3.5 bg-[var(--header-bg)] border-t border-[var(--border-color)] shadow-lg animate-fade-in"
-        >
-          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4 min-w-0">
-            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-[var(--badge-bg)] text-[var(--accent-primary)] shrink-0">
-                <Cookie className="w-4 h-4 sm:w-4.5 sm:h-4.5" aria-hidden="true" />
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="cookie-consent-title"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+    >
+      <div className="w-full sm:max-w-md min-w-0 bg-[var(--modal-bg,var(--bg-surface))] border border-[var(--border-color)] sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden">
+        {!isCustomizeOpen ? (
+          /* ── Main consent panel ── */
+          <div className="p-5 sm:p-6 space-y-4">
+            {/* Header */}
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-xl bg-[var(--badge-bg)] text-[var(--accent-primary)] shrink-0 mt-0.5">
+                <Cookie className="w-5 h-5" aria-hidden="true" />
               </div>
-              <div className="text-xs sm:text-[13px] text-[var(--text-muted)] leading-relaxed min-w-0 break-words">
-                <span className="font-semibold text-[var(--text-main)] mr-1">
-                  Cookies & Privacy:
-                </span>
-                <span>
-                  We use strictly necessary storage for workspace sync and optional analytics. Read our{" "}
-                  <Link href="/cookies" className="text-[var(--accent-primary)] underline hover:text-[var(--text-main)] transition-colors">
+              <div>
+                <h2
+                  id="cookie-consent-title"
+                  className="font-bold text-sm sm:text-base text-[var(--text-main)] leading-snug"
+                >
+                  We value your privacy
+                </h2>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed mt-0.5">
+                  We use cookies to keep your workspace running and — with your permission — to understand how people use the site. Read our{" "}
+                  <Link
+                    href="/cookies"
+                    className="text-[var(--accent-primary)] underline hover:text-[var(--text-main)] transition-colors"
+                  >
                     Cookie Policy
-                  </Link>.
-                </span>
+                  </Link>
+                  .
+                </p>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 shrink-0 w-full md:w-auto sm:justify-end">
-              <button
-                type="button"
-                onClick={() => setIsCustomizeOpen(true)}
-                className="px-3 py-2 sm:px-3.5 text-xs font-medium rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] min-h-[44px] sm:min-h-[36px] w-full sm:w-auto whitespace-nowrap flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
-              >
-                Customize
-              </button>
-              <button
-                type="button"
-                onClick={handleRejectNonEssential}
-                className="px-3 py-2 sm:px-3.5 text-xs font-medium rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] min-h-[44px] sm:min-h-[36px] w-full sm:w-auto whitespace-nowrap flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
-              >
-                Reject Non-Essential
-              </button>
+            {/* What we use — quick summary */}
+            <div className="grid grid-cols-3 gap-2 text-center text-[11px]">
+              <div className="bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl px-2 py-2.5 space-y-1">
+                <div className="text-base">🔧</div>
+                <div className="font-semibold text-[var(--text-main)]">Essential</div>
+                <div className="text-[var(--text-muted)] leading-tight">Always on</div>
+              </div>
+              <div className="bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl px-2 py-2.5 space-y-1">
+                <div className="text-base">📊</div>
+                <div className="font-semibold text-[var(--text-main)]">Analytics</div>
+                <div className="text-[var(--text-muted)] leading-tight">Optional</div>
+              </div>
+              <div className="bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl px-2 py-2.5 space-y-1">
+                <div className="text-base">📢</div>
+                <div className="font-semibold text-[var(--text-main)]">Ads</div>
+                <div className="text-[var(--text-muted)] leading-tight">Optional</div>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex flex-col gap-2">
+              {/* Primary CTA */}
               <button
                 type="button"
                 onClick={handleAcceptAll}
-                className="px-4 py-2 sm:px-4.5 text-xs font-medium rounded-lg bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white min-h-[44px] sm:min-h-[36px] w-full sm:w-auto whitespace-nowrap flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
+                className="w-full py-3 text-sm font-semibold rounded-xl bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white flex items-center justify-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
               >
+                <Check className="w-4 h-4" />
                 Accept All
               </button>
+
+              {/* Secondary row */}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleRejectNonEssential}
+                  className="flex-1 py-2.5 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
+                >
+                  Reject Optional
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsCustomizeOpen(true)}
+                  className="flex-1 py-2.5 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] inline-flex items-center justify-center gap-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
+                >
+                  <Settings className="w-3.5 h-3.5" />
+                  Customize
+                </button>
+              </div>
             </div>
           </div>
-        </aside>
-      ) : (
-        /* 2. Granular Preferences Centered Modal */
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="cookie-preferences-title"
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 animate-fade-in overflow-hidden"
-          onClick={() => setIsCustomizeOpen(false)}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-[min(42rem,calc(100vw-1.5rem))] min-w-0 bg-[var(--modal-bg)] border border-[var(--border-color)] rounded-2xl shadow-xl p-4 sm:p-6 space-y-4 my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden"
-          >
-            <header className="flex items-center justify-between gap-3 border-b border-[var(--border-color)] pb-3 shrink-0 min-w-0 select-none">
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                <Settings className="w-5 h-5 text-[var(--accent-primary)] shrink-0" aria-hidden="true" />
-                <h2 id="cookie-preferences-title" className="font-bold text-sm sm:text-base text-[var(--text-main)] min-w-0">
-                  Manage Cookie & Tracking Preferences
+        ) : (
+          /* ── Customize preferences panel ── */
+          <div className="p-5 sm:p-6 flex flex-col max-h-[85dvh] sm:max-h-[80dvh]">
+            {/* Header */}
+            <div className="flex items-center justify-between gap-3 border-b border-[var(--border-color)] pb-3 mb-3 shrink-0">
+              <div className="flex items-center gap-2">
+                <Settings className="w-4.5 h-4.5 text-[var(--accent-primary)] shrink-0" aria-hidden="true" />
+                <h2 className="font-bold text-sm text-[var(--text-main)]">
+                  Choose Your Preferences
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={() => setIsCustomizeOpen(false)}
-                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]"
-                aria-label="Close customization modal"
+                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]"
+                aria-label="Back to main consent"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
-            </header>
+            </div>
 
-            <div className="grid grid-cols-1 gap-3 text-xs min-w-0 max-w-full overflow-y-auto overscroll-contain flex-1 pr-0.5">
-              {/* Category 1: Strictly Necessary */}
-              <article className="p-3 sm:p-3.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-1">
+            {/* Categories */}
+            <div className="flex-1 overflow-y-auto space-y-2.5 text-xs pr-0.5">
+              {/* Necessary */}
+              <article className="p-3 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-1">
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-semibold text-[var(--text-main)]">Strictly Necessary</span>
-                  <span className="text-xs font-mono px-2 py-0.5 rounded bg-[var(--badge-bg)] text-[var(--accent-primary)]">
-                    Always Active
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[var(--badge-bg)] text-[var(--accent-primary)]">
+                    Always On
                   </span>
                 </div>
                 <p className="text-[var(--text-muted)] leading-relaxed">
-                  Required for core workspace synchronization, JWT password gate verification, and theme preference persistence.
+                  Required for core workspace features, keeping protected spaces unlocked during your session, and remembering your theme choice.
                 </p>
               </article>
 
-              {/* Category 2: Analytics Cookies */}
-              <article className="p-3 sm:p-3.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-1">
+              {/* Analytics */}
+              <article className="p-3 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-1">
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-semibold text-[var(--text-main)]">Performance & Analytics</span>
                   <label className="relative inline-flex items-center cursor-pointer select-none">
@@ -260,12 +296,12 @@ export function CookieConsent() {
                   </label>
                 </div>
                 <p className="text-[var(--text-muted)] leading-relaxed">
-                  Aggregated, anonymized visit counts and traffic sources via Google Analytics 4 with IP anonymization enabled.
+                  Anonymised visit counts and traffic sources via Google Analytics 4. Helps us improve the product.
                 </p>
               </article>
 
-              {/* Category 3: Advertising / Marketing */}
-              <article className="p-3 sm:p-3.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-1">
+              {/* Marketing */}
+              <article className="p-3 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-1">
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-semibold text-[var(--text-main)]">Advertising & Partner</span>
                   <label className="relative inline-flex items-center cursor-pointer select-none">
@@ -280,37 +316,33 @@ export function CookieConsent() {
                   </label>
                 </div>
                 <p className="text-[var(--text-muted)] leading-relaxed">
-                  Permits Google AdSense cookies on editorial guide and article pages to serve relevant non-intrusive ads.
+                  Allows Google AdSense to show relevant ads on guide and article pages.
                 </p>
               </article>
             </div>
 
-            <footer className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-3 shrink-0 min-w-0 border-t border-[var(--border-color)]">
-              <span className="text-xs text-[var(--text-muted)]">
-                You can change these preferences at any time via the &quot;Cookie Preferences&quot; link in the footer.
-              </span>
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto self-stretch sm:self-auto">
-                <button
-                  type="button"
-                  onClick={handleRejectNonEssential}
-                  className="px-3.5 py-2 text-xs font-medium rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] cursor-pointer min-h-[44px] sm:min-h-[36px] w-full sm:w-auto whitespace-nowrap flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]"
-                >
-                  Reject Non-Essential
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveCustom}
-                  className="px-4.5 py-2 text-xs font-medium rounded-lg bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary-hover)] inline-flex items-center justify-center gap-1.5 cursor-pointer min-h-[44px] sm:min-h-[36px] w-full sm:w-auto whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]"
-                >
-                  <Check className="w-3.5 h-3.5" />
-                  Save Preferences
-                </button>
-              </div>
-            </footer>
+            {/* Footer */}
+            <div className="pt-3 mt-3 border-t border-[var(--border-color)] flex flex-col sm:flex-row gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleRejectNonEssential}
+                className="flex-1 py-2.5 text-xs font-medium rounded-xl border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]"
+              >
+                Reject Optional
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveCustom}
+                className="flex-1 py-2.5 text-xs font-semibold rounded-xl bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary-hover)] inline-flex items-center justify-center gap-1.5 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]"
+              >
+                <Check className="w-3.5 h-3.5" />
+                Save My Choices
+              </button>
+            </div>
           </div>
-        </div>
-      )}
-    </>
+        )}
+      </div>
+    </div>
   );
 }
 

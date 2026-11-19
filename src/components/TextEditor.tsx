@@ -1494,7 +1494,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
       )}
 
       {/* Main Workspace Canvas (Full Width & Height, Zero Outer Padding) */}
-      <main className="flex-1 min-h-0 h-full flex overflow-hidden relative bg-[var(--bg-main)]">
+      <main className="flex-1 min-h-0 flex flex-row min-w-0 w-full overflow-hidden relative bg-[var(--bg-main)]">
         {loading ? (
           <div className="w-full h-full space-y-4 animate-pulse p-4 sm:p-6">
             {[85, 70, 92, 60, 78].map((w, i) => (
@@ -1502,7 +1502,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
             ))}
           </div>
         ) : (
-          <div className="flex-1 w-full h-full flex min-h-0 max-w-full overflow-hidden">
+          <div className="flex-1 min-h-0 min-w-0 w-full h-full flex flex-row overflow-hidden">
             {/* Outline Sidebar Pane */}
             {showOutline && (
               <>
@@ -1561,7 +1561,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
             {/* Writer Pane */}
             {(viewMode === "write" || viewMode === "split") && (
               <div className={`flex-1 h-full min-h-0 min-w-0 flex flex-col bg-[var(--bg-card)] relative overflow-hidden ${viewMode === "split" ? "border-r border-[var(--border-color)]" : ""}`}>
-                <div className="flex-1 h-full flex min-h-0 relative overflow-hidden">
+                <div className="flex-1 min-h-0 w-full h-full flex flex-row relative overflow-hidden">
                   {/* Line Numbers Gutter */}
                   <div
                     ref={lineNumbersRef}
@@ -1575,18 +1575,20 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                     ))}
                   </div>
 
-                  {/* Main Editor Textarea */}
-                  <textarea
-                    ref={textareaRef}
-                    value={displayContent}
-                    onChange={handleChange}
-                    onKeyDown={handleKeyDown}
-                    onScroll={handleScroll}
-                    placeholder="Type or paste Markdown here... (Type '/' for commands)"
-                    aria-label="Notes markdown content editor"
-                    className="w-full flex-1 h-full min-h-0 max-w-full resize-none bg-transparent text-[var(--text-main)] py-3 px-3 sm:px-4 outline-none font-mono text-base sm:text-sm leading-6 placeholder-[var(--text-subtle)] overflow-y-auto overflow-x-hidden overscroll-contain selection:bg-[var(--accent-primary)]/20 relative z-10"
-                    spellCheck="false"
-                  />
+                  {/* Main Editor Textarea Container */}
+                  <div className="flex-1 min-h-0 min-w-0 h-full relative overflow-hidden">
+                    <textarea
+                      ref={textareaRef}
+                      value={displayContent}
+                      onChange={handleChange}
+                      onKeyDown={handleKeyDown}
+                      onScroll={handleScroll}
+                      placeholder="Type or paste Markdown here... (Type '/' for commands)"
+                      aria-label="Notes markdown content editor"
+                      className="absolute inset-0 w-full h-full resize-none bg-transparent text-[var(--text-main)] py-3 px-3 sm:px-4 outline-none font-mono text-base sm:text-sm leading-6 placeholder-[var(--text-subtle)] overflow-y-auto overflow-x-hidden overscroll-contain selection:bg-[var(--accent-primary)]/20 z-10"
+                      spellCheck="false"
+                    />
+                  </div>
 
                   {/* Floating Slash Commands Menu (Anchored directly to caret position) */}
                   {typeof document !== "undefined" && slashMenu.open && filteredSlashOptions.length > 0 &&
@@ -1637,8 +1639,8 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
 
             {/* Formatted Markdown Live Preview Pane */}
             {(viewMode === "preview" || viewMode === "split") && (
-              <section className="flex-1 h-full min-h-0 min-w-0 flex flex-col bg-[var(--bg-main)] overflow-hidden">
-                <div ref={previewRef} className="flex-1 h-full min-h-0 min-w-0 p-4 sm:p-6 md:p-8 overflow-y-auto overflow-x-hidden overscroll-contain max-w-full lg:max-w-4xl lg:mx-auto scroll-smooth w-full">
+              <section className="flex-1 min-h-0 min-w-0 h-full flex flex-col bg-[var(--bg-main)] overflow-hidden">
+                <div ref={previewRef} className="flex-1 min-h-0 min-w-0 p-4 sm:p-6 md:p-8 overflow-y-auto overflow-x-hidden overscroll-contain max-w-full lg:max-w-4xl lg:mx-auto scroll-smooth w-full">
                   <MarkdownRenderer content={displayContent} onToggleTask={handleToggleTask} />
                 </div>
               </section>

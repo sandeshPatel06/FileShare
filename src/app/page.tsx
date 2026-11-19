@@ -87,7 +87,7 @@ export default function Home() {
         "name": "What is the file size upload limit?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "You can upload files up to 500 MB each. FileShare supports multi-file uploads including videos, zip archives, images, PDFs, and code repositories with streaming cloud storage backing."
+          "text": "You can upload files up to 500 MB each. FileShare supports multi-file uploads including videos, zip archives, images, PDFs, and code files."
         }
       },
       {
@@ -95,7 +95,7 @@ export default function Home() {
         "name": "How does real-time synchronization work?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "FileShare utilizes Server-Sent Events (SSE) to broadcast changes across all connected clients in milliseconds. Edits and file uploads show up automatically without any page refresh needed."
+          "text": "FileShare uses instant live sync so changes appear across all connected browsers in milliseconds. When anyone edits notes or uploads a file, it shows up automatically without refreshing."
         }
       },
       {
@@ -103,7 +103,7 @@ export default function Home() {
         "name": "Can I protect my workspace with a password?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes! Click the \"Lock Space\" button inside any workspace to set a password. Passwords are securely hashed with bcrypt (12 rounds) and access is verified via JWT tokens."
+          "text": "Yes. Click Lock Space in the top bar to set a password. Anyone visiting the link will need to enter your password to view or edit notes and files."
         }
       },
       {
@@ -111,7 +111,7 @@ export default function Home() {
         "name": "How do I open my workspace on mobile devices?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Click the QR code button in the top navigation bar of your workspace to generate a high-resolution QR code. Scan it with your phone's camera to immediately continue editing on mobile."
+          "text": "Click the QR code button in the top bar. Scan it with your phone's camera to instantly open and edit your workspace on mobile."
         }
       },
       {
@@ -119,7 +119,7 @@ export default function Home() {
         "name": "How is FileShare different from Pastebin, Google Drive, or WeTransfer?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Unlike Pastebin, FileShare offers real-time live typing synchronization, rich Markdown formatting, Mermaid diagram rendering, and 500MB multi-file uploads. Unlike Google Drive or WeTransfer, FileShare requires zero registration, no recipient email addresses, and creates instant workspaces accessible by custom URL slug or QR code."
+          "text": "Unlike Pastebin, FileShare syncs your typing live, renders rich Markdown diagrams, and supports 500MB file uploads. Unlike Google Drive or WeTransfer, there is no account to create, no email addresses needed, and workspaces open instantly with a link."
         }
       },
       {
@@ -127,7 +127,7 @@ export default function Home() {
         "name": "Can I write Markdown and render Mermaid diagrams?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes! FileShare natively parses GitHub Flavored Markdown (headings, task lists, code blocks with syntax highlighting) and automatically renders Mermaid sequence, flowchart, and class diagrams inline with live synchronization."
+          "text": "Yes. FileShare supports GitHub Flavored Markdown (headings, task lists, tables, syntax-highlighted code blocks) and renders Mermaid flowcharts and diagrams automatically in real time."
         }
       }
     ]
@@ -162,7 +162,7 @@ export default function Home() {
         "@type": "HowToStep",
         "position": 4,
         "name": "Share or lock your space",
-        "text": "Share the URL, scan the dynamic QR code on mobile devices, or set a bcrypt password lock for confidential collaboration."
+        "text": "Share the URL, scan the QR code on your phone, or add a password lock for private collaboration."
       }
     ]
   };

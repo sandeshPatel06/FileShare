@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { FileText, CheckCircle2, AlertTriangle, ShieldAlert, Scale, Globe, Building2 } from "lucide-react";
+import { FileText, CheckCircle2, AlertTriangle, ShieldAlert, Scale, Globe, Building2, HardDrive, Shield } from "lucide-react";
 import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 
 const appUrl = getAppUrl();
@@ -59,7 +59,7 @@ export default function TermsPage() {
         <div className="mb-8 border-b border-[var(--border-color)] pb-6">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] mb-3">
             <Scale className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
-            <span>Legal Framework &amp; Intermediary Guidelines</span>
+            <span>Plain-Language Terms &amp; Intermediary Guidelines</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
             Terms &amp; Conditions of Service
@@ -77,87 +77,90 @@ export default function TermsPage() {
               1. Acceptance of Terms &amp; Entity Information
             </h2>
             <p className="text-[var(--text-muted)]">
-              These Terms and Conditions (&quot;Terms&quot;) constitute a legally binding agreement between you (&quot;User&quot;, &quot;you&quot;) and <strong>SHP Technology</strong> (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;), the owner and operator of the FileShare web platform at <code className="font-mono text-xs break-all">{appUrl}</code>.
+              Welcome to FileShare. FileShare is a free, zero-registration notepad and file sharing tool. By opening this site, creating or viewing a workspace, or uploading files, you agree to these Terms and Conditions (&quot;Terms&quot;), our Privacy Policy, and our Cookie Policy. If you do not agree, please do not use the service. You never need an account or email to use FileShare.
             </p>
             <div className="p-4 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs font-mono space-y-1">
               <div><strong>Operating Entity:</strong> SHP Technology</div>
               <div><strong>Operator:</strong> Sandesh Patel</div>
               <div><strong>Registered Office:</strong> 1st floor, SHP Technology, Near Underground Bridge, Madan Mahal Station, Jabalpur, Madhya Pradesh 482001, India</div>
               <div><strong>Contact Email:</strong> sandeshpatel.sp.93@gmail.com</div>
+              <div><strong>Platform URL:</strong> <code className="font-mono text-xs break-all">{appUrl}</code></div>
             </div>
-            <p className="text-[var(--text-muted)]">
-              By accessing, creating, editing, uploading to, or viewing any workspace on FileShare, you explicitly agree to comply with and be bound by these Terms, our Privacy Policy, Cookie Policy, and Refund Policy. If you disagree with any portion of these agreements, you must cease using the Service immediately.
-            </p>
           </section>
 
-          {/* Section 2: Intermediary Status (India IT Act Section 79) */}
+          {/* Section 2: Platform Role & Intermediary Status */}
           <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
               <Globe className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
-              2. Intermediary Status under the Indian IT Act, 2000
+              2. Our Role as a Platform (You own what you write and upload; we provide the tool)
             </h2>
             <p className="text-[var(--text-muted)]">
-              FileShare functions strictly as an <strong>&quot;Intermediary&quot;</strong> as defined under Section 2(1)(w) of the <strong>Indian Information Technology Act, 2000 (IT Act)</strong> and complies with the <strong>Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021</strong>.
+              FileShare operates as an <strong>Intermediary</strong> under Section 2(1)(w) of the <strong>Indian Information Technology Act, 2000</strong> and the <strong>Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021</strong>.
             </p>
             <p className="text-[var(--text-muted)]">
-              In accordance with Section 79 of the IT Act, SHP Technology does not initiate the transmission, select the receiver of the transmission, or modify the contents contained in user workspaces. All notes, Markdown documents, diagrams, and files are user-generated, hosted ephemerally at the request of users.
+              Under Section 79 safe harbor provisions, here is what that means in plain English:
             </p>
+            <ul className="list-disc pl-5 space-y-1 text-xs sm:text-sm text-[var(--text-muted)]">
+              <li><strong>You own your content:</strong> You keep full ownership of all notes, markdown documents, and files you create or upload.</li>
+              <li><strong>We provide the tool:</strong> We do not review, endorse, edit, or curate your content, and we do not choose who receives your workspace links.</li>
+              <li><strong>You are responsible:</strong> Because you choose what to write and upload, you are solely responsible for what you share.</li>
+            </ul>
           </section>
 
-          {/* Section 3: Acceptable Use Policy & Content Restrictions (Rule 3[1][b]) */}
+          {/* Section 3: Acceptable Use Policy */}
           <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-4">
             <div className="flex items-center gap-2 text-lg font-bold text-[var(--text-main)]">
               <AlertTriangle className="w-5 h-5 shrink-0 text-[var(--status-danger-text)]" />
-              3. Acceptable Use Policy (Mandatory Statutory Prohibitions)
+              3. Clear Rules for Acceptable Use
             </div>
             <p className="text-[var(--text-muted)]">
-              Under Rule 3(1)(b) of the Information Technology (Intermediary Guidelines) Rules, 2021 and international law, you agree that you shall <strong>NOT</strong> host, display, upload, modify, publish, transmit, store, or share any information that:
+              To keep FileShare safe and legal for everyone (and in compliance with Rule 3(1)(b) of the IT Intermediary Rules, 2021), you agree <strong>NOT</strong> to upload, paste, store, or share any content that falls into these categories:
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div className="p-3.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] space-y-1">
-                <div className="font-bold text-[var(--status-danger-text)]">Malware &amp; Software Exploits</div>
+                <div className="font-bold text-[var(--status-danger-text)]">Malware &amp; Exploits</div>
                 <p className="text-[var(--text-muted)]">
-                  Contains software viruses, trojans, ransomware, spyware, keyloggers, botnets, or any computer code designed to interrupt, destroy, or limit the functionality of any computer resource.
+                  Viruses, trojans, ransomware, spyware, keyloggers, or any software designed to hack, harm, or disrupt computers, devices, or networks.
                 </p>
               </div>
 
               <div className="p-3.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] space-y-1">
-                <div className="font-bold text-[var(--status-danger-text)]">Copyright &amp; IP Infringement</div>
+                <div className="font-bold text-[var(--status-danger-text)]">Copyright &amp; Piracy</div>
                 <p className="text-[var(--text-muted)]">
-                  Infringes any patent, trademark, copyright, trade secret, or other proprietary rights of third parties without explicit authorization.
+                  Files, books, music, movies, or proprietary software that you do not own or have written legal permission to distribute.
                 </p>
               </div>
 
               <div className="p-3.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] space-y-1">
-                <div className="font-bold text-[var(--status-danger-text)]">Child Harm &amp; Exploitation (CSAM)</div>
+                <div className="font-bold text-[var(--status-danger-text)]">Child Harm (CSAM) — Zero Tolerance</div>
                 <p className="text-[var(--text-muted)]">
-                  Is harmful to child welfare, depicts child sexual abuse or exploitation. We maintain a zero-tolerance policy and report incidents directly to law enforcement authorities.
+                  Any child sexual abuse material, child exploitation, or content endangering minors. We enforce zero tolerance and report violations to law enforcement immediately.
                 </p>
               </div>
 
               <div className="p-3.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] space-y-1">
-                <div className="font-bold text-[var(--status-danger-text)]">Fraud, Phishing &amp; Impersonation</div>
+                <div className="font-bold text-[var(--status-danger-text)]">Phishing &amp; Scams</div>
                 <p className="text-[var(--text-muted)]">
-                  Deceives or misleads the addressee about the origin of messages, impersonates another person, or spreads financial scams and credential phishing traps.
+                  Fake login pages, credential harvesting, financial fraud, impersonating people or brands, or misleading links.
                 </p>
               </div>
 
               <div className="p-3.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] space-y-1">
-                <div className="font-bold text-[var(--status-danger-text)]">Threats to Sovereignty &amp; Security</div>
+                <div className="font-bold text-[var(--status-danger-text)]">National Security &amp; Violence</div>
                 <p className="text-[var(--text-muted)]">
-                  Threatens the unity, integrity, defense, security, or sovereignty of India, friendly relations with foreign States, or public order, or incites violence.
+                  Material that threatens the sovereignty, defense, or integrity of India or friendly nations, incites violence, or disrupts public order.
                 </p>
               </div>
 
               <div className="p-3.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] space-y-1">
-                <div className="font-bold text-[var(--status-danger-text)]">Defamation &amp; Invasive Content</div>
+                <div className="font-bold text-[var(--status-danger-text)]">Abuse &amp; Doxxing</div>
                 <p className="text-[var(--text-muted)]">
-                  Is defamatory, obscene, pornographic, pedophilic, invasive of another&apos;s privacy, bodily privacy, or encouraging gambling, hate speech, or harassment.
+                  Hate speech, defamation, non-consensual intimate imagery, harassment, or publishing someone else&apos;s private personal data without consent.
                 </p>
               </div>
             </div>
-            <p className="text-xs text-[var(--text-muted)] italic">
-              SHP Technology reserves the right to terminate access, take down violating workspaces and files immediately, and block offending IP addresses upon receiving actual knowledge or statutory notice.
+            <p className="text-xs text-[var(--text-muted)]">
+              SHP Technology reserves the right to immediately take down violating files, delete workspaces, and block abusive IP addresses upon discovery or notice.
             </p>
           </section>
 
@@ -165,51 +168,66 @@ export default function TermsPage() {
           <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
               <ShieldAlert className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
-              4. Notice, Takedown &amp; Grievance Redressal (24-36h SLA)
+              4. Notice, Takedown &amp; Grievance Redressal (24–36h SLA)
             </h2>
             <p className="text-[var(--text-muted)]">
-              Under Rule 3(1)(d) of the IT Intermediary Rules, 2021 and international DMCA provisions, upon receiving actual knowledge in the form of an order by a court of competent jurisdiction, or on being notified by the appropriate government or its agency, or on receiving a verifiable grievance from an affected individual:
+              If you discover unlawful material, copyright infringement, or a violation of your legal rights on FileShare, send an email to our Grievance Officer with the exact workspace link and a short description:
             </p>
-            <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-[var(--text-muted)]">
-              <li>We will act within <strong>twenty-four to thirty-six hours</strong> to disable access to unlawful or infringing material.</li>
-              <li>Takedown notices and copyright infringement complaints should be directed to our designated Grievance Officer:</li>
-            </ul>
             <div className="p-3.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs font-mono space-y-1 break-all">
               <div><strong>Grievance &amp; Abuse Officer:</strong> Sandesh Patel</div>
               <div><strong>Email:</strong> sandeshpatel.sp.93@gmail.com</div>
               <div><strong>Address:</strong> 1st floor, SHP Technology, Near Underground Bridge, Madan Mahal Station, Jabalpur, Madhya Pradesh 482001, India</div>
             </div>
+            <p className="text-xs sm:text-sm text-[var(--text-muted)]">
+              Under Rule 3(1)(d) of the IT Intermediary Rules, 2021, we act within <strong>24 to 36 hours</strong> to remove or disable access to verified unlawful or infringing content upon receiving a valid report or court/government order.
+            </p>
           </section>
 
-          {/* Section 5: Ephemeral Nature and Storage Caps */}
+          {/* Section 5: Storage Caps & Ephemeral Nature */}
           <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
-            <h2 className="text-lg font-bold text-[var(--text-main)]">5. Ephemeral Architecture &amp; Service Limits</h2>
+            <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
+              <HardDrive className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
+              5. Storage Limits &amp; Temporary Workspaces
+            </h2>
             <p className="text-[var(--text-muted)]">
-              FileShare enforces an individual upload cap of <strong>500 MB per file</strong>. Workspaces and file vaults are engineered for agile, collaborative, and temporary usage.
+              FileShare is designed for quick collaboration, live Markdown editing, and fast file sharing—not permanent cloud storage or long-term archiving.
             </p>
-            <p className="text-[var(--text-muted)]">
-              FileShare is <strong>not an archival backup solution</strong>. We reserve the right to delete unreferenced or inactive workspaces following extended dormancy (30 to 90 days) to preserve system integrity and storage bandwidth. You are solely responsible for keeping permanent local backups of mission-critical notes and media.
-            </p>
+            <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm text-[var(--text-muted)]">
+              <li><strong>500 MB per file limit:</strong> You can upload individual files up to 500 MB. Larger files are rejected automatically.</li>
+              <li><strong>Temporary workspaces:</strong> Workspaces and uploaded files that remain inactive (typically untouched for 30 to 90 days) may be automatically deleted to free up server resources.</li>
+              <li><strong>Keep your own backups:</strong> Please save copies of important notes and files on your own device. We cannot recover deleted or expired workspaces.</li>
+            </ul>
           </section>
 
           {/* Section 6: Disclaimers and Limitation of Liability */}
           <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
-            <h2 className="text-lg font-bold text-[var(--text-main)]">6. Disclaimers of Warranties &amp; Limitation of Liability</h2>
-            <div className="p-4 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs space-y-2 text-[var(--text-muted)] leading-relaxed uppercase">
+            <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
+              <Shield className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
+              6. Service Provided As-Is (No Warranties &amp; Limitation of Liability)
+            </h2>
+            <p className="text-[var(--text-muted)]">
+              FileShare is provided completely free of charge on an <strong>&quot;as is&quot;</strong> and <strong>&quot;as available&quot;</strong> basis, without warranties of any kind.
+            </p>
+            <div className="p-4 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs space-y-2 text-[var(--text-muted)] leading-relaxed">
               <p>
-                THE SERVICE IS PROVIDED ON AN &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; BASIS. SHP TECHNOLOGY AND ITS OPERATORS EXPRESSLY DISCLAIM ALL WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT.
+                <strong>No uptime guarantees:</strong> While we aim for high reliability, we do not promise that FileShare will always be online, uninterrupted, bug-free, or secure against unauthorized attacks.
               </p>
               <p>
-                IN NO EVENT SHALL SHP TECHNOLOGY, ITS AFFILIATES, OFFICERS, OR DEVELOPERS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR EXEMPLARY DAMAGES (INCLUDING DAMAGES FOR LOSS OF PROFITS, DATA, USE, GOODWILL, OR BUSINESS INTERRUPTION) ARISING OUT OF OR IN CONNECTION WITH YOUR USE OR INABILITY TO USE THE SERVICE.
+                <strong>Limitation of liability:</strong> To the maximum extent allowed by law, SHP Technology, Sandesh Patel, and contributors are not liable for any lost data, lost profits, business interruption, or damages resulting from using or being unable to use FileShare.
               </p>
             </div>
           </section>
 
-          {/* Section 7: Indemnification */}
+          {/* Section 7: User Responsibility */}
           <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
-            <h2 className="text-lg font-bold text-[var(--text-main)]">7. User Indemnification</h2>
+            <h2 className="text-lg font-bold text-[var(--text-main)]">
+              7. User Responsibility
+            </h2>
             <p className="text-[var(--text-muted)]">
-              You agree to defend, indemnify, and hold harmless SHP Technology, Sandesh Patel, and associated contributors from and against any claims, liabilities, damages, losses, and expenses (including reasonable legal and accounting fees) arising out of or in any way connected with your violation of these Terms, your upload of unauthorized content, or your infringement of any intellectual property or privacy rights of any third party.
+              You are entirely responsible for the text you write, files you upload, and how you share your workspace links and optional passwords.
+            </p>
+            <p className="text-[var(--text-muted)]">
+              If someone brings a legal claim, dispute, or demand against SHP Technology or Sandesh Patel because of content you uploaded, laws you broke, or your misuse of FileShare, you agree to take full responsibility and cover any resulting damages, losses, and reasonable legal expenses.
             </p>
           </section>
 
@@ -217,13 +235,13 @@ export default function TermsPage() {
           <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
               <Building2 className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
-              8. Governing Law &amp; Exclusive Jurisdiction
+              8. Governing Law &amp; Jurisdiction
             </h2>
             <p className="text-[var(--text-muted)]">
-              These Terms and your use of FileShare shall be governed by and construed in accordance with the laws of the Republic of India, without giving effect to any principles of conflict of laws.
+              These Terms and your use of FileShare are governed by the laws of India.
             </p>
             <p className="text-[var(--text-muted)]">
-              Any dispute, controversy, or claim arising out of or relating to these Terms or the breach, termination, or invalidity thereof shall be subject to the <strong>exclusive jurisdiction of the courts of competent jurisdiction located in Jabalpur, Madhya Pradesh, India</strong>.
+              Any dispute or legal claim arising from FileShare or these Terms shall be handled exclusively by the competent courts in <strong>Jabalpur, Madhya Pradesh, India</strong>.
             </p>
           </section>
         </div>

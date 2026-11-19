@@ -46,7 +46,11 @@ if (hasPg) {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { Pool } = require("pg");
-    const connectionString = process.env.DATABASE_URL || "";
+    let connectionString = process.env.DATABASE_URL || "";
+    if (connectionString.includes("sslmode=") && !connectionString.includes("uselibpqcompat")) {
+      const sep = connectionString.includes("?") ? "&" : "?";
+      connectionString = `${connectionString}${sep}uselibpqcompat=true`;
+    }
     const isLocal = connectionString?.includes("localhost") || connectionString?.includes("127.0.0.1");
     pgPool = new Pool({
       connectionString,

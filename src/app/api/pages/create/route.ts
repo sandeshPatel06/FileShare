@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import db from "@/lib/db";
 import { createPageSchema, slugSchema } from "@/lib/validators";
 import { rateLimit } from "@/lib/rateLimiter";
+import { generateSlug } from "@/lib/slugGenerator";
 
 // POST /api/pages/create
 export async function POST(req: NextRequest) {
@@ -43,9 +44,33 @@ export async function POST(req: NextRequest) {
 }
 
 // GET /api/pages/create?slug=xyz — check availability
+// GET /api/pages/create?new=true[&prefix=notes] — generate guaranteed fresh/unused slug
 export async function GET(req: NextRequest) {
   const limited = await rateLimit(req, "general");
   if (limited) return limited;
+
+  const isNew = req.nextUrl.searchParams.get("new") === "true" || req.nextUrl.searchParams.get("random") === "true";
+  if (isNew) {
+    const rawPrefix = req.nextUrl.searchParams.get("prefix") ?? "";
+    const cleanPrefix = rawPrefix.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 16);
+
+    try {
+      for (let attempts = 0; attempts < 15; attempts++) {
+        const baseSlug = generateSlug();
+        const candidate = cleanPrefix ? `${cleanPrefix}-${baseSlug}` : baseSlug;
+        const existing = await db.prepare("SELECT 1 FROM pages WHERE slug = ?").get(candidate);
+        if (!existing) {
+          return NextResponse.json({ slug: candidate, available: true });
+        }
+      }
+      const uniqueSuffix = Math.floor(Math.random() * 9000 + 1000);
+      const fallback = cleanPrefix ? `${cleanPrefix}-${generateSlug()}-${uniqueSuffix}` : `${generateSlug()}-${uniqueSuffix}`;
+      return NextResponse.json({ slug: fallback, available: true });
+    } catch {
+      const fallback = cleanPrefix ? `${cleanPrefix}-${generateSlug()}` : generateSlug();
+      return NextResponse.json({ slug: fallback, available: true });
+    }
+  }
 
   const slug = req.nextUrl.searchParams.get("slug") ?? "";
   const parsed = slugSchema.safeParse(slug);

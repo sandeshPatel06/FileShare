@@ -25,8 +25,8 @@ import { ADSENSE_SLOTS } from "@/lib/ads";
 const appUrl = getAppUrl();
 
 export const metadata: Metadata = {
-  title: "User Guide & Documentation",
-  description: "Comprehensive manual and knowledge base for FileShare. Master real-time Markdown notes, AI formatting, Mermaid diagrams, file vaults, and cryptographic security.",
+  title: "User Guide & Documentation — FileShare",
+  description: "Learn how to use FileShare: real-time notes, one-click formatting, simple diagrams, file sharing up to 500 MB, and password protection without creating an account.",
   keywords: [
     "FileShare user guide",
     "FileShare documentation",
@@ -35,14 +35,14 @@ export const metadata: Metadata = {
     "how to use online notepad without login",
     "mermaid diagrams tutorial",
     "file vault manual",
-    "ephemeral workspace guide",
+    "private temporary workspace guide",
   ],
   alternates: {
     canonical: `${appUrl}/guide`,
   },
   openGraph: {
     title: "User Guide & Documentation — FileShare",
-    description: "Master real-time Markdown notes, Mermaid diagrams, file vaults, and cryptographic security on FileShare.",
+    description: "Learn how to use FileShare: real-time notes, one-click formatting, simple diagrams, file sharing up to 500 MB, and password protection without creating an account.",
     url: `${appUrl}/guide`,
     siteName: "FileShare",
     locale: "en_US",
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     site: "@SandeshPat007",
     creator: "@SandeshPat007",
     title: "User Guide & Documentation — FileShare",
-    description: "Master real-time Markdown notes, Mermaid diagrams, file vaults, and cryptographic security on FileShare.",
+    description: "Learn how to use FileShare: real-time notes, one-click formatting, simple diagrams, file sharing up to 500 MB, and password protection without creating an account.",
     images: [`${appUrl}/og-image.png`],
   },
 };
@@ -75,7 +75,7 @@ export default function GuidePage() {
         "name": "How long are files and notes stored on FileShare?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "FileShare is designed as an agile, ephemeral collaboration workspace. Files and active notes remain available while the space is active. To protect storage resources and user privacy, inactive workspaces may be subject to ephemeral lifecycle pruning after 30 days of inactivity. Always export mission-critical documents to permanent git or local archives."
+          "text": "Workspaces stay active as long as you use them. Spaces inactive for more than 30 days may be cleaned up automatically to free storage. Always export important notes or files to your own device if you need to keep them permanently."
         }
       },
       {
@@ -83,15 +83,15 @@ export default function GuidePage() {
         "name": "What happens if two people edit the same workspace simultaneously?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Our Server-Sent Events engine pushes debounced text updates in near real-time. To prevent collisions, we recommend working under distinct Markdown headers when multiple team members are typing concurrently."
+          "text": "Edits sync in real time across all open tabs. If multiple people are writing at once, we recommend editing under different headings to avoid overwriting each other's changes."
         }
       },
       {
         "@type": "Question",
-        "name": "Can I rename my workspace slug?",
+        "name": "Can I rename my workspace link?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes! If you are the workspace administrator (or the space is unlocked), click the workspace name in the header to trigger the rename dialog. Our database enforces ON UPDATE CASCADE referential integrity, ensuring all uploaded files stay linked to the new workspace name seamlessly."
+          "text": "Yes. Click the workspace name in the header to rename it. Any files you already uploaded will automatically stay linked to the new workspace name."
         }
       },
       {
@@ -99,7 +99,7 @@ export default function GuidePage() {
         "name": "Are there any file type restrictions?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "FileShare accepts virtually all standard media, archive, and code formats including ZIP, TAR, PDF, PNG, JPG, MP4, MP3, TXT, JSON, CSV, and code files. However, our Acceptable Use Policy strictly forbids malicious executables, ransomware, phishing scripts, and illegal material. Violating content is permanently deleted upon detection."
+          "text": "You can upload almost any standard file up to 500 MB, including PDFs, images, videos, audio, and ZIP archives. Malware, illegal material, and harmful scripts are strictly prohibited."
         }
       }
     ]
@@ -109,8 +109,8 @@ export default function GuidePage() {
     "@context": "https://schema.org",
     "@type": "HowTo",
     "@id": `${appUrl}/guide#howto`,
-    "name": "How to Use FileShare Real-Time Workspace, Markdown Editor, and File Vault",
-    "description": "Step-by-step instructions for creating ephemeral workspaces, collaborating in real time, rendering Mermaid diagrams, using the AI formatting copilot, and uploading files up to 500MB on FileShare.",
+    "name": "How to Use FileShare: Fast Notes and Easy File Sharing",
+    "description": "Simple step-by-step instructions for creating a workspace, taking notes, sharing files up to 500MB, and protecting your work on FileShare.",
     "url": `${appUrl}/guide`,
     "image": `${appUrl}/logo.png`,
     "totalTime": "PT5M",
@@ -118,36 +118,36 @@ export default function GuidePage() {
       {
         "@type": "HowToStep",
         "position": 1,
-        "name": "Create or Navigate to a Workspace Slug",
-        "text": "Open FileShare and choose a custom workspace slug under /s/[slug] or click 'New Space' for a cryptographically randomized name. The space is provisioned atomically on first visit.",
+        "name": "Create or Open a Workspace",
+        "text": "Go to FileShare and click 'New Space' or type any address like /s/my-notes in your browser. The space opens instantly with no login or sign-up needed.",
         "url": `${appUrl}/guide#section-1`
       },
       {
         "@type": "HowToStep",
         "position": 2,
-        "name": "Write and Format Live Markdown",
-        "text": "Type in the split-view editor using standard GitHub Flavored Markdown (GFM). Use Cmd/Ctrl+Shift+F to trigger the AI Copilot formatter to clean headings, lists, and line breaks without disturbing code blocks.",
+        "name": "Write Notes and Make Lists",
+        "text": "Type in the editor on the left using simple Markdown. The right side shows a clean live preview with clickable to-do checkboxes.",
         "url": `${appUrl}/guide#section-2`
       },
       {
         "@type": "HowToStep",
         "position": 3,
-        "name": "Render Declarative Mermaid Diagrams",
-        "text": "Add ```mermaid fenced code blocks to create flowcharts, sequence diagrams, and architecture maps that compile dynamically to SVG in the live preview.",
+        "name": "Draw Simple Visual Diagrams",
+        "text": "Add ```mermaid code blocks to turn simple text lists into clean flowcharts and diagrams automatically.",
         "url": `${appUrl}/guide#section-4`
       },
       {
         "@type": "HowToStep",
         "position": 4,
-        "name": "Upload and Manage Files in the Vault",
-        "text": "Drag and drop archives, documents, images, or media up to 500MB into the File Vault. Files are backed by cloud storage with streaming downloads and inline media previews.",
+        "name": "Upload Files and Photos",
+        "text": "Drag and drop any files, photos, or documents up to 500MB into the file vault. Preview pictures and play audio or video right in your browser.",
         "url": `${appUrl}/guide#section-6`
       },
       {
         "@type": "HowToStep",
         "position": 5,
-        "name": "Lock Workspace and Share via QR Code",
-        "text": "Optionally set a bcrypt passphrase lock to restrict access to authenticated JWT sessions, or click the QR code icon to instantly open the space on mobile devices.",
+        "name": "Lock with a Password and Open on Your Phone",
+        "text": "Set a quick password to keep your notes private, or click the QR code icon to scan and open your workspace on your phone instantly.",
         "url": `${appUrl}/guide#section-7`
       }
     ]
@@ -167,7 +167,7 @@ export default function GuidePage() {
       {
         "@type": "ListItem",
         "position": 2,
-        "name": "Documentation & User Guide",
+        "name": "User Guide",
         "item": `${appUrl}/guide`
       }
     ]
@@ -187,7 +187,7 @@ export default function GuidePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
-      {/* Conditionally load AdSense on this comprehensive publisher guide */}
+      {/* Conditionally load AdSense on this guide */}
       <AdSenseScript />
 
       {/* Header */}
@@ -213,20 +213,18 @@ export default function GuidePage() {
         <div className="mb-10 border-b border-[var(--border-color)] pb-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] mb-3">
             <BookOpen className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
-            <span>Official Knowledge Base & Platform Manual</span>
+            <span>User Guide</span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-bold tracking-tight mb-4">
-            FileShare Complete User Guide
+            How to Use FileShare
           </h1>
           <p className="max-w-3xl text-sm sm:text-base text-[var(--text-muted)] leading-relaxed">
-            Welcome to the definitive documentation for FileShare. This guide provides an in-depth walkthrough of our real-time collaborative Markdown editor, AI formatting copilot, cloud file vault architecture, access security, and workflow automation.
+            A simple, step-by-step guide to writing notes, sharing files up to 500&nbsp;MB, and working together in real time—no account or sign-up needed.
           </p>
           <div className="mt-4 flex flex-wrap gap-4 text-xs font-mono text-[var(--text-subtle)]">
-            <span>Version: 2.4.0 (2026 Edition)</span>
+            <span>Updated 2026</span>
             <span className="hidden sm:inline">•</span>
-            <span>Reading Time: ~12 minutes</span>
-            <span className="hidden sm:inline">•</span>
-            <span>Word Count: ~2,100 words</span>
+            <span>~4 min read</span>
           </div>
         </div>
 
@@ -237,15 +235,15 @@ export default function GuidePage() {
             Table of Contents
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-xs text-[var(--text-muted)]">
-            <a href="#section-1" className="hover:text-[var(--text-main)] hover:underline">1. Workspace Architecture & Slugs</a>
-            <a href="#section-2" className="hover:text-[var(--text-main)] hover:underline">2. Markdown Syntax & Rich Text</a>
-            <a href="#section-3" className="hover:text-[var(--text-main)] hover:underline">3. AI Copilot Formatting Engine</a>
-            <a href="#section-4" className="hover:text-[var(--text-main)] hover:underline">4. Declarative Mermaid Diagrams</a>
-            <a href="#section-5" className="hover:text-[var(--text-main)] hover:underline">5. Real-Time Sync (SSE)</a>
-            <a href="#section-6" className="hover:text-[var(--text-main)] hover:underline">6. High-Performance File Vault</a>
-            <a href="#section-7" className="hover:text-[var(--text-main)] hover:underline">7. Security & Passphrase Gates</a>
-            <a href="#section-8" className="hover:text-[var(--text-main)] hover:underline">8. Cross-Device QR Mobility</a>
-            <a href="#section-9" className="hover:text-[var(--text-main)] hover:underline">9. Keyboard Shortcuts & Reference</a>
+            <a href="#section-1" className="hover:text-[var(--text-main)] hover:underline">1. Create or Open a Space</a>
+            <a href="#section-2" className="hover:text-[var(--text-main)] hover:underline">2. Write Notes &amp; To-Do Lists</a>
+            <a href="#section-3" className="hover:text-[var(--text-main)] hover:underline">3. Tidy Notes in One Click</a>
+            <a href="#section-4" className="hover:text-[var(--text-main)] hover:underline">4. Draw Simple Diagrams</a>
+            <a href="#section-5" className="hover:text-[var(--text-main)] hover:underline">5. Work Together in Real Time</a>
+            <a href="#section-6" className="hover:text-[var(--text-main)] hover:underline">6. Share Files (Up to 500 MB)</a>
+            <a href="#section-7" className="hover:text-[var(--text-main)] hover:underline">7. Protect with a Password</a>
+            <a href="#section-8" className="hover:text-[var(--text-main)] hover:underline">8. Open on Phone via QR Code</a>
+            <a href="#section-9" className="hover:text-[var(--text-main)] hover:underline">9. Keyboard Shortcuts</a>
             <a href="#section-10" className="hover:text-[var(--text-main)] hover:underline">10. Frequently Asked Questions</a>
           </div>
         </nav>
@@ -257,28 +255,28 @@ export default function GuidePage() {
               1
             </div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)] min-w-0">
-              Workspace Architecture & URL Slug Topology
+              Create or Open a Space
             </h2>
           </div>
           <p className="text-sm leading-relaxed text-[var(--text-muted)]">
-            Every workspace on FileShare is bound to a unique, human-readable URL slug under the <code className="px-1.5 py-0.5 rounded bg-[var(--bg-surface)] font-mono text-xs text-[var(--accent-primary)]">/s/[slug]</code> namespace. Unlike traditional SaaS applications that mandate account creation, password verification emails, and team workspace onboarding workflows, FileShare instantiates workspaces dynamically on first request.
+            Every space on FileShare has its own web address starting with <code className="px-1.5 py-0.5 rounded bg-[var(--bg-surface)] font-mono text-xs text-[var(--accent-primary)]">/s/[name]</code>. You never have to create an account, remember a username, or check your email. Just open a link and start writing immediately.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
             <div className="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)]">
-              <h3 className="font-semibold text-sm mb-1 text-[var(--text-main)]">Custom Workspace Names</h3>
+              <h3 className="font-semibold text-sm mb-1 text-[var(--text-main)]">Pick Your Own Name</h3>
               <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                You can select any descriptive alphanumeric slug, such as <code className="font-mono text-[var(--accent-primary)]">/s/q4-sprint-planning</code> or <code className="font-mono text-[var(--accent-primary)]">/s/mobile-app-bugs</code>. Workspace slugs accept lowercase letters, numbers, and hyphens (up to 48 characters).
+                Choose any easy-to-remember name you want, like <code className="font-mono text-[var(--accent-primary)]">/s/class-notes</code> or <code className="font-mono text-[var(--accent-primary)]">/s/project-ideas</code>. You can use lowercase letters, numbers, and dashes (up to 48 characters).
               </p>
             </div>
             <div className="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)]">
-              <h3 className="font-semibold text-sm mb-1 text-[var(--text-main)]">Cryptographic Auto-Generated Slugs</h3>
+              <h3 className="font-semibold text-sm mb-1 text-[var(--text-main)]">Get a Random Private Name</h3>
               <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                Clicking &quot;New Space&quot; on the home page produces a cryptographically randomized slug (e.g., <code className="font-mono text-[var(--accent-primary)]">/s/swift-falcon-7492</code>). This provides non-guessability for sensitive pairing sessions or confidential document handoffs.
+                Click <strong>&quot;New Space&quot;</strong> on the home page to get a randomly generated name (like <code className="font-mono text-[var(--accent-primary)]">/s/swift-falcon-7492</code>). Random names are hard for strangers to guess, making them great for private notes or quick file transfers.
               </p>
             </div>
           </div>
           <p className="text-sm leading-relaxed text-[var(--text-muted)]">
-            <strong>Defensive Provisioning:</strong> When a user navigates to an uninitialized slug, our database layer executes an atomic <code className="font-mono text-xs">INSERT OR IGNORE</code> transaction. The workspace is provisioned immediately with zero latency, ready to accept edits and file uploads.
+            Whenever you or a friend open a new workspace link, FileShare creates it automatically. If it already exists, your saved notes and files load right away.
           </p>
         </section>
 
@@ -289,33 +287,33 @@ export default function GuidePage() {
               2
             </div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)] min-w-0">
-              Markdown Syntax & Rich Text Capabilities
+              Write Notes &amp; To-Do Lists
             </h2>
           </div>
           <p className="text-sm leading-relaxed text-[var(--text-muted)]">
-            FileShare features a split-view editor supporting the full GitHub Flavored Markdown (GFM) specification. The left pane provides an ultra-low latency code textarea, while the right pane renders formatted HTML with syntax highlighting and live interactive widgets.
+            The screen is split into two panels: type your text on the left, and see your clean formatted notes appear on the right. You can use simple symbols to add headings, bold text, bullet points, and to-do lists.
           </p>
           <div className="bg-[var(--bg-surface)] p-5 rounded-xl border border-[var(--border-color)] space-y-3">
-            <h3 className="font-semibold text-sm text-[var(--text-main)]">Essential Syntax Reference</h3>
+            <h3 className="font-semibold text-sm text-[var(--text-main)]">Quick Formatting Tips</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
               <div className="p-3 rounded bg-[var(--bg-main)] border border-[var(--border-color)]">
-                <div className="text-[var(--accent-primary)] font-bold mb-1">Headers & Typography</div>
-                <div className="text-[var(--text-muted)]"># Large Header (H1)</div>
-                <div className="text-[var(--text-muted)]">## Section Header (H2)</div>
-                <div className="text-[var(--text-muted)]">### Subsection (H3)</div>
-                <div className="text-[var(--text-muted)]">**Bold Text** | *Italic Text*</div>
+                <div className="text-[var(--accent-primary)] font-bold mb-1">Headings &amp; Styles</div>
+                <div className="text-[var(--text-muted)]"># Big Heading</div>
+                <div className="text-[var(--text-muted)]">## Medium Heading</div>
+                <div className="text-[var(--text-muted)]">### Small Heading</div>
+                <div className="text-[var(--text-muted)]">**Bold text** | *Italic text*</div>
               </div>
               <div className="p-3 rounded bg-[var(--bg-main)] border border-[var(--border-color)]">
-                <div className="text-[var(--accent-primary)] font-bold mb-1">Interactive Tasks & Lists</div>
-                <div className="text-[var(--text-muted)]">- [ ] Pending action item</div>
-                <div className="text-[var(--text-muted)]">- [x] Completed task</div>
-                <div className="text-[var(--text-muted)]">1. Ordered list item</div>
-                <div className="text-[var(--text-muted)]">&gt; Blockquote highlight</div>
+                <div className="text-[var(--accent-primary)] font-bold mb-1">Lists &amp; Checkboxes</div>
+                <div className="text-[var(--text-muted)]">- [ ] To-do item</div>
+                <div className="text-[var(--text-muted)]">- [x] Completed item</div>
+                <div className="text-[var(--text-muted)]">1. Numbered list</div>
+                <div className="text-[var(--text-muted)]">&gt; Quote or note</div>
               </div>
             </div>
           </div>
           <p className="text-sm leading-relaxed text-[var(--text-muted)]">
-            <strong>Interactive Checklists:</strong> Unlike static Markdown viewers where checkboxes are read-only, checkboxes in FileShare&apos;s live preview pane can be toggled with a single mouse click. Toggling a task automatically updates the underlying Markdown source code and broadcasts the state change to all connected collaborators.
+            <strong>Interactive Checklists:</strong> You can click any checkbox directly in the preview on the right to check off tasks. Your notes update automatically and the checked box updates on all connected screens right away.
           </p>
         </section>
 
@@ -326,23 +324,22 @@ export default function GuidePage() {
               3
             </div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)] min-w-0">
-              AI Copilot Formatting Engine
+              Tidy Notes in One Click
             </h2>
           </div>
           <p className="text-sm leading-relaxed text-[var(--text-muted)]">
-            During rapid brainstorming sessions or chaotic engineering war rooms, notes often end up with inconsistent indentation, broken bullet lists, uneven heading depths, and excessive empty line breaks. FileShare includes a deterministic AI-powered formatting engine designed specifically for technical Markdown documents.
+            If your notes get messy while typing quickly during a meeting or class, use the built-in one-click cleaner. Just click the magic wand icon or press <kbd className="px-1.5 py-0.5 rounded bg-[var(--bg-surface)] border border-[var(--border-color)] font-mono text-xs">Cmd/Ctrl + Shift + F</kbd> to tidy everything up instantly.
           </p>
           <div className="p-5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-3">
             <div className="flex items-center gap-2 font-semibold text-sm text-[var(--text-main)]">
               <Sparkles className="w-4 h-4 text-[var(--accent-primary)]" />
-              What the AI Copilot Formatter Normalizes:
+              What the Cleaner Tidies Up:
             </div>
             <ul className="list-disc pl-5 space-y-2 text-xs sm:text-sm text-[var(--text-muted)]">
-              <li><strong>Heading Standardization:</strong> Enforces standard ATX formatting (<code className="font-mono"># Heading</code>) with exact space delimiters, correcting malformed headers like <code className="font-mono">##Heading</code>.</li>
-              <li><strong>List Bullet Harmonization:</strong> Converts mixed asterisks (<code className="font-mono">*</code>), pluses (<code className="font-mono">+</code>), and irregular dashes into consistent, clean hyphenated lists (<code className="font-mono">-</code>).</li>
-              <li><strong>Code Block Protection:</strong> Intelligently preserves raw whitespace, tabs, and indentation inside fenced code blocks (<code className="font-mono">```typescript ... ```</code>) while cleaning exterior documentation text.</li>
-              <li><strong>Excessive Line Break Collapse:</strong> Cleans up messy three- or four-line gaps into clean, readable single blank lines.</li>
-              <li><strong>Punctuation & Comma Spacing:</strong> Standardizes English comma and period spacing across sentences for professional document presentation.</li>
+              <li><strong>Headings:</strong> Fixes missing spaces after <code className="font-mono">#</code> symbols (turns <code className="font-mono">##Heading</code> into <code className="font-mono">## Heading</code>).</li>
+              <li><strong>Bullet Lists:</strong> Converts messy asterisks and plus signs into neat, consistent dash bullets (<code className="font-mono">-</code>).</li>
+              <li><strong>Code Snippets:</strong> Keeps your code blocks and spacing intact without altering your text.</li>
+              <li><strong>Extra Spacing:</strong> Removes unnecessary blank lines so your notes look tidy and readable.</li>
             </ul>
           </div>
         </section>
@@ -357,11 +354,11 @@ export default function GuidePage() {
               4
             </div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)] min-w-0">
-              Declarative Technical Diagrams with Mermaid.js
+              Draw Simple Diagrams
             </h2>
           </div>
           <p className="text-sm leading-relaxed text-[var(--text-muted)]">
-            Complex software architectures, user flows, and database schemas are cumbersome to describe with pure prose. FileShare features integrated support for Mermaid.js, compiling declarative text syntax directly into responsive SVG diagrams.
+            You can turn simple text into visual flowcharts and charts right inside your notes—without drawing tools or separate apps. Just type a <code className="font-mono text-xs">```mermaid</code> block, and FileShare renders it as a clean visual graphic in the preview.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
             <div className="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)]">
@@ -372,30 +369,30 @@ export default function GuidePage() {
               <pre className="p-3 rounded bg-[var(--bg-main)] border border-[var(--border-color)] text-[11px] font-mono text-[var(--text-muted)] dark:text-[var(--text-main)] overflow-x-auto">
 {`\`\`\`mermaid
 flowchart TD
-    Client[Web Browser] -->|SSE Stream| Edge[Edge Server]
-    Edge -->|Query| DB[(PostgreSQL)]
-    Client -->|Binary Upload| S3[(Backblaze B2)]
+    Start[Open workspace link] --> Notes[Type notes together]
+    Start --> Files[Drop in photos or files]
+    Notes --> Done[All saved instantly]
+    Files --> Done
 \`\`\``}
               </pre>
             </div>
             <div className="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)]">
               <h3 className="font-semibold text-xs sm:text-sm mb-2 text-[var(--text-main)] flex items-center gap-1.5">
                 <Code2 className="w-4 h-4 text-[var(--accent-primary)]" />
-                Sequence Diagram Example
+                Step-by-Step Sequence Example
               </h3>
               <pre className="p-3 rounded bg-[var(--bg-main)] border border-[var(--border-color)] text-[11px] font-mono text-[var(--text-muted)] dark:text-[var(--text-main)] overflow-x-auto">
 {`\`\`\`mermaid
 sequenceDiagram
-    User->>Gateway: POST /login
-    Gateway->>DB: Verify bcrypt hash
-    DB-->>Gateway: OK (Match)
-    Gateway-->>User: 200 OK + JWT Token
+    You->>Screen: Type a note
+    Screen->>FileShare: Saves automatically
+    FileShare-->>Friend: Appears on their screen
 \`\`\``}
               </pre>
             </div>
           </div>
           <p className="text-sm leading-relaxed text-[var(--text-muted)]">
-            Because diagrams are stored as plain text, they can be edited collaboratively, copied across workspaces, and version-controlled cleanly without dealing with stale PNG or binary drawing files.
+            Because your diagrams are written in plain text, you can edit, copy, or update them in seconds just like regular words.
           </p>
         </section>
 
@@ -406,23 +403,22 @@ sequenceDiagram
               5
             </div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)] min-w-0">
-              Real-Time Synchronization Engine (Server-Sent Events)
+              Work Together in Real Time
             </h2>
           </div>
           <p className="text-sm leading-relaxed text-[var(--text-muted)]">
-            FileShare utilizes a high-efficiency Server-Sent Events (SSE) streaming engine rather than traditional polling or heavyweight bidirectional WebSockets. This architecture delivers minimal client memory overhead and native reconnection handling over standard HTTP/2 and HTTP/3 transports.
+            Share your workspace link with anyone to work together instantly. Whatever you type appears immediately on all open screens without refreshing.
           </p>
           <div className="bg-[var(--bg-surface)] p-5 rounded-xl border border-[var(--border-color)] space-y-3">
             <h3 className="font-semibold text-sm text-[var(--text-main)] flex items-center gap-2">
               <Zap className="w-4 h-4 text-[var(--accent-primary)]" />
-              How Real-Time Sync Works Under the Hood:
+              How Live Sync Works:
             </h3>
-            <ol className="list-decimal pl-5 space-y-2 text-xs sm:text-sm text-[var(--text-muted)]">
-              <li><strong>Connection Establishment:</strong> When a user opens a workspace, the browser subscribes to <code className="font-mono text-xs break-all">/api/pages/[slug]/events</code> via the native <code className="font-mono text-xs">EventSource</code> API.</li>
-              <li><strong>Debounced Typing Invalidation:</strong> As a user types, edits are buffered and transmitted over an authenticated POST request with debounced timing to eliminate network congestion.</li>
-              <li><strong>Central Event Hub:</strong> The server commits the updated text atomically to the database and emits an event through our centralized event hub singleton.</li>
-              <li><strong>Broadcast Fan-Out:</strong> All active subscribers to that specific workspace receive the update in under 50 milliseconds, updating the client editor smoothly without cursor jumps.</li>
-            </ol>
+            <ul className="list-disc pl-5 space-y-2 text-xs sm:text-sm text-[var(--text-muted)]">
+              <li><strong>Automatic Saving:</strong> Every change saves automatically as you type. You never have to look for a save button.</li>
+              <li><strong>Smooth Typing Protection:</strong> If someone else types while you are actively writing, FileShare protects your current paragraph so your cursor never jumps.</li>
+              <li><strong>Helpful Tip:</strong> When working with others at the same time, write under different headings so you do not type over each other.</li>
+            </ul>
           </div>
         </section>
 
@@ -433,32 +429,32 @@ sequenceDiagram
               6
             </div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)] min-w-0">
-              High-Performance File Vault & Media Handling
+              Share Files (Up to 500 MB)
             </h2>
           </div>
           <p className="text-sm leading-relaxed text-[var(--text-muted)]">
-            In addition to real-time Markdown notes, every FileShare workspace includes an integrated multi-file storage vault capable of storing files up to 500 MB per file.
+            Every workspace includes a file vault on the right side of the screen. You can upload and share files up to 500&nbsp;MB each.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-4">
             <div className="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)]">
               <HardDrive className="w-5 h-5 text-[var(--accent-primary)] mb-2" />
-              <h3 className="font-semibold text-sm mb-1 text-[var(--text-main)]">500MB Upload Limit</h3>
+              <h3 className="font-semibold text-sm mb-1 text-[var(--text-main)]">500 MB Per File</h3>
               <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                Upload large video recordings, zip archives, high-resolution design assets, PDFs, and code tarballs effortlessly.
+                Upload photos, videos, PDFs, ZIP folders, audio tracks, or documents with simple drag-and-drop.
               </p>
             </div>
             <div className="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)]">
               <Sparkles className="w-5 h-5 text-[var(--accent-primary)] mb-2" />
-              <h3 className="font-semibold text-sm mb-1 text-[var(--text-main)]">In-Browser Previews</h3>
+              <h3 className="font-semibold text-sm mb-1 text-[var(--text-main)]">Instant Previews</h3>
               <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                Click any file to preview high-resolution images, stream MP4/WebM videos, listen to audio files, or view PDF documents directly.
+                Click any file to view pictures, play music or videos, or read PDFs directly in your browser.
               </p>
             </div>
             <div className="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)]">
               <Shield className="w-5 h-5 text-[var(--accent-primary)] mb-2" />
-              <h3 className="font-semibold text-sm mb-1 text-[var(--text-main)]">S3 & B2 Cloud Storage</h3>
+              <h3 className="font-semibold text-sm mb-1 text-[var(--text-main)]">Fast Downloads</h3>
               <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                Files are backed by Backblaze B2 S3-compatible cloud storage with high bandwidth and local disk fallback redundancy.
+                Download files at full speed anytime, or share direct download links with friends and coworkers.
               </p>
             </div>
           </div>
@@ -471,26 +467,26 @@ sequenceDiagram
               7
             </div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)] min-w-0">
-              Security, Access Control & Passphrase Protection
+              Protect with a Password
             </h2>
           </div>
           <p className="text-sm leading-relaxed text-[var(--text-muted)]">
-            While public workspaces are ideal for open collaboration and classroom sharing, confidential projects require strict access restriction. FileShare incorporates enterprise-grade cryptographic controls that can be engaged in seconds.
+            Workspaces are open to anyone with the link by default. If you want privacy for personal notes or sensitive files, you can lock your workspace with a password in seconds.
           </p>
           <div className="bg-[var(--bg-surface)] p-5 rounded-xl border border-[var(--border-color)] space-y-4">
             <div className="flex items-center gap-2 font-semibold text-sm text-[var(--text-main)]">
               <Lock className="w-4 h-4 text-[var(--accent-primary)]" />
-              How Workspace Security Is Enforced:
+              How Password Protection Works:
             </div>
             <div className="space-y-3 text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
               <p>
-                <strong>Bcrypt Passphrase Hashing:</strong> When you set a workspace password, the server computes a 10-round bcrypt hash with an individual salt. The plaintext password is never stored or logged anywhere on our infrastructure.
+                <strong>Setting a Password:</strong> Click the <strong>Lock</strong> icon at the top of the screen, type a password, and click save. Anyone who visits the link will need to enter this password before they can see notes or download files.
               </p>
               <p>
-                <strong>Stateless JWT Authentication:</strong> Successful authentication produces a cryptographic JSON Web Token (JWT) signed with a secure server secret. The client stores this token strictly in temporary <code className="font-mono text-xs">sessionStorage</code>. When the browser tab is closed, access expires automatically.
+                <strong>Temporary Login Session:</strong> Once you enter the password, your browser tab stays unlocked while you work. When you close the tab, the workspace locks again. Your password is protected safely with secure encryption so nobody else can see it.
               </p>
               <p>
-                <strong>Zero Password Gate Bypass:</strong> API endpoints verifying file downloads, note editing, and SSE event streaming strictly validate the Bearer token. Any request without a valid token to a locked space receives an immediate HTTP 401 Unauthorized rejection.
+                <strong>Changing or Removing:</strong> Anyone who knows the password can change it or remove it at any time from the same lock menu.
               </p>
             </div>
           </div>
@@ -506,11 +502,11 @@ sequenceDiagram
               8
             </div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)] min-w-0">
-              Cross-Device Mobility & Instant QR Code Transfer
+              Open on Phone via QR Code
             </h2>
           </div>
           <p className="text-sm leading-relaxed text-[var(--text-muted)]">
-            Seamlessly transitioning between a desktop workstation, iPad, and smartphone is often hampered by typing long URLs or having to email links to yourself. FileShare solves this with instant QR code generation:
+            Need to open your notes on your phone or upload photos quickly? You do not need to email links to yourself or type long web addresses.
           </p>
           <div className="p-5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] flex flex-col sm:flex-row items-center gap-6">
             <div className="w-16 h-16 rounded-xl bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center shrink-0">
@@ -518,10 +514,10 @@ sequenceDiagram
             </div>
             <div className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
               <p className="mb-2">
-                Click the <strong>QR Code icon</strong> in the top navigation bar of any workspace. A high-resolution, vector QR code is rendered instantly.
+                Click the <strong>QR Code icon</strong> in the top menu of your workspace to show a QR code on your computer screen.
               </p>
               <p>
-                Point your smartphone or tablet camera at the screen to open the exact same workspace immediately. Perfect for mobile photo uploads, live lecture note-taking, or testing responsive designs.
+                Point your phone camera at the screen and tap the notification link to open the space immediately. It is the easiest way to take photos directly into the file vault or read notes on the go.
               </p>
             </div>
           </div>
@@ -534,52 +530,52 @@ sequenceDiagram
               9
             </div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)] min-w-0">
-              Keyboard Shortcuts & Hotkey Reference
+              Keyboard Shortcuts
             </h2>
           </div>
           <p className="text-sm leading-relaxed text-[var(--text-muted)]">
-            Power users can navigate and format text rapidly using standard keyboard shortcuts:
+            Speed up your writing with these handy keyboard shortcuts:
           </p>
           <div className="overflow-x-auto max-w-full">
             <table className="w-full min-w-[640px] text-left text-xs border border-[var(--border-color)] rounded-xl overflow-hidden">
               <thead className="bg-[var(--bg-surface)] font-mono text-[var(--text-subtle)] dark:text-[var(--text-muted)] border-b border-[var(--border-color)]">
                 <tr>
                   <th className="p-3">Action</th>
-                  <th className="p-3">Shortcut (Mac)</th>
-                  <th className="p-3">Shortcut (Windows/Linux)</th>
-                  <th className="p-3">Description</th>
+                  <th className="p-3">Mac</th>
+                  <th className="p-3">Windows / Linux</th>
+                  <th className="p-3">What it does</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border-color)] text-[var(--text-muted)]">
                 <tr>
-                  <td className="p-3 font-semibold text-[var(--text-main)]">AI Copilot Format</td>
+                  <td className="p-3 font-semibold text-[var(--text-main)]">Tidy Notes</td>
                   <td className="p-3 font-mono whitespace-nowrap">Cmd + Shift + F</td>
                   <td className="p-3 font-mono whitespace-nowrap">Ctrl + Shift + F</td>
-                  <td className="p-3">Cleans and normalizes document markdown syntax</td>
+                  <td className="p-3">Cleans headings, lists, and spacing in one click</td>
                 </tr>
                 <tr>
                   <td className="p-3 font-semibold text-[var(--text-main)]">Bold Text</td>
                   <td className="p-3 font-mono whitespace-nowrap">Cmd + B</td>
                   <td className="p-3 font-mono whitespace-nowrap">Ctrl + B</td>
-                  <td className="p-3">Encloses selected text in double asterisks</td>
+                  <td className="p-3">Makes selected words **bold**</td>
                 </tr>
                 <tr>
                   <td className="p-3 font-semibold text-[var(--text-main)]">Italic Text</td>
                   <td className="p-3 font-mono whitespace-nowrap">Cmd + I</td>
                   <td className="p-3 font-mono whitespace-nowrap">Ctrl + I</td>
-                  <td className="p-3">Encloses selected text in single underscores</td>
+                  <td className="p-3">Makes selected words *italic*</td>
                 </tr>
                 <tr>
-                  <td className="p-3 font-semibold text-[var(--text-main)]">Insert Code Block</td>
+                  <td className="p-3 font-semibold text-[var(--text-main)]">Code Block</td>
                   <td className="p-3 font-mono whitespace-nowrap">Cmd + Shift + C</td>
                   <td className="p-3 font-mono whitespace-nowrap">Ctrl + Shift + C</td>
-                  <td className="p-3">Wraps text in fenced code backticks</td>
+                  <td className="p-3">Inserts code formatting brackets</td>
                 </tr>
                 <tr>
                   <td className="p-3 font-semibold text-[var(--text-main)]">Toggle File Panel</td>
                   <td className="p-3 font-mono whitespace-nowrap">Cmd + \</td>
                   <td className="p-3 font-mono whitespace-nowrap">Ctrl + \</td>
-                  <td className="p-3">Opens or closes the right-hand file vault drawer</td>
+                  <td className="p-3">Shows or hides the file vault side panel</td>
                 </tr>
               </tbody>
             </table>
@@ -593,7 +589,7 @@ sequenceDiagram
               10
             </div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)] min-w-0">
-              Frequently Asked Questions & Troubleshooting
+              Frequently Asked Questions
             </h2>
           </div>
           <div className="space-y-4 text-xs sm:text-sm">
@@ -603,7 +599,7 @@ sequenceDiagram
                 How long are files and notes stored on FileShare?
               </h3>
               <p className="text-[var(--text-muted)] leading-relaxed">
-                FileShare is designed as an agile, ephemeral collaboration workspace. Files and active notes remain available while the space is active. To protect storage resources and user privacy, inactive workspaces may be subject to ephemeral lifecycle pruning after 30 days of inactivity. Always export mission-critical documents to permanent git or local archives.
+                Workspaces stay active as long as you use them. Spaces inactive for more than 30 days may be cleaned up automatically to free storage. Always export important notes or files to your own device if you need to keep them permanently.
               </p>
             </div>
 
@@ -613,17 +609,17 @@ sequenceDiagram
                 What happens if two people edit the same workspace simultaneously?
               </h3>
               <p className="text-[var(--text-muted)] leading-relaxed">
-                Our Server-Sent Events engine pushes debounced text updates in near real-time. To prevent collisions, we recommend working under distinct Markdown headers when multiple team members are typing concurrently.
+                Edits sync in real time across all open tabs. If multiple people are writing at once, we recommend editing under different headings to avoid overwriting each other&apos;s changes.
               </p>
             </div>
 
             <div className="p-5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)]">
               <h3 className="font-bold text-[var(--text-main)] mb-2 flex items-center gap-2">
                 <HelpCircle className="w-4 h-4 text-[var(--accent-primary)]" />
-                Can I rename my workspace slug?
+                Can I rename my workspace link?
               </h3>
               <p className="text-[var(--text-muted)] leading-relaxed">
-                Yes! If you are the workspace administrator (or the space is unlocked), click the workspace name in the header to trigger the rename dialog. Our database enforces <code className="font-mono text-xs">ON UPDATE CASCADE</code> referential integrity, ensuring all uploaded files stay linked to the new workspace name seamlessly.
+                Yes. Click the workspace name in the header to rename it. Any files you already uploaded will automatically stay linked to the new workspace name.
               </p>
             </div>
 
@@ -633,18 +629,18 @@ sequenceDiagram
                 Are there any file type restrictions?
               </h3>
               <p className="text-[var(--text-muted)] leading-relaxed">
-                FileShare accepts virtually all standard media, archive, and code formats including ZIP, TAR, PDF, PNG, JPG, MP4, MP3, TXT, JSON, CSV, and code files. However, our Acceptable Use Policy strictly forbids malicious executables, ransomware, phishing scripts, and illegal material. Violating content is permanently deleted upon detection.
+                You can upload almost any standard file up to 500 MB, including PDFs, images, videos, audio, and ZIP archives. Malware, illegal material, and harmful scripts are strictly prohibited.
               </p>
             </div>
           </div>
         </section>
 
-        {/* CTA Footer Box (safely separated without ad interference) */}
+        {/* CTA Footer Box */}
         <div className="my-8 sm:my-12 p-6 sm:p-8 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-center max-w-2xl mx-auto">
           <CheckCircle2 className="w-8 h-8 text-[var(--status-success-text)] mx-auto mb-3" />
-          <h2 className="text-xl font-bold mb-2">Ready to Experience FileShare?</h2>
+          <h2 className="text-xl font-bold mb-2">Ready to Get Started?</h2>
           <p className="text-xs sm:text-sm text-[var(--text-muted)] mb-5 leading-relaxed">
-            Put this guide to work. Launch a collaborative space in seconds without registering or filling out forms.
+            Create your first workspace in seconds. No registration or setup needed.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
@@ -658,7 +654,7 @@ sequenceDiagram
               href="/resources"
               className="w-full sm:w-auto px-5 py-2.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs sm:text-sm font-semibold hover:bg-[var(--bg-surface)] transition-colors inline-flex items-center justify-center"
             >
-              Browse Engineering Articles
+              Browse Resources
             </Link>
           </div>
         </div>
@@ -667,7 +663,7 @@ sequenceDiagram
       {/* Footer */}
       <footer className="border-t border-[var(--border-color)] py-8 bg-[var(--header-bg)]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
-          <p>© 2026 FileShare (SHP Technology). Complete technical manual &amp; collaborative platform.</p>
+          <p>© 2026 FileShare (SHP Technology). Real-time notes and file sharing.</p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link href="/" className="hover:text-[var(--text-main)] transition-colors">Home</Link>
             <span className="hidden sm:inline">•</span>

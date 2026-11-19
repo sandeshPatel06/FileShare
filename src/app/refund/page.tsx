@@ -74,25 +74,25 @@ export default function RefundPolicyPage() {
             Refund &amp; Cancellation Policy
           </h1>
           <p className="text-sm sm:text-base text-[var(--text-muted)] leading-relaxed max-w-2xl">
-            This Refund and Cancellation Policy outlines the financial and commercial terms governing the use of FileShare, operated by SHP Technology.
+            FileShare is a 100% free web utility operated by SHP Technology. Here is how our refund and cancellation policies work.
           </p>
           <p className="text-xs text-[var(--text-subtle)] mt-2 font-mono">
             Last Updated: September 29, 2026 | Effective Date: September 29, 2026
           </p>
         </div>
 
-        <div className="space-y-8 text-sm leading-relaxed">
+        <div className="space-y-6 text-sm leading-relaxed">
           {/* Section 1: Free Service Tier */}
           <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 shrink-0 text-[var(--status-success-text)]" />
-              1. 100% Free Core Platform
+              1. 100% Free Utility (No Paid Tiers)
             </h2>
             <p className="text-[var(--text-muted)]">
-              FileShare is provided as a <strong>free public web application</strong>. All fundamental capabilities—including creating workspaces, real-time Markdown editing, AI copilot formatting, Mermaid diagram compilation, passphrase protection, and file uploads up to 500MB per file—are accessible at no monetary charge.
+              FileShare is entirely free. All core features—instant workspace creation, real-time Markdown notes, AI copilot formatting, Mermaid diagrams, password protection, and file sharing up to 500 MB per file—are free to use.
             </p>
             <p className="text-[var(--text-muted)]">
-              We do not ask for credit cards, debit cards, bank details, or recurring monthly subscriptions to access the platform. Because standard users are not billed, refund requests for standard service access do not apply.
+              We do not collect credit cards, debit cards, or subscription fees. Because you are never charged to use FileShare, refunds do not apply to regular usage.
             </p>
           </section>
 
@@ -100,64 +100,50 @@ export default function RefundPolicyPage() {
           <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
               <RefreshCcw className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
-              2. Cancellation and Termination Policy
+              2. No Accounts to Cancel
             </h2>
             <p className="text-[var(--text-muted)]">
-              Because FileShare operates on a zero-registration, account-free model, there are no ongoing accounts or contracts to cancel:
+              FileShare uses a zero-registration model. There are no member accounts, subscriptions, or recurring commitments to cancel:
             </p>
             <ul className="list-disc pl-5 space-y-1.5 text-xs text-[var(--text-muted)]">
-              <li>You may stop using FileShare at any time simply by closing your browser tab.</li>
-              <li>You can delete your uploaded files immediately through the trash icon in the File Explorer panel.</li>
-              <li>You can overwrite or erase notes within your workspace at any time.</li>
-              <li>Inactive ephemeral workspaces are automatically pruned by our cleanup scheduler without any cancellation fees.</li>
+              <li>To stop using FileShare, simply close your browser tab.</li>
+              <li>You can delete your uploaded files at any time via the file panel.</li>
+              <li>You can edit or clear your notes whenever you like.</li>
+              <li>Unused workspaces are automatically cleaned up without any fees or action required.</li>
             </ul>
           </section>
 
-          {/* Section 3: Voluntary Donations and Sponsorships */}
-          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
-            <h2 className="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
-              <CreditCard className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
-              3. Voluntary Donations, Tips &amp; Sponsorships
-            </h2>
-            <p className="text-[var(--text-muted)]">
-              If you choose to support the maintenance and server bandwidth of FileShare through voluntary donations (such as GitHub Sponsors, Buy Me a Coffee, or Open Collective):
-            </p>
-            <ul className="list-disc pl-5 space-y-1.5 text-xs text-[var(--text-muted)]">
-              <li>Donations and sponsorships are voluntary gifts provided without expectation of commercial goods or exclusive services.</li>
-              <li>As a general rule, voluntary contributions are non-refundable once processed.</li>
-              <li>However, in cases of verified technical error, fraudulent transaction, or accidental duplicate donation, please email us within <strong>14 calendar days</strong> of the transaction date. We will review and process a refund to the original payment source.</li>
-            </ul>
-          </section>
-
-          {/* Section 4: Enterprise Licensing */}
+          {/* Section 3: Future Paid Features & Commercial Terms */}
           <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
               <ShieldAlert className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
-              4. Custom Commercial &amp; Enterprise Agreements
+              3. Future Paid Features &amp; Commercial Terms
             </h2>
             <p className="text-[var(--text-muted)]">
-              If an organization contracts SHP Technology for custom enterprise deployment, dedicated private cloud hosting, or tailored SLA agreements:
+              If FileShare introduces optional paid features, enterprise hosting, or dedicated support in the future:
             </p>
-            <p className="text-[var(--text-muted)]">
-              Refund and cancellation provisions will be governed by the specific Statement of Work (SOW) or commercial contract signed by both parties. In the absence of specific conflicting terms, custom enterprise setup and engineering consulting fees are non-refundable once engineering deployment has commenced.
-            </p>
+            <ul className="list-disc pl-5 space-y-1.5 text-xs text-[var(--text-muted)]">
+              <li><strong>Clear Pricing:</strong> All fees, billing terms, and renewal cycles will be stated upfront before payment.</li>
+              <li><strong>Refund Window:</strong> For any future paid plans, refund requests submitted within 14 calendar days of initial purchase or billing error will be reviewed and refunded to the original payment method.</li>
+              <li><strong>Voluntary Donations:</strong> Voluntary tips or sponsorships to support server costs are non-refundable, except in verified cases of technical error or accidental duplicate charges.</li>
+              <li><strong>Enterprise Contracts:</strong> Custom agreements and private deployments are governed by their respective signed Statement of Work (SOW).</li>
+            </ul>
           </section>
 
-          {/* Section 5: Contact */}
+          {/* Section 4: Contact & Billing Support */}
           <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
               <Mail className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
-              5. Billing Inquiries &amp; Dispute Resolution
+              4. Questions &amp; Support
             </h2>
             <p className="text-[var(--text-muted)]">
-              For any payment inquiries, erroneous transaction claims, or billing clarifications, please contact our billing administration:
+              If you have any questions about this policy, voluntary contributions, or future services, please get in touch:
             </p>
             <div className="p-4 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs font-mono space-y-1 break-all">
               <div>Entity: SHP Technology (FileShare)</div>
-              <div>Billing Email: sandeshpatel.sp.93@gmail.com</div>
-              <div>Support Email: sandeshpatel.sp.93@gmail.com</div>
-              <div>Operating Address: 1st floor, SHP Technology, Near Underground Bridge, Madan Mahal Station, Jabalpur, Madhya Pradesh 482001, India</div>
-              <div>Response Time: 24 to 48 business hours</div>
+              <div>Email: sandeshpatel.sp.93@gmail.com</div>
+              <div>Address: 1st floor, SHP Technology, Near Underground Bridge, Madan Mahal Station, Jabalpur, Madhya Pradesh 482001, India</div>
+              <div>Response Time: Usually within 24 to 48 business hours</div>
             </div>
           </section>
         </div>

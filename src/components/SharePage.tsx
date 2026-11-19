@@ -139,9 +139,9 @@ export function SharePage({ pageData }: SharePageProps) {
       </header>
 
       {/* Main Workspace */}
-      <main className="flex-1 min-h-0 h-full flex flex-row min-w-0 w-full max-w-full relative overflow-hidden">
+      <main className="flex-1 min-h-0 flex flex-row min-w-0 w-full max-w-full relative overflow-hidden">
         {/* Left Editor Pane */}
-        <section aria-label="Markdown workspace" className="flex-1 min-w-0 min-h-0 h-full flex flex-col self-stretch overflow-hidden">
+        <section aria-label="Markdown workspace" className="flex-1 min-w-0 min-h-0 flex flex-col overflow-hidden">
           <TextEditor slug={slug} initialContent={pageData.content} token={effectiveToken} />
         </section>
 
@@ -153,7 +153,7 @@ export function SharePage({ pageData }: SharePageProps) {
           className={`
             absolute sm:static inset-y-0 right-0 z-40 sm:z-auto
             bg-[var(--bg-surface)]
-            flex flex-col shrink-0 min-h-0 h-full self-stretch overflow-hidden overscroll-contain max-w-full
+            flex flex-col shrink-0 min-h-0 overflow-hidden overscroll-contain max-w-full
             transition-[transform,width,opacity] duration-200 ease-in-out
             w-[280px] max-w-[85vw] sm:max-w-full
             ${showFilePanel

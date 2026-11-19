@@ -60,16 +60,18 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
         >
           <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl overflow-hidden p-[1.5px] bg-[var(--accent-primary)] shadow-xs transition-opacity group-hover:opacity-90 shrink-0">
             <div className="w-full h-full rounded-[6px] sm:rounded-[9px] overflow-hidden bg-[var(--bg-surface)] flex items-center justify-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/logo.png"
-                alt="FileShare Logo"
-                width={32}
-                height={32}
-                decoding="async"
-                fetchPriority="high"
-                className="w-full h-full object-cover"
-              />
+              <picture>
+                <source srcSet="/logo.webp" type="image/webp" />
+                <img
+                  src="/logo.png"
+                  alt="FileShare Logo"
+                  width={32}
+                  height={32}
+                  decoding="async"
+                  fetchPriority="high"
+                  className="w-full h-full object-cover"
+                />
+              </picture>
             </div>
           </div>
           <span className="font-bold text-sm sm:text-base tracking-tight text-[var(--text-main)] hidden sm:inline group-hover:text-[var(--accent-primary)] transition-colors whitespace-nowrap">

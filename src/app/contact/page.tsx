@@ -103,7 +103,11 @@ export default function ContactPage() {
         </div>
 
         {/* Direct Contact Channels */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <section aria-labelledby="direct-channels-heading" className="mb-6">
+          <h2 id="direct-channels-heading" className="sr-only">
+            Direct Contact Channels
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="p-5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] flex flex-col justify-between">
             <div>
               <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center mb-3">
@@ -184,6 +188,7 @@ export default function ContactPage() {
             </a>
           </div>
         </div>
+        </section>
 
         {/* Response Time SLA */}
         <div className="mb-10 p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] flex items-center gap-3 text-xs text-[var(--text-muted)]">
@@ -314,7 +319,7 @@ export default function ContactPage() {
               <button
                 type="submit"
                 className="px-6 py-2.5 min-h-[44px] rounded-lg bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white text-xs sm:text-sm font-semibold transition-colors inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm"
-                aria-label="Open in email client"
+                aria-label="Open in Email App"
               >
                 <Send className="w-4 h-4" />
                 <span>Open in Email App</span>
@@ -324,7 +329,7 @@ export default function ContactPage() {
                 type="button"
                 onClick={handleCopyDraft}
                 className="px-5 py-2.5 min-h-[44px] rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] hover:bg-[var(--bg-card-hover)] text-[var(--text-main)] text-xs sm:text-sm font-semibold transition-colors inline-flex items-center justify-center gap-2 cursor-pointer"
-                aria-label="Copy draft message to clipboard"
+                aria-label="Copy Draft to Clipboard"
               >
                 <Copy className="w-4 h-4 text-[var(--accent-primary)]" />
                 <span>Copy Draft to Clipboard</span>

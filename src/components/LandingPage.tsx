@@ -320,9 +320,10 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
                 type="button"
                 onClick={handleShufflePlaceholder}
                 title="Shuffle name"
-                className="text-[var(--text-muted)] hover:text-[var(--text-main)] p-1 cursor-pointer"
+                aria-label="Shuffle workspace name"
+                className="text-[var(--text-muted)] hover:text-[var(--text-main)] p-2 min-w-[32px] min-h-[32px] flex items-center justify-center cursor-pointer rounded-md transition-colors"
               >
-                <Shuffle className="w-3.5 h-3.5" />
+                <Shuffle className="w-4 h-4" />
               </button>
             </div>
 

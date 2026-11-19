@@ -8,17 +8,28 @@ import {
   Image as ImageIcon, FileSpreadsheet, ChevronDown, Check, FileJson, Archive, AlertTriangle,
   Copy
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { usePageContent } from "@/hooks/usePageContent";
 import { showToast } from "@/components/ui/Toast";
-import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
-import { exportAllAsZip } from "@/lib/exportZip";
 import { copyToClipboard } from "@/lib/clipboard";
 import { createPortal } from "react-dom";
 import { computePosition, flip, shift, offset, size } from "@floating-ui/dom";
 import { FloatingMenu } from "@/components/ui/FloatingMenu";
 import { getCaretCoordinates } from "@/lib/caret";
+
+const MarkdownRenderer = dynamic(
+  () => import("@/components/MarkdownRenderer").then((mod) => mod.MarkdownRenderer),
+  {
+    loading: () => (
+      <div className="p-4 text-xs text-[var(--text-muted)] flex items-center justify-center">
+        Loading preview...
+      </div>
+    ),
+    ssr: false,
+  }
+);
 
 interface TextEditorProps {
   slug: string;
@@ -711,9 +722,14 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     return formatMarkdownToHTML(displayContent);
   };
 
-  const handleExportAllZip = () => {
+  const handleExportAllZip = async () => {
     setShowExportMenu(false);
-    exportAllAsZip({ slug, content: displayContent, token });
+    try {
+      const { exportAllAsZip } = await import("@/lib/exportZip");
+      await exportAllAsZip({ slug, content: displayContent, token });
+    } catch {
+      showToast("Failed to load export module", "error");
+    }
   };
 
   const handleExportMarkdown = () => {

@@ -260,7 +260,7 @@ export function SharePage({ pageData }: SharePageProps) {
 
       <footer className="border-t border-[var(--border-color)] bg-[var(--header-bg)] h-7 min-h-7 max-h-7 py-0 px-2 sm:px-3 shrink-0 text-[10px] sm:text-xs text-[var(--text-muted)] flex flex-nowrap items-center justify-center sm:justify-between gap-1.5 sm:gap-2 z-20 font-medium overflow-hidden w-full min-w-0 max-w-full select-none">
         <div className="hidden sm:flex items-center gap-1.5 min-w-0 max-w-full flex-1 overflow-hidden">
-          <span className="truncate min-w-0">Workspace: <code className="font-mono font-semibold text-[var(--text-main)] truncate max-w-[45vw] sm:max-w-[280px] inline-block align-bottom">{typeof window !== "undefined" && window.location.pathname.startsWith("/projects") ? "/projects" : "/s"}/{slug}</code></span>
+          <span className="truncate min-w-0">Workspace: <code className="font-mono font-semibold text-[var(--text-main)] truncate max-w-[45vw] sm:max-w-[280px] inline-block align-bottom">/{slug}</code></span>
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap min-w-0 max-w-full whitespace-nowrap overflow-x-auto no-scrollbar">
           <Link href="/guide" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors py-0.5 shrink-0">User Guide</Link>

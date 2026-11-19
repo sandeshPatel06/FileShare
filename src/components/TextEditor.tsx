@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState, useCallback, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo, useSyncExternalStore } from "react";
 import {
   Heading1, Heading2, Heading3, Bold, Italic, Strikethrough,
   List, ListOrdered, CheckSquare, Quote, Code, Table, Sparkles,
@@ -39,6 +39,68 @@ interface TextEditorProps {
 
 type ViewMode = "write" | "preview" | "split";
 
+interface FormatItem {
+  icon: React.ReactNode;
+  prefix: string;
+  suffix?: string;
+  title: string;
+  label: string;
+  extraClass?: string;
+}
+
+const TOOLBAR_FORMAT_GROUPS: { name: string; items: FormatItem[] }[] = [
+  {
+    name: "headings",
+    items: [
+      { icon: <Heading1 size={15} />, prefix: "# ", title: "Heading 1 (#)", label: "Heading 1", extraClass: "text-xs font-black" },
+      { icon: <Heading2 size={15} />, prefix: "## ", title: "Heading 2 (##)", label: "Heading 2", extraClass: "text-xs font-black" },
+      { icon: <Heading3 size={15} />, prefix: "### ", title: "Heading 3 (###)", label: "Heading 3", extraClass: "text-xs font-black" },
+    ],
+  },
+  {
+    name: "inline",
+    items: [
+      { icon: <Bold size={15} />, prefix: "**", suffix: "**", title: "Bold (**text**)", label: "Bold" },
+      { icon: <Italic size={15} />, prefix: "*", suffix: "*", title: "Italic (*text*)", label: "Italic" },
+      { icon: <Strikethrough size={15} />, prefix: "~~", suffix: "~~", title: "Strikethrough (~~text~~)", label: "Strikethrough" },
+    ],
+  },
+  {
+    name: "lists",
+    items: [
+      { icon: <List size={15} />, prefix: "- ", title: "Unordered List (-)", label: "Unordered List" },
+      { icon: <ListOrdered size={15} />, prefix: "1. ", title: "Numbered List (1.)", label: "Numbered List" },
+      { icon: <CheckSquare size={15} />, prefix: "- [ ] ", title: "Task Checkbox (- [ ])", label: "Task Checkbox" },
+    ],
+  },
+  {
+    name: "blocks",
+    items: [
+      { icon: <Quote size={15} />, prefix: "> ", title: "Blockquote (>)", label: "Blockquote" },
+      { icon: <Code size={15} />, prefix: "```\n", suffix: "\n```", title: "Code Block (```)", label: "Code Block" },
+      { icon: <Table size={15} />, prefix: "| Header 1 | Header 2 |\n| :--- | :--- |\n| Cell 1 | Cell 2 |\n", title: "Insert Table", label: "Insert Table" },
+    ],
+  },
+];
+
+const SLASH_OPTIONS = [
+  { id: "h1", icon: <Heading1 size={14} />, label: "Heading 1", insert: "# " },
+  { id: "h2", icon: <Heading2 size={14} />, label: "Heading 2", insert: "## " },
+  { id: "h3", icon: <Heading3 size={14} />, label: "Heading 3", insert: "### " },
+  { id: "todo", icon: <CheckSquare size={14} />, label: "To-do list", insert: "- [ ] " },
+  { id: "ul", icon: <List size={14} />, label: "Bulleted list", insert: "- " },
+  { id: "ol", icon: <ListOrdered size={14} />, label: "Numbered list", insert: "1. " },
+  { id: "quote", icon: <Quote size={14} />, label: "Blockquote", insert: "> " },
+  { id: "code", icon: <Code size={14} />, label: "Code block", insert: "```\n\n```" },
+  { id: "table", icon: <Table size={14} />, label: "Table", insert: "| Header 1 | Header 2 |\n| :--- | :--- |\n| Cell 1 | Cell 2 |\n" },
+];
+
+const VIEW_MODES: { mode: ViewMode; label: string; icon: React.ReactNode; hiddenOnMobile?: boolean }[] = [
+  { mode: "write", label: "Raw", icon: <Layout size={14} /> },
+  { mode: "split", label: "Split", icon: <Columns size={14} />, hiddenOnMobile: true },
+  { mode: "preview", label: "Preview", icon: <Eye size={14} /> },
+];
+
 const TEMPLATES = [
   {
     id: "meeting",
@@ -65,6 +127,67 @@ const TEMPLATES = [
     content: `# 📔 Work Log: ${new Date().toLocaleDateString()}\n\n---\n\n## 🏆 Key Accomplishments\n- Accomplishment 1\n- Accomplishment 2\n\n---\n\n## 💡 Learnings & Insights\n- Insight 1\n- Insight 2\n\n---\n\n## 🚧 Current Blockers\n- None\n\n---\n\n## 🎯 Tomorrow's Priorities\n- [ ] Priority 1\n- [ ] Priority 2\n`,
   },
 ];
+
+const EXPORT_BASE_STYLES = `
+  h1 { font-size: 24px; font-weight: 800; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-top: 24px; color: #0f172a; }
+  h2 { font-size: 20px; font-weight: 700; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-top: 20px; color: #0f172a; }
+  h3 { font-size: 16px; font-weight: 700; margin-top: 16px; color: #1a7f37; }
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; page-break-inside: avoid; }
+  th, td { border: 1px solid #cbd5e1; padding: 10px 14px; text-align: left; }
+  th { background: #f8fafc; font-weight: 700; text-transform: uppercase; font-size: 12px; color: #475569; }
+  tr:nth-child(even) { background: #f8fafc; }
+  blockquote { border-left: 4px solid #1a7f37; background: #f1f5f9; margin: 16px 0; padding: 12px 16px; border-radius: 0 12px 12px 0; font-style: italic; color: #334155; }
+  pre { background: #0d1117; color: #e6edf3; padding: 16px; border-radius: 12px; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 13px; line-height: 1.5; page-break-inside: avoid; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background: rgba(26, 127, 55, 0.1); padding: 2px 6px; border-radius: 4px; color: #1a7f37; font-weight: 600; font-size: 0.9em; }
+  pre code { background: transparent; padding: 0; color: inherit; }
+  ul, ol { padding-left: 24px; margin: 12px 0; }
+  li { margin: 4px 0; }
+  input[type="checkbox"] { margin-right: 8px; transform: scale(1.15); accent-color: #1a7f37; }
+  hr { border: 0; border-top: 2px solid #e2e8f0; margin: 24px 0; }
+  a { color: #1a7f37; text-decoration: underline; }
+  strong { color: #1a7f37; font-weight: 800; }
+  img { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #cbd5e1; margin: 16px 0; page-break-inside: avoid; }
+`;
+
+const EXPORT_ITEM_CLASS = "w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[40px] sm:min-h-[32px]";
+
+function buildExportDocument(title: string, bodyHtml: string, isPrint = false): string {
+  const bodyStyle = isPrint
+    ? "font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #0f172a; background: #ffffff; line-height: 1.6; padding: 0; margin: 0;"
+    : "font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 850px; margin: 40px auto; padding: 32px; color: #0f172a; background: #ffffff; line-height: 1.6; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-radius: 16px; border: 1px solid #e2e8f0;";
+  const printRule = isPrint ? "@page { margin: 15mm; size: auto; }" : "";
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title}</title>
+  <style>
+    ${printRule}
+    body { ${bodyStyle} }
+    ${EXPORT_BASE_STYLES}
+  </style>
+</head>
+<body>
+  <div class="markdown-body">
+    ${bodyHtml}
+  </div>
+</body>
+</html>`;
+}
+
+function downloadFile(contentStr: string, filename: string, mime: string) {
+  const blob = new Blob([contentStr], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
 const subscribeDesktop = (callback: () => void) => {
   if (typeof window === "undefined") return () => {};
@@ -126,9 +249,8 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
 
   const isDesktop = useSyncExternalStore(subscribeDesktop, getIsDesktop, getServerIsDesktop);
   const [userViewMode, setUserViewMode] = useState<ViewMode | null>(null);
-  // Deep fix: never render split view on mobile viewports. A desktop user who
-  // picked split and then resizes/rotates to mobile would otherwise get two
-  // squeezed panes side by side. Fall back to write mode instead.
+
+  // Fall back to write mode on mobile viewports
   const viewMode = userViewMode
     ? (userViewMode === "split" && !isDesktop ? "write" : userViewMode)
     : (isDesktop ? "split" : "write");
@@ -141,15 +263,15 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showOutline, setShowOutline]       = useState(false);
-  
+
   // Slash Commands state
   const [slashMenu, setSlashMenu] = useState<{
     open: boolean;
     filter: string;
     activeIndex: number;
     slashIndex: number;
-  }>({ 
-    open: false, filter: "", activeIndex: 0, slashIndex: 0 
+  }>({
+    open: false, filter: "", activeIndex: 0, slashIndex: 0
   });
 
   const fileInputRef    = useRef<HTMLInputElement>(null);
@@ -170,17 +292,21 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     }
   }, [serverContent, conflict]);
 
-  // Immediate save helper for conflict resolutions & Cmd+S
-  const pushImmediate = useCallback(
-    async (val: string) => {
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
-        debounceTimer.current = null;
-      }
-      lastPushedRef.current = val;
-      syncLocalContent(val);
-      if (statusEl.current) statusEl.current.setAttribute("data-status", "saving");
+  const clearDebounce = useCallback(() => {
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+      debounceTimer.current = null;
+    }
+  }, []);
 
+  const setStatus = useCallback((status: "saving" | "saved" | "idle" | "error") => {
+    if (statusEl.current) statusEl.current.setAttribute("data-status", status);
+  }, []);
+
+  // Shared content mutation push helper
+  const sendContent = useCallback(
+    async (val: string): Promise<boolean> => {
+      setStatus("saving");
       try {
         const res = await fetch(`/api/pages/${slug}/content`, {
           method: "PATCH",
@@ -192,27 +318,54 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
         });
 
         if (res.ok) {
-          if (statusEl.current) statusEl.current.setAttribute("data-status", "saved");
+          lastPushedRef.current = val;
+          setStatus("saved");
           setTimeout(() => {
-            if (statusEl.current && statusEl.current.getAttribute("data-status") === "saved") {
-              statusEl.current.setAttribute("data-status", "idle");
+            if (statusEl.current?.getAttribute("data-status") === "saved") {
+              setStatus("idle");
             }
           }, 2000);
-        } else {
-          if (statusEl.current) statusEl.current.setAttribute("data-status", "error");
+          return true;
         }
+        setStatus("error");
+        return false;
       } catch {
-        if (statusEl.current) statusEl.current.setAttribute("data-status", "error");
+        setStatus("error");
+        return false;
       }
     },
-    [slug, token, clientId, syncLocalContent]
+    [slug, token, clientId, setStatus]
+  );
+
+  // Immediate save helper for conflict resolutions & Cmd+S
+  const pushImmediate = useCallback(
+    async (val: string) => {
+      clearDebounce();
+      lastPushedRef.current = val;
+      syncLocalContent(val);
+      await sendContent(val);
+    },
+    [clearDebounce, syncLocalContent, sendContent]
+  );
+
+  // Debounced auto-save push to API (400ms)
+  const pushUpdate = useCallback(
+    (val: string) => {
+      touchLocalEdit();
+      syncLocalContent(val);
+      if (val === lastPushedRef.current) return;
+      setStatus("saving");
+
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      debounceTimer.current = setTimeout(() => {
+        sendContent(val);
+      }, 400);
+    },
+    [touchLocalEdit, syncLocalContent, sendContent, setStatus]
   );
 
   const handleTakeMine = () => {
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-      debounceTimer.current = null;
-    }
+    clearDebounce();
     pushImmediate(displayContent);
     resolveConflictTakeMine();
     showToast("Kept your local edits", "success");
@@ -220,10 +373,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
 
   const handleTakeRemote = () => {
     if (conflict?.remoteContent !== undefined) {
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
-        debounceTimer.current = null;
-      }
+      clearDebounce();
       const remote = conflict.remoteContent;
       setDisplayContent(remote);
       lastPushedRef.current = remote;
@@ -235,10 +385,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
 
   const handleMerge = () => {
     if (conflict?.remoteContent) {
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
-        debounceTimer.current = null;
-      }
+      clearDebounce();
       const merged = smartMerge(displayContent, conflict.remoteContent);
       setDisplayContent(merged);
       lastPushedRef.current = merged;
@@ -248,46 +395,6 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
       showToast("Merged collaborator changes below notes", "info");
     }
   };
-
-  // Debounced auto-save push to API
-  const pushUpdate = useCallback(
-    (val: string) => {
-      touchLocalEdit();
-      syncLocalContent(val);
-      if (val === lastPushedRef.current) return;
-      if (statusEl.current) statusEl.current.setAttribute("data-status", "saving");
-
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
-
-      debounceTimer.current = setTimeout(async () => {
-        try {
-          const res = await fetch(`/api/pages/${slug}/content`, {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-            body: JSON.stringify({ content: val, clientId }),
-          });
-
-          if (res.ok) {
-            lastPushedRef.current = val;
-            if (statusEl.current) statusEl.current.setAttribute("data-status", "saved");
-            setTimeout(() => {
-              if (statusEl.current && statusEl.current.getAttribute("data-status") === "saved") {
-                statusEl.current.setAttribute("data-status", "idle");
-              }
-            }, 2000);
-          } else {
-            if (statusEl.current) statusEl.current.setAttribute("data-status", "error");
-          }
-        } catch {
-          if (statusEl.current) statusEl.current.setAttribute("data-status", "error");
-        }
-      }, 400);
-    },
-    [slug, token, touchLocalEdit, syncLocalContent, clientId]
-  );
 
   // Markdown Document Auto-Format (Cmd/Ctrl+Shift+F)
   const handleAICopilotFormat = useCallback(() => {
@@ -383,13 +490,12 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     const val = e.target.value;
     setDisplayContent(val);
     pushUpdate(val);
-    
+
     // Slash Menu Detection
     const cursor = e.target.selectionStart;
-    const textBeforeCursor = val.substring(0, cursor);
-    const lastLine = textBeforeCursor.split('\n').pop() || "";
-    
-    // If the line starts with an optional whitespace and a slash, followed by alphabetical chars
+    const textBeforeCursor = val.slice(0, cursor);
+    const lastLine = textBeforeCursor.split("\n").pop() || "";
+
     const match = lastLine.match(/^(\s*)\/([a-zA-Z]*)$/);
     if (match) {
       const leadingSpaces = match[1];
@@ -397,9 +503,9 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
       const lineStart = cursor - lastLine.length;
       const slashIndex = lineStart + leadingSpaces.length;
 
-      setSlashMenu(prev => ({ 
-        open: true, 
-        filter, 
+      setSlashMenu((prev) => ({
+        open: true,
+        filter,
         activeIndex: prev.open ? prev.activeIndex : 0,
         slashIndex,
       }));
@@ -408,19 +514,9 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     }
   };
 
-  // Slash Menu Options
-  const slashOptions = [
-    { id: "h1", icon: <Heading1 size={14} />, label: "Heading 1", insert: "# " },
-    { id: "h2", icon: <Heading2 size={14} />, label: "Heading 2", insert: "## " },
-    { id: "h3", icon: <Heading3 size={14} />, label: "Heading 3", insert: "### " },
-    { id: "todo", icon: <CheckSquare size={14} />, label: "To-do list", insert: "- [ ] " },
-    { id: "ul", icon: <List size={14} />, label: "Bulleted list", insert: "- " },
-    { id: "ol", icon: <ListOrdered size={14} />, label: "Numbered list", insert: "1. " },
-    { id: "quote", icon: <Quote size={14} />, label: "Blockquote", insert: "> " },
-    { id: "code", icon: <Code size={14} />, label: "Code block", insert: "```\n\n```" },
-    { id: "table", icon: <Table size={14} />, label: "Table", insert: "| Header 1 | Header 2 |\n| :--- | :--- |\n| Cell 1 | Cell 2 |\n" }
-  ];
-  const filteredSlashOptions = slashOptions.filter(o => o.label.toLowerCase().includes(slashMenu.filter));
+  const filteredSlashOptions = SLASH_OPTIONS.filter((o) =>
+    o.label.toLowerCase().includes(slashMenu.filter)
+  );
 
   const updateSlashMenuPosition = useCallback(() => {
     const textarea = textareaRef.current;
@@ -433,7 +529,6 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     const caretX = rect.left + coords.left - textarea.scrollLeft;
     const caretY = rect.top + coords.top - textarea.scrollTop;
 
-    // If caret is scrolled outside visible textarea boundary, close
     if (
       caretY < rect.top - coords.height ||
       caretY > rect.bottom ||
@@ -523,14 +618,43 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     }
   }, [slashMenu.activeIndex, slashMenu.open]);
 
+  const executeSlashCommand = (option: typeof SLASH_OPTIONS[0]) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const cursor = textarea.selectionStart;
+    const textBeforeCursor = displayContent.slice(0, cursor);
+    const textAfterCursor = displayContent.slice(textarea.selectionEnd);
+
+    const lastNewlineIdx = textBeforeCursor.lastIndexOf("\n");
+    const lineStart = lastNewlineIdx === -1 ? 0 : lastNewlineIdx + 1;
+    const textBeforeLine = displayContent.slice(0, lineStart);
+    const currentLine = textBeforeCursor.slice(lineStart);
+
+    const leadingSpaces = currentLine.match(/^\s*/)?.[0] || "";
+    const replacement = leadingSpaces + option.insert;
+
+    const newContent = textBeforeLine + replacement + textAfterCursor;
+    setDisplayContent(newContent);
+    pushUpdate(newContent);
+    setSlashMenu({ open: false, filter: "", activeIndex: 0, slashIndex: 0 });
+
+    setTimeout(() => {
+      textarea.focus();
+      let newCursor = textBeforeLine.length + replacement.length;
+      if (option.id === "code") newCursor -= 4;
+      textarea.setSelectionRange(newCursor, newCursor);
+    }, 0);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (slashMenu.open) {
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setSlashMenu(prev => ({ ...prev, activeIndex: (prev.activeIndex + 1) % filteredSlashOptions.length }));
+        setSlashMenu((prev) => ({ ...prev, activeIndex: (prev.activeIndex + 1) % filteredSlashOptions.length }));
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
-        setSlashMenu(prev => ({ ...prev, activeIndex: (prev.activeIndex - 1 + filteredSlashOptions.length) % filteredSlashOptions.length }));
+        setSlashMenu((prev) => ({ ...prev, activeIndex: (prev.activeIndex - 1 + filteredSlashOptions.length) % filteredSlashOptions.length }));
       } else if (e.key === "Enter" || e.key === "Tab") {
         e.preventDefault();
         if (filteredSlashOptions.length > 0) {
@@ -543,59 +667,24 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
       return;
     }
 
-    // Shortcut inside textarea: Cmd/Ctrl+Shift+F (Format document)
     if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === "f" || e.key === "F")) {
       e.preventDefault();
       handleAICopilotFormat();
       return;
     }
 
-    // Shortcut inside textarea: Cmd/Ctrl+S (Save notes immediately)
     if ((e.metaKey || e.ctrlKey) && (e.key === "s" || e.key === "S")) {
       e.preventDefault();
       pushImmediate(displayContent);
       return;
     }
 
-    // Tab indents by 2 spaces
     if (e.key === "Tab" && !e.shiftKey) {
       e.preventDefault();
-      applyFormat("  ");
+      applyFormatting("  ");
     }
   };
 
-  const executeSlashCommand = (option: typeof slashOptions[0]) => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-    
-    const cursor = textarea.selectionStart;
-    const textBeforeCursor = displayContent.substring(0, cursor);
-    const textAfterCursor = displayContent.substring(textarea.selectionEnd);
-    
-    // Find where the slash command started on the current line
-    const lastNewlineIdx = textBeforeCursor.lastIndexOf('\n');
-    const lineStart = lastNewlineIdx === -1 ? 0 : lastNewlineIdx + 1;
-    const textBeforeLine = displayContent.substring(0, lineStart);
-    const currentLine = textBeforeCursor.substring(lineStart);
-    
-    // Replace the slash and filter text with the actual command
-    const leadingSpaces = currentLine.match(/^\s*/)?.[0] || "";
-    const replacement = leadingSpaces + option.insert;
-    
-    const newContent = textBeforeLine + replacement + textAfterCursor;
-    setDisplayContent(newContent);
-    pushUpdate(newContent);
-    setSlashMenu({ open: false, filter: "", activeIndex: 0, slashIndex: 0 });
-    
-    setTimeout(() => {
-      textarea.focus();
-      let newCursor = textBeforeLine.length + replacement.length;
-      if (option.id === "code") newCursor -= 4; // place cursor inside the backticks
-      textarea.setSelectionRange(newCursor, newCursor);
-    }, 0);
-  };
-
-  // Sync line numbers and preview scrolling with editor textarea
   const handleScroll = () => {
     if (slashMenu.open) {
       updateSlashMenuPosition();
@@ -615,37 +704,33 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     }
   };
 
-  // Feature: Interactive Task Checkboxes in Preview
+  // Interactive Task Checkboxes in Preview
   const handleToggleTask = (lineIndex: number, checked: boolean) => {
     const lines = displayContent.split(/\r?\n/);
     if (lineIndex >= 0 && lineIndex < lines.length) {
-      const line = lines[lineIndex];
-      // Replace - [ ] or - [x] or - [X]
-      const replaced = line.replace(/-\s*\[([ xX])\]/, checked ? "- [x]" : "- [ ]");
-      lines[lineIndex] = replaced;
-      const newContent = lines.join('\n');
+      lines[lineIndex] = lines[lineIndex].replace(/-\s*\[([ xX])\]/, checked ? "- [x]" : "- [ ]");
+      const newContent = lines.join("\n");
       setDisplayContent(newContent);
       pushUpdate(newContent);
     }
   };
 
-  // Format Helper Injection
-  const applyFormat = (prefix: string, suffix: string = "") => {
+  // Consolidated parameter-driven format helper
+  const applyFormatting = useCallback((prefix: string, suffix = "", defaultText = "text") => {
     const textarea = textareaRef.current;
     if (!textarea) return;
 
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = displayContent.substring(start, end);
+    const { selectionStart: start, selectionEnd: end } = textarea;
+    const selectedText = displayContent.slice(start, end);
 
     let replacement = "";
     if (selectedText) {
       replacement = `${prefix}${selectedText}${suffix}`;
     } else {
-      replacement = prefix.endsWith(" ") || prefix.endsWith("\n") ? `${prefix}` : `${prefix}text${suffix}`;
+      replacement = prefix.endsWith(" ") || prefix.endsWith("\n") ? prefix : `${prefix}${defaultText}${suffix}`;
     }
 
-    const newContent = displayContent.substring(0, start) + replacement + displayContent.substring(end);
+    const newContent = displayContent.slice(0, start) + replacement + displayContent.slice(end);
     setDisplayContent(newContent);
     pushUpdate(newContent);
 
@@ -654,7 +739,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
       const cursorOffset = selectedText ? start + replacement.length : start + prefix.length;
       textarea.setSelectionRange(cursorOffset, cursorOffset);
     }, 0);
-  };
+  }, [displayContent, pushUpdate]);
 
   // Image / File Upload Helper
   const handleFileUpload = async (files: FileList | null) => {
@@ -668,9 +753,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
 
         const res = await fetch(`/api/pages/${slug}/files/upload`, {
           method: "POST",
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
           body: formData,
         });
 
@@ -700,19 +783,6 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     pushUpdate(newContent);
     setShowTemplateModal(false);
     showToast("Starter template inserted!", "success");
-  };
-
-  // Export Engine Functions
-  const downloadFile = (contentStr: string, filename: string, mime: string) => {
-    const blob = new Blob([contentStr], { type: mime });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
   };
 
   const getExportHTML = (): string => {
@@ -758,42 +828,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
   };
 
   const handleExportHTML = () => {
-    const renderedBody = getExportHTML();
-    const htmlDoc = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${slug}</title>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; max-width: 850px; margin: 40px auto; padding: 32px; color: #0f172a; background: #ffffff; line-height: 1.6; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-radius: 16px; border: 1px solid #e2e8f0; }
-    h1 { font-size: 24px; font-weight: 800; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-top: 24px; color: #0f172a; }
-    h2 { font-size: 20px; font-weight: 700; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-top: 20px; color: #0f172a; }
-    h3 { font-size: 16px; font-weight: 700; margin-top: 16px; color: #1a7f37; }
-    table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
-    th, td { border: 1px solid #cbd5e1; padding: 10px 14px; text-align: left; }
-    th { background: #f8fafc; font-weight: 700; text-transform: uppercase; font-size: 12px; color: #475569; }
-    tr:nth-child(even) { background: #f8fafc; }
-    blockquote { border-left: 4px solid #1a7f37; background: #f1f5f9; margin: 16px 0; padding: 12px 16px; border-radius: 0 12px 12px 0; font-style: italic; color: #334155; }
-    pre { background: #0d1117; color: #e6edf3; padding: 16px; border-radius: 12px; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 13px; line-height: 1.5; }
-    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background: rgba(26, 127, 55, 0.1); padding: 2px 6px; border-radius: 4px; color: #1a7f37; font-weight: 600; font-size: 0.9em; }
-    pre code { background: transparent; padding: 0; color: inherit; }
-    ul, ol { padding-left: 24px; margin: 12px 0; }
-    li { margin: 4px 0; }
-    input[type="checkbox"] { margin-right: 8px; transform: scale(1.15); accent-color: #1a7f37; }
-    hr { border: 0; border-top: 2px solid #e2e8f0; margin: 24px 0; }
-    a { color: #1a7f37; text-decoration: underline; }
-    strong { color: #1a7f37; font-weight: 800; }
-    img { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #cbd5e1; margin: 16px 0; }
-  </style>
-</head>
-<body>
-  <div class="markdown-body">
-    ${renderedBody}
-  </div>
-</body>
-</html>`;
-    downloadFile(htmlDoc, `${slug}.html`, "text/html");
+    downloadFile(buildExportDocument(slug, getExportHTML(), false), `${slug}.html`, "text/html");
     setShowExportMenu(false);
     showToast("Exported formatted HTML document!", "success");
   };
@@ -806,10 +841,9 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     const canvasWidth = 900;
     const contentWidth = canvasWidth - padding * 2;
 
-    // 1. Calculate required canvas height dynamically
     let estimatedHeight = padding * 2;
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
+    for (const raw of lines) {
+      const line = raw.trim();
       if (line.startsWith("# ")) estimatedHeight += 44;
       else if (line.startsWith("## ")) estimatedHeight += 38;
       else if (line.startsWith("### ")) estimatedHeight += 32;
@@ -820,7 +854,6 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     }
     estimatedHeight = Math.max(400, estimatedHeight);
 
-    // 2. Create Native HTML5 Canvas
     const canvas = document.createElement("canvas");
     canvas.width = canvasWidth;
     canvas.height = estimatedHeight;
@@ -830,7 +863,6 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
       return;
     }
 
-    // Background fill (Clean document canvas background)
     ctx.fillStyle = "#0d1117";
     ctx.fillRect(0, 0, canvasWidth, estimatedHeight);
 
@@ -844,20 +876,26 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
       ctx.fillText(text, x, currY);
     };
 
+    const drawDivider = (currY: number) => {
+      ctx.strokeStyle = "#30363d";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padding, currY);
+      ctx.lineTo(padding + contentWidth, currY);
+      ctx.stroke();
+    };
+
     for (let i = 0; i < lines.length; i++) {
       const rawLine = lines[i];
       const line = rawLine.trim();
 
-      // Code blocks ```
       if (line.startsWith("```")) {
         if (!inCodeBlock) {
           inCodeBlock = true;
           const lang = line.replace("```", "").trim().toUpperCase() || "CODE";
           ctx.fillStyle = "#1e293b";
           ctx.fillRect(padding, y, contentWidth, 24);
-          ctx.font = "bold 11px ui-monospace, SFMono-Regular, monospace";
-          ctx.fillStyle = "#94a3b8";
-          ctx.fillText(lang, padding + 12, y + 16);
+          drawText(lang, padding + 12, y + 16, "bold 11px ui-monospace, SFMono-Regular, monospace", "#94a3b8");
           y += 24;
         } else {
           inCodeBlock = false;
@@ -874,149 +912,115 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
         continue;
       }
 
-      // Markdown Tables | ... |
       if (line.startsWith("|") && line.endsWith("|")) {
-        if (/^\|[\s\-:|]+\|$/.test(line)) {
-          continue;
-        }
-        const cells = line.slice(1, -1).split("|").map(c => c.trim());
-        if (!inTable) {
-          inTable = true;
-          const colWidth = contentWidth / Math.max(1, cells.length);
-          ctx.fillStyle = "#161b22";
-          ctx.fillRect(padding, y, contentWidth, 32);
-          ctx.strokeStyle = "#30363d";
-          ctx.strokeRect(padding, y, contentWidth, 32);
+        if (/^\|[\s\-:|]+\|$/.test(line)) continue;
+        const cells = line.slice(1, -1).split("|").map((c) => c.trim());
+        const isHeader = !inTable;
+        inTable = true;
+        const rowH = isHeader ? 32 : 30;
+        const colWidth = contentWidth / Math.max(1, cells.length);
+        ctx.fillStyle = isHeader ? "#161b22" : (i % 2 === 0 ? "#0d1117" : "#161b22");
+        ctx.fillRect(padding, y, contentWidth, rowH);
+        ctx.strokeStyle = "#30363d";
+        ctx.strokeRect(padding, y, contentWidth, rowH);
 
-          cells.forEach((cell, idx) => {
-            ctx.strokeStyle = "#30363d";
-            ctx.strokeRect(padding + idx * colWidth, y, colWidth, 32);
-            drawText(cell.toUpperCase(), padding + idx * colWidth + 10, y + 21, "bold 11px sans-serif", "#8b949e");
-          });
-          y += 32;
-        } else {
-          const colWidth = contentWidth / Math.max(1, cells.length);
-          ctx.fillStyle = (i % 2 === 0) ? "#0d1117" : "#161b22";
-          ctx.fillRect(padding, y, contentWidth, 30);
+        cells.forEach((cell, idx) => {
+          const cx = padding + idx * colWidth;
           ctx.strokeStyle = "#30363d";
-          ctx.strokeRect(padding, y, contentWidth, 30);
-
-          cells.forEach((cell, idx) => {
-            ctx.strokeStyle = "#30363d";
-            ctx.strokeRect(padding + idx * colWidth, y, colWidth, 30);
-            drawText(cell, padding + idx * colWidth + 10, y + 20, "13px sans-serif", "#e6edf3");
-          });
-          y += 30;
-        }
+          ctx.strokeRect(cx, y, colWidth, rowH);
+          drawText(
+            isHeader ? cell.toUpperCase() : cell,
+            cx + 10,
+            y + (isHeader ? 21 : 20),
+            isHeader ? "bold 11px sans-serif" : "13px sans-serif",
+            isHeader ? "#8b949e" : "#e6edf3"
+          );
+        });
+        y += rowH;
         continue;
-      } else {
-        if (inTable) {
-          inTable = false;
-          y += 10;
-        }
+      } else if (inTable) {
+        inTable = false;
+        y += 10;
       }
 
-      // Empty lines
       if (!line) {
         y += 14;
         continue;
       }
 
-      // Headings
       if (line.startsWith("# ")) {
-        drawText(line.replace("# ", ""), padding, y + 24, "bold 22px sans-serif", "#f0f6fc");
-        ctx.strokeStyle = "#30363d";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(padding, y + 32);
-        ctx.lineTo(padding + contentWidth, y + 32);
-        ctx.stroke();
+        drawText(line.slice(2), padding, y + 24, "bold 22px sans-serif", "#f0f6fc");
+        drawDivider(y + 32);
         y += 42;
       } else if (line.startsWith("## ")) {
-        drawText(line.replace("## ", ""), padding, y + 20, "bold 18px sans-serif", "#f0f6fc");
-        ctx.strokeStyle = "#30363d";
-        ctx.beginPath();
-        ctx.moveTo(padding, y + 28);
-        ctx.lineTo(padding + contentWidth, y + 28);
-        ctx.stroke();
+        drawText(line.slice(3), padding, y + 20, "bold 18px sans-serif", "#f0f6fc");
+        drawDivider(y + 28);
         y += 36;
       } else if (line.startsWith("### ")) {
-        drawText(line.replace("### ", ""), padding, y + 18, "bold 15px sans-serif", "#3fb950");
+        drawText(line.slice(4), padding, y + 18, "bold 15px sans-serif", "#3fb950");
         y += 30;
       } else if (line.startsWith("> ")) {
-        // Blockquote
         ctx.fillStyle = "#161b22";
         ctx.fillRect(padding, y, contentWidth, 28);
         ctx.fillStyle = "#238636";
         ctx.fillRect(padding, y, 4, 28);
-        drawText(line.replace("> ", ""), padding + 14, y + 19, "italic 13px sans-serif", "#c9d1d9");
+        drawText(line.slice(2), padding + 14, y + 19, "italic 13px sans-serif", "#c9d1d9");
         y += 32;
       } else if (line.startsWith("- [x]") || line.startsWith("- [X]")) {
-        // Completed Task
         ctx.fillStyle = "#10b981";
         ctx.fillRect(padding, y + 4, 14, 14);
         drawText("✓", padding + 3, y + 15, "bold 11px sans-serif", "#ffffff");
         drawText(line.replace(/^-\s*\[[xX]\]\s*/, ""), padding + 22, y + 16, "13px sans-serif", "#8b949e");
         y += 24;
       } else if (line.startsWith("- [ ]")) {
-        // Pending Task
         ctx.strokeStyle = "#64748b";
         ctx.strokeRect(padding, y + 4, 14, 14);
         drawText(line.replace(/^-\s*\[\s*\]\s*/, ""), padding + 22, y + 16, "13px sans-serif", "#e6edf3");
         y += 24;
       } else if (line.startsWith("- ")) {
-        // Bullet list
         ctx.fillStyle = "#238636";
         ctx.beginPath();
         ctx.arc(padding + 6, y + 10, 3, 0, Math.PI * 2);
         ctx.fill();
-        drawText(line.replace("- ", ""), padding + 18, y + 15, "13px sans-serif", "#e6edf3");
+        drawText(line.slice(2), padding + 18, y + 15, "13px sans-serif", "#e6edf3");
         y += 24;
       } else if (line.startsWith("---")) {
-        // HR
-        ctx.strokeStyle = "#30363d";
-        ctx.beginPath();
-        ctx.moveTo(padding, y + 10);
-        ctx.lineTo(padding + contentWidth, y + 10);
-        ctx.stroke();
+        drawDivider(y + 10);
         y += 20;
       } else {
-        // Normal paragraph text
         drawText(line, padding, y + 15, "13px sans-serif", "#e6edf3");
         y += 24;
       }
     }
 
-    // Export Native Canvas directly to PNG blob
     canvas.toBlob((blob) => {
-      if (blob) {
-        const pngUrl = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = pngUrl;
-        a.download = `${slug}.png`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(pngUrl), 1000);
-        showToast("Exported PNG (.png) document image!", "success");
-      } else {
+      if (!blob) {
         showToast("Could not generate PNG image", "error");
+        return;
       }
+      const pngUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = pngUrl;
+      a.download = `${slug}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(pngUrl), 1000);
+      showToast("Exported PNG (.png) document image!", "success");
     }, "image/png");
   };
 
   const handlePrintPDF = () => {
     setShowExportMenu(false);
-    const renderedBody = getExportHTML();
-
     const iframe = document.createElement("iframe");
-    iframe.style.position = "fixed";
-    iframe.style.right = "0";
-    iframe.style.bottom = "0";
-    iframe.style.width = "0";
-    iframe.style.height = "0";
-    iframe.style.border = "0";
-
+    Object.assign(iframe.style, {
+      position: "fixed",
+      right: "0",
+      bottom: "0",
+      width: "0",
+      height: "0",
+      border: "0",
+    });
     document.body.appendChild(iframe);
 
     const doc = iframe.contentWindow?.document;
@@ -1026,40 +1030,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     }
 
     doc.open();
-    doc.write(`<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>${slug}</title>
-  <style>
-    @page { margin: 15mm; size: auto; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #0f172a; background: #ffffff; line-height: 1.6; padding: 0; margin: 0; }
-    h1 { font-size: 24px; font-weight: 800; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-top: 24px; color: #0f172a; }
-    h2 { font-size: 20px; font-weight: 700; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-top: 20px; color: #0f172a; }
-    h3 { font-size: 16px; font-weight: 700; margin-top: 16px; color: #1a7f37; }
-    table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; page-break-inside: avoid; }
-    th, td { border: 1px solid #cbd5e1; padding: 10px 14px; text-align: left; }
-    th { background: #f8fafc; font-weight: 700; text-transform: uppercase; font-size: 12px; color: #475569; }
-    tr:nth-child(even) { background: #f8fafc; }
-    blockquote { border-left: 4px solid #1a7f37; background: #f1f5f9; margin: 16px 0; padding: 12px 16px; border-radius: 0 12px 12px 0; font-style: italic; color: #334155; }
-    pre { background: #0d1117; color: #e6edf3; padding: 16px; border-radius: 12px; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 13px; line-height: 1.5; page-break-inside: avoid; }
-    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background: rgba(26, 127, 55, 0.1); padding: 2px 6px; border-radius: 4px; color: #1a7f37; font-weight: 600; font-size: 0.9em; }
-    pre code { background: transparent; padding: 0; color: inherit; }
-    ul, ol { padding-left: 24px; margin: 12px 0; }
-    li { margin: 4px 0; }
-    input[type="checkbox"] { margin-right: 8px; transform: scale(1.15); accent-color: #1a7f37; }
-    hr { border: 0; border-top: 2px solid #e2e8f0; margin: 24px 0; }
-    a { color: #1a7f37; text-decoration: underline; }
-    strong { color: #1a7f37; font-weight: 800; }
-    img { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #cbd5e1; margin: 16px 0; page-break-inside: avoid; }
-  </style>
-</head>
-<body>
-  <div>
-    ${renderedBody}
-  </div>
-</body>
-</html>`);
+    doc.write(buildExportDocument(slug, getExportHTML(), true));
     doc.close();
 
     setTimeout(() => {
@@ -1076,24 +1047,23 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
   const charCount = displayContent.length;
   const readTime  = Math.max(1, Math.ceil(wordCount / 200));
 
-  // Feature 3: Checklist Progress Tracker
-  const taskCheckboxes = displayContent.match(/-\s*\[([ xX])\]/g) || [];
-  const completedTasks = displayContent.match(/-\s*\[([xX])\]/g) || [];
-  const totalTasks = taskCheckboxes.length;
-  const completedCount = completedTasks.length;
+  const totalTasks = (displayContent.match(/-\s*\[([ xX])\]/g) || []).length;
+  const completedCount = (displayContent.match(/-\s*\[([xX])\]/g) || []).length;
   const taskProgress = totalTasks > 0 ? Math.round((completedCount / totalTasks) * 100) : 0;
 
-  // Feature 2: Table of Contents (Outline)
-  const headings = displayContent
-    .split("\n")
-    .filter((line) => /^#{1,3}\s/.test(line))
-    .map((line) => {
-      const level = line.match(/^#{1,3}/)?.[0].length || 1;
-      const text = line.replace(/^#{1,3}\s/, "");
-      // simple slugification for anchors
-      const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-      return { level, text, id };
-    });
+  const headings = useMemo(() => {
+    return displayContent
+      .split("\n")
+      .filter((line) => /^#{1,3}\s/.test(line))
+      .map((line) => {
+        const level = line.match(/^#{1,3}/)?.[0].length || 1;
+        const text = line.replace(/^#{1,3}\s/, "");
+        const id = text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+        return { level, text, id };
+      });
+  }, [displayContent]);
+
+
 
   return (
     <section className={`
@@ -1126,135 +1096,25 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
       <header className="relative z-30 flex flex-col sm:flex-row items-stretch sm:items-center px-2.5 py-1.5 border-b border-[var(--border-color)] bg-[var(--bg-surface)] shrink-0 gap-1.5 select-none min-h-[44px] w-full min-w-0 max-w-full">
         {/* Left: Markdown Format Icons Toolbar */}
         <div className="flex items-center gap-1.5 flex-nowrap flex-none w-full sm:flex-1 overflow-x-auto no-scrollbar py-0.5 min-w-0 max-w-full overscroll-x-contain">
-          {/* Headings */}
-          <div className="flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)] shrink-0">
-            <button
-              type="button"
-              onClick={() => applyFormat("# ")}
-              title="Heading 1 (#)"
-              aria-label="Heading 1"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-xs font-black text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
-            >
-              <Heading1 size={15} />
-            </button>
-            <button
-              type="button"
-              onClick={() => applyFormat("## ")}
-              title="Heading 2 (##)"
-              aria-label="Heading 2"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-xs font-black text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
-            >
-              <Heading2 size={15} />
-            </button>
-            <button
-              type="button"
-              onClick={() => applyFormat("### ")}
-              title="Heading 3 (###)"
-              aria-label="Heading 3"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-xs font-black text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
-            >
-              <Heading3 size={15} />
-            </button>
-          </div>
-
-          <div className="w-px h-4 bg-[var(--border-color)] mx-0.5 shrink-0" />
-
-          {/* Inline styles */}
-          <div className="flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)] shrink-0">
-            <button
-              type="button"
-              onClick={() => applyFormat("**", "**")}
-              title="Bold (**text**)"
-              aria-label="Bold"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
-            >
-              <Bold size={15} />
-            </button>
-            <button
-              type="button"
-              onClick={() => applyFormat("*", "*")}
-              title="Italic (*text*)"
-              aria-label="Italic"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
-            >
-              <Italic size={15} />
-            </button>
-            <button
-              type="button"
-              onClick={() => applyFormat("~~", "~~")}
-              title="Strikethrough (~~text~~)"
-              aria-label="Strikethrough"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
-            >
-              <Strikethrough size={15} />
-            </button>
-          </div>
-
-          <div className="w-px h-4 bg-[var(--border-color)] mx-0.5 shrink-0" />
-
-          {/* Lists */}
-          <div className="flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)] shrink-0">
-            <button
-              type="button"
-              onClick={() => applyFormat("- ")}
-              title="Unordered List (-)"
-              aria-label="Unordered List"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
-            >
-              <List size={15} />
-            </button>
-            <button
-              type="button"
-              onClick={() => applyFormat("1. ")}
-              title="Numbered List (1.)"
-              aria-label="Numbered List"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
-            >
-              <ListOrdered size={15} />
-            </button>
-            <button
-              type="button"
-              onClick={() => applyFormat("- [ ] ")}
-              title="Task Checkbox (- [ ])"
-              aria-label="Task Checkbox"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
-            >
-              <CheckSquare size={15} />
-            </button>
-          </div>
-
-          <div className="w-px h-4 bg-[var(--border-color)] mx-0.5 shrink-0" />
-
-          {/* Blocks */}
-          <div className="flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)] shrink-0">
-            <button
-              type="button"
-              onClick={() => applyFormat("> ")}
-              title="Blockquote (>)"
-              aria-label="Blockquote"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
-            >
-              <Quote size={15} />
-            </button>
-            <button
-              type="button"
-              onClick={() => applyFormat("```\n", "\n```")}
-              title="Code Block (```)"
-              aria-label="Code Block"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
-            >
-              <Code size={15} />
-            </button>
-            <button
-              type="button"
-              onClick={() => applyFormat("| Header 1 | Header 2 |\n| :--- | :--- |\n| Cell 1 | Cell 2 |\n")}
-              title="Insert Table"
-              aria-label="Insert Table"
-              className="min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
-            >
-              <Table size={15} />
-            </button>
-          </div>
+          {TOOLBAR_FORMAT_GROUPS.map((group, gIdx) => (
+            <div key={group.name} className="flex items-center shrink-0">
+              {gIdx > 0 && <div className="w-px h-4 bg-[var(--border-color)] mx-1 shrink-0" />}
+              <div className="flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)] shrink-0">
+                {group.items.map((btn) => (
+                  <button
+                    key={btn.label}
+                    type="button"
+                    onClick={() => applyFormatting(btn.prefix, btn.suffix ?? "")}
+                    title={btn.title}
+                    aria-label={btn.label}
+                    className={`min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer ${btn.extraClass ?? ""}`}
+                  >
+                    {btn.icon}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Right: Actions, Templates, Export, Zen & View Controls */}
@@ -1286,12 +1146,12 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
           {/* Outline / ToC Toggle */}
           <button
             type="button"
-            onClick={() => setShowOutline(prev => !prev)}
+            onClick={() => setShowOutline((prev) => !prev)}
             aria-label="Toggle document outline"
             aria-pressed={showOutline}
             className={`min-h-[44px] min-w-[44px] sm:min-h-[32px] sm:min-w-[32px] p-2 sm:p-1.5 flex items-center justify-center rounded-lg border transition-all cursor-pointer shrink-0 ${
-              showOutline 
-                ? "bg-[var(--accent-primary)] border-[var(--accent-primary)] text-white shadow-xs" 
+              showOutline
+                ? "bg-[var(--accent-primary)] border-[var(--accent-primary)] text-white shadow-xs"
                 : "bg-[var(--bg-card)] border-[var(--border-color)] text-[var(--text-main)] hover:border-[var(--accent-primary)]/50"
             }`}
             title="Toggle Document Outline"
@@ -1346,60 +1206,32 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                   <Archive size={14} className="text-[var(--accent-primary)]" />
                   <span>Export All (ZIP Archive)</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={handleCopyContent}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[40px] sm:min-h-[32px]"
-                >
+                <button type="button" onClick={handleCopyContent} className={EXPORT_ITEM_CLASS}>
                   <Copy size={14} className="text-[var(--accent-primary)]" />
                   <span>Copy to Clipboard</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={handleExportMarkdown}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[40px] sm:min-h-[32px]"
-                >
+                <button type="button" onClick={handleExportMarkdown} className={EXPORT_ITEM_CLASS}>
                   <FileText size={14} className="text-[var(--accent-primary)]" />
                   <span>Markdown (.md)</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={handleExportHTML}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[40px] sm:min-h-[32px]"
-                >
+                <button type="button" onClick={handleExportHTML} className={EXPORT_ITEM_CLASS}>
                   <FileCode size={14} className="text-[var(--accent-cyan)]" />
                   <span>HTML Document</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={handlePrintPDF}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[40px] sm:min-h-[32px]"
-                >
+                <button type="button" onClick={handlePrintPDF} className={EXPORT_ITEM_CLASS}>
                   <Printer size={14} className="text-[var(--accent-primary)]" />
                   <span>PDF Document</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={handleExportImage}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[40px] sm:min-h-[32px]"
-                >
+                <button type="button" onClick={handleExportImage} className={EXPORT_ITEM_CLASS}>
                   <ImageIcon size={14} className="text-[var(--status-success-text)]" />
                   <span>Image (.png)</span>
                 </button>
                 <div className="my-1 border-t border-[var(--border-color)]" />
-                <button
-                  type="button"
-                  onClick={handleExportText}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[40px] sm:min-h-[32px]"
-                >
+                <button type="button" onClick={handleExportText} className={EXPORT_ITEM_CLASS}>
                   <FileSpreadsheet size={14} className="text-[var(--text-muted)]" />
                   <span>Plain Text (.txt)</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={handleExportJSON}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[40px] sm:min-h-[32px]"
-                >
+                <button type="button" onClick={handleExportJSON} className={EXPORT_ITEM_CLASS}>
                   <FileJson size={15} className="text-[var(--status-danger-text)]" />
                   <span>JSON Dataset (.json)</span>
                 </button>
@@ -1425,51 +1257,26 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
 
           {/* View Mode Toggle Segmented Control */}
           <div className="inline-flex items-center p-0.5 rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] shrink-0" role="group" aria-label="Editor view mode">
-            <button
-              type="button"
-              onClick={() => setViewMode("write")}
-              aria-label="Raw markdown mode"
-              aria-pressed={viewMode === "write"}
-              className={`min-h-[44px] min-w-[44px] px-2.5 sm:min-h-[32px] sm:min-w-[32px] sm:px-2 flex items-center gap-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
-                viewMode === "write"
-                  ? "bg-[var(--accent-primary)] text-white shadow-xs"
-                  : "text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/5"
-              }`}
-              title="Raw Mode"
-            >
-              <Layout size={14} />
-              <span className="hidden md:inline">Raw</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode("split")}
-              aria-label="Split view mode"
-              aria-pressed={viewMode === "split"}
-              className={`min-h-[44px] min-w-[44px] px-2.5 sm:min-h-[32px] sm:min-w-[32px] sm:px-2 hidden sm:flex items-center gap-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
-                viewMode === "split"
-                  ? "bg-[var(--accent-primary)] text-white shadow-xs"
-                  : "text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/5"
-              }`}
-              title="Split View"
-            >
-              <Columns size={14} />
-              <span className="hidden md:inline">Split</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode("preview")}
-              aria-label="Preview mode"
-              aria-pressed={viewMode === "preview"}
-              className={`min-h-[44px] min-w-[44px] px-2.5 sm:min-h-[32px] sm:min-w-[32px] sm:px-2 flex items-center gap-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
-                viewMode === "preview"
-                  ? "bg-[var(--accent-primary)] text-white shadow-xs"
-                  : "text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/5"
-              }`}
-              title="Preview Mode"
-            >
-              <Eye size={14} />
-              <span className="hidden md:inline">Preview</span>
-            </button>
+            {VIEW_MODES.map(({ mode, label, icon, hiddenOnMobile }) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setViewMode(mode)}
+                aria-label={`${label} mode`}
+                aria-pressed={viewMode === mode}
+                className={`min-h-[44px] min-w-[44px] px-2.5 sm:min-h-[32px] sm:min-w-[32px] sm:px-2 items-center gap-1.5 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                  hiddenOnMobile ? "hidden sm:flex" : "flex"
+                } ${
+                  viewMode === mode
+                    ? "bg-[var(--accent-primary)] text-white shadow-xs"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/5"
+                }`}
+                title={`${label} Mode`}
+              >
+                {icon}
+                <span className="hidden md:inline">{label}</span>
+              </button>
+            ))}
           </div>
         </div>
       </header>
@@ -1541,38 +1348,36 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                     </button>
                   </div>
                   <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-3 space-y-1">
-                  {headings.length === 0 ? (
-                    <p className="text-xs text-[var(--text-muted)] italic">No headings found in document.</p>
-                  ) : (
-                    headings.map((h, i) => (
-                      <a
-                        key={i}
-                        href={`#${h.id}`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          const el = document.getElementById(h.id);
-                          if (el) el.scrollIntoView({ behavior: 'smooth' });
-                          // On mobile the outline overlays the editor — dismiss
-                          // it after jumping so the user lands back in context.
-                          if (typeof window !== "undefined" && window.innerWidth < 640) {
-                            setShowOutline(false);
-                          }
-                        }}
-                        className={`block text-xs truncate hover:text-[var(--accent-primary)] transition-colors cursor-pointer py-1 ${
-                          h.level === 1 ? "font-bold text-[var(--text-main)] mt-2" :
-                          h.level === 2 ? "font-medium text-[var(--text-muted)] ml-3" :
-                          "text-[var(--text-muted)] ml-6"
-                        }`}
-                        title={h.text}
-                      >
-                        {h.text}
-                      </a>
-                    ))
-                  )}
-                </div>
-              </aside>
-            </>
-          )}
+                    {headings.length === 0 ? (
+                      <p className="text-xs text-[var(--text-muted)] italic">No headings found in document.</p>
+                    ) : (
+                      headings.map((h, i) => (
+                        <a
+                          key={i}
+                          href={`#${h.id}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            const el = document.getElementById(h.id);
+                            if (el) el.scrollIntoView({ behavior: "smooth" });
+                            if (typeof window !== "undefined" && window.innerWidth < 640) {
+                              setShowOutline(false);
+                            }
+                          }}
+                          className={`block text-xs truncate hover:text-[var(--accent-primary)] transition-colors cursor-pointer py-1 ${
+                            h.level === 1 ? "font-bold text-[var(--text-main)] mt-2" :
+                            h.level === 2 ? "font-medium text-[var(--text-muted)] ml-3" :
+                            "text-[var(--text-muted)] ml-6"
+                          }`}
+                          title={h.text}
+                        >
+                          {h.text}
+                        </a>
+                      ))
+                    )}
+                  </div>
+                </aside>
+              </>
+            )}
 
             {/* Writer Pane */}
             {(viewMode === "write" || viewMode === "split") && (
@@ -1606,10 +1411,10 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                     />
                   </div>
 
-                  {/* Floating Slash Commands Menu (Anchored directly to caret position) */}
+                  {/* Floating Slash Commands Menu */}
                   {typeof document !== "undefined" && slashMenu.open && filteredSlashOptions.length > 0 &&
                     createPortal(
-                      <div 
+                      <div
                         ref={slashMenuRef}
                         role="listbox"
                         aria-label="Slash commands suggestions"
@@ -1631,10 +1436,10 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                               role="option"
                               aria-selected={i === slashMenu.activeIndex}
                               onClick={() => executeSlashCommand(opt)}
-                              onMouseEnter={() => setSlashMenu(prev => ({ ...prev, activeIndex: i }))}
+                              onMouseEnter={() => setSlashMenu((prev) => ({ ...prev, activeIndex: i }))}
                               className={`flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
-                                i === slashMenu.activeIndex 
-                                   ? "bg-[var(--accent-primary)] text-white" 
+                                i === slashMenu.activeIndex
+                                  ? "bg-[var(--accent-primary)] text-white"
                                   : "text-[var(--text-main)] hover:bg-[var(--bg-card)]"
                               }`}
                             >
@@ -1681,7 +1486,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
               <span className="hidden md:flex items-center gap-1.5" title={`${completedCount} of ${totalTasks} tasks completed`}>
                 <CheckSquare size={12} className={completedCount === totalTasks ? "text-[var(--status-success-text)]" : ""} />
                 <div className="w-12 h-1 bg-[var(--border-color)] rounded-full overflow-hidden flex">
-                  <div 
+                  <div
                     className="h-full bg-[var(--status-success-text)] transition-all duration-300"
                     style={{ width: `${taskProgress}%` }}
                   />
@@ -1696,7 +1501,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
           {/* Active Collaborators Presence Badge */}
           <div
             className="flex items-center gap-1.5 px-1.5 py-0.5 rounded-full bg-[var(--status-success-bg)] border border-[var(--status-success-border)] text-[10px] text-[var(--status-success-text)] font-semibold"
-            title={`${collaboratorCount} active browser session${collaboratorCount === 1 ? '' : 's'} connected to this workspace`}
+            title={`${collaboratorCount} active browser session${collaboratorCount === 1 ? "" : "s"} connected to this workspace`}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-[var(--status-success-text)] animate-pulse" />
             <span>{collaboratorCount} live</span>
@@ -1764,80 +1569,62 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
 
 function formatMarkdownToHTML(md: string): string {
   if (!md.trim()) return "<p><em>Empty document</em></p>";
-  
+
   let html = md
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 
-  // Code blocks: ```lang ... ```
   html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
-    return `<div style="margin: 12px 0; border-radius: 10px; overflow: hidden; border: 1px solid #cbd5e1;"><div style="background: #1e293b; color: #94a3b8; padding: 4px 12px; font-size: 11px; font-weight: bold; font-family: monospace; text-transform: uppercase;">${lang || 'code'}</div><pre style="background: #0f172a; color: #f8fafc; padding: 14px; margin: 0; font-family: monospace; font-size: 13px; overflow-x: auto; line-height: 1.5;"><code>${code}</code></pre></div>`;
+    return `<div style="margin: 12px 0; border-radius: 10px; overflow: hidden; border: 1px solid #cbd5e1;"><div style="background: #1e293b; color: #94a3b8; padding: 4px 12px; font-size: 11px; font-weight: bold; font-family: monospace; text-transform: uppercase;">${lang || "code"}</div><pre style="background: #0f172a; color: #f8fafc; padding: 14px; margin: 0; font-family: monospace; font-size: 13px; overflow-x: auto; line-height: 1.5;"><code>${code}</code></pre></div>`;
   });
 
-  // Inline code: `code`
   html = html.replace(/`([^`]+)`/g, '<code style="background: #f1f5f9; color: #1a7f37; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.9em; font-weight: 600;">$1</code>');
-
-  // Headings
   html = html.replace(/^### (.*$)/gim, '<h3 style="font-size: 16px; font-weight: 700; color: #1a7f37; margin-top: 18px; margin-bottom: 8px;">$1</h3>');
   html = html.replace(/^## (.*$)/gim, '<h2 style="font-size: 20px; font-weight: 700; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-top: 22px; margin-bottom: 10px;">$1</h2>');
   html = html.replace(/^# (.*$)/gim, '<h1 style="font-size: 24px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-top: 24px; margin-bottom: 12px;">$1</h1>');
 
-  // Markdown Tables: parse lines starting with |
   const lines = html.split("\n");
   const resultLines: string[] = [];
   let inTable = false;
   let tableRows: string[] = [];
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
+  const flushTable = () => {
+    if (inTable) {
+      tableRows.push("</tbody>");
+      resultLines.push(`<table style="width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; font-family: sans-serif;">${tableRows.join("")}</table>`);
+      inTable = false;
+      tableRows = [];
+    }
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
     if (line.startsWith("|") && line.endsWith("|")) {
-      if (/^\|[\s\-:|]+\|$/.test(line)) {
-        continue;
-      }
-      const cells = line.slice(1, -1).split("|").map(c => c.trim());
+      if (/^\|[\s\-:|]+\|$/.test(line)) continue;
+      const cells = line.slice(1, -1).split("|").map((c) => c.trim());
       if (!inTable) {
         inTable = true;
-        tableRows = [];
-        const headerCols = cells.map(c => `<th style="border: 1px solid #cbd5e1; padding: 8px 12px; background: #f8fafc; font-weight: 700; text-align: left; font-size: 12px; text-transform: uppercase; color: #475569;">${c}</th>`).join("");
-        tableRows.push(`<thead><tr>${headerCols}</tr></thead><tbody>`);
+        const ths = cells.map((c) => `<th style="border: 1px solid #cbd5e1; padding: 8px 12px; background: #f8fafc; font-weight: 700; text-align: left; font-size: 12px; text-transform: uppercase; color: #475569;">${c}</th>`).join("");
+        tableRows.push(`<thead><tr>${ths}</tr></thead><tbody>`);
       } else {
-        const bodyCols = cells.map(c => `<td style="border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left;">${c}</td>`).join("");
-        tableRows.push(`<tr>${bodyCols}</tr>`);
+        const tds = cells.map((c) => `<td style="border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left;">${c}</td>`).join("");
+        tableRows.push(`<tr>${tds}</tr>`);
       }
     } else {
-      if (inTable) {
-        inTable = false;
-        tableRows.push("</tbody>");
-        resultLines.push(`<table style="width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; font-family: sans-serif;">${tableRows.join("")}</table>`);
-      }
-      resultLines.push(lines[i]);
+      flushTable();
+      resultLines.push(rawLine);
     }
   }
-  if (inTable) {
-    tableRows.push("</tbody>");
-    resultLines.push(`<table style="width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; font-family: sans-serif;">${tableRows.join("")}</table>`);
-  }
+  flushTable();
 
   html = resultLines.join("\n");
-
-  // Blockquotes: > text
   html = html.replace(/^>\s?(.*$)/gim, '<blockquote style="border-left: 4px solid #1a7f37; background: #f1f5f9; margin: 12px 0; padding: 10px 14px; border-radius: 0 8px 8px 0; font-style: italic; color: #334155;">$1</blockquote>');
-
-  // Horizontal rules
   html = html.replace(/^---$/gim, '<hr style="border: 0; border-top: 2px solid #e2e8f0; margin: 20px 0;" />');
-
-  // Task list checkboxes: - [x] task or - [ ] task
   html = html.replace(/^-\s*\[x\]\s*(.*$)/gim, '<div style="margin: 4px 0;"><input type="checkbox" checked disabled style="margin-right: 8px; accent-color: #1a7f37;" /> <span style="text-decoration: line-through; color: #64748b;">$1</span></div>');
   html = html.replace(/^-\s*\[\s*\]\s*(.*$)/gim, '<div style="margin: 4px 0;"><input type="checkbox" disabled style="margin-right: 8px; accent-color: #1a7f37;" /> <span>$1</span></div>');
-
-  // Unordered list items: - item
   html = html.replace(/^-\s+(.*$)/gim, '<li style="margin: 4px 0; list-style-type: disc;">$1</li>');
-
-  // Numbered list items: 1. item
   html = html.replace(/^\d+\.\s+(.*$)/gim, '<li style="margin: 4px 0; list-style-type: decimal;">$1</li>');
-
-  // Bold, Italic, Strikethrough
   html = html.replace(/\*\*([^*]+)\*\*/g, '<strong style="color: #1a7f37; font-weight: 800;">$1</strong>');
   html = html.replace(/\*([^*]+)\*/g, '<em style="font-style: italic; font-weight: 600;">$1</em>');
   html = html.replace(/~~([^~]+)~~/g, '<del style="text-decoration: line-through; color: #94a3b8;">$1</del>');

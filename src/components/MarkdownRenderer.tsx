@@ -1,6 +1,14 @@
 "use client";
-import React, { isValidElement, cloneElement, useState } from "react";
-import ReactMarkdown from "react-markdown";
+import React, {
+  isValidElement,
+  cloneElement,
+  useState,
+  useEffect,
+  useMemo,
+  type ReactNode,
+  type ReactElement,
+} from "react";
+import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
@@ -8,317 +16,67 @@ import rehypeHighlight from "rehype-highlight";
 import rehypeSlug from "rehype-slug";
 import { Copy, Check } from "lucide-react";
 import { MermaidRenderer } from "@/components/MermaidRenderer";
+import { copyToClipboard } from "@/lib/clipboard";
 
 interface MarkdownRendererProps {
   content: string;
   onToggleTask?: (lineIndex: number, checked: boolean) => void;
 }
 
+// ── Static Plugin Pipelines (hoisted to prevent unified re-initialization) ──
+const REMARK_PLUGINS = [remarkGfm];
+const REHYPE_PLUGINS = [rehypeRaw, rehypeSanitize, rehypeHighlight, rehypeSlug];
+
+// ── Pure Helpers ──
+
 /**
- * Full-featured Markdown renderer supporting:
- * - GitHub Flavored Markdown (tables, task lists, strikethrough, autolinks)
- * - Syntax-highlighted fenced code blocks with language badge & copy button
- * - Mermaid diagrams via ```mermaid fences
- * - Sanitized raw HTML (safe formatting only)
- * - Heading anchor IDs (`rehype-slug`)
- * - Bidirectional page links (`[[slug]]`)
+ * Bidirectional Page Linking: converts [[slug]] to [slug](/s/slug) outside code fences and spans.
+ * Fast path: returns early if no "[[" substring exists in the document.
  */
-export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProps) {
-  const safeContent = typeof content === "string" ? content : "";
+function parseBidirectionalLinks(text: string): string {
+  if (!text.includes("[[")) return text;
 
-  if (!safeContent.trim()) {
-    return (
-      <div className="h-full flex items-center justify-center text-xs font-mono text-[var(--text-muted)] italic select-none">
-        Empty notes preview. Start typing in Write mode…
-      </div>
-    );
-  }
-
-  // Bidirectional Page Linking: convert [[slug]] to [slug](/s/slug) outside code fences
-  const parseBidirectionalLinks = (text: string) => {
-    const parts = text.split(/(```[\s\S]*?```)/g);
-    for (let i = 0; i < parts.length; i++) {
-      if (i % 2 === 0) {
-        const inlineParts = parts[i].split(/(`[^`]+`)/g);
-        for (let j = 0; j < inlineParts.length; j++) {
-          if (j % 2 === 0) {
-            inlineParts[j] = inlineParts[j].replace(/\[\[(.*?)\]\]/g, (_match, p1) => {
-              const cleanSlug = p1.trim();
-              return `[${cleanSlug}](/s/${cleanSlug})`;
-            });
-          }
-        }
-        parts[i] = inlineParts.join("");
+  const parts = text.split(/(```[\s\S]*?```)/g);
+  for (let i = 0; i < parts.length; i += 2) {
+    const inlineParts = parts[i].split(/(`[^`]+`)/g);
+    for (let j = 0; j < inlineParts.length; j += 2) {
+      if (inlineParts[j].includes("[[")) {
+        inlineParts[j] = inlineParts[j].replace(/\[\[(.*?)\]\]/g, (_match, p1) => {
+          const cleanSlug = p1.trim();
+          return `[${cleanSlug}](/s/${cleanSlug})`;
+        });
       }
     }
-    return parts.join("");
-  };
-
-  const parsedContent = parseBidirectionalLinks(safeContent);
-
-  return (
-    <div className="max-w-full min-w-0 break-words [overflow-wrap:anywhere] text-sm sm:text-[15px] leading-relaxed text-[var(--text-main)] select-text markdown-body">
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        // Raw HTML is parsed for formatting, then sanitized before React
-        // renders it. This blocks javascript: URLs, event handlers, iframe,
-        // object/embed/form injection and stored XSS in shared workspaces.
-        rehypePlugins={[rehypeRaw, rehypeSanitize, rehypeHighlight, rehypeSlug]}
-        components={{
-          // ── Fenced code blocks container ──
-          pre({ children }) {
-            const codeElement = isValidElement(children)
-              ? children
-              : Array.isArray(children) && isValidElement(children[0])
-              ? children[0]
-              : null;
-            const className = (codeElement?.props as { className?: string } | undefined)?.className || "";
-            const match = /language-(\w+)/.exec(className);
-            const lang = match?.[1];
-            const rawCode = extractText(children).replace(/\n$/, "");
-
-            // Mermaid diagram block
-            if (lang === "mermaid") {
-              return <MermaidRenderer chart={rawCode} />;
-            }
-
-            return (
-              <div className="my-3 rounded-xl border border-[var(--border-color)] overflow-hidden bg-[var(--input-bg)] shadow-sm">
-                <div className="flex items-center justify-between px-3.5 py-1.5 bg-[var(--bg-surface)] border-b border-[var(--border-color)] select-none">
-                  <span className="text-[11px] font-mono uppercase tracking-wider text-[var(--text-muted)] font-extrabold">
-                    {lang || "code"}
-                  </span>
-                  <CopyCodeButton code={rawCode} />
-                </div>
-                <pre className="p-3.5 overflow-x-auto text-xs md:text-sm font-mono leading-relaxed m-0 bg-transparent text-[var(--text-main)]">
-                  {isValidElement(children)
-                    ? cloneElement(children as React.ReactElement<{ isBlock?: boolean }>, { isBlock: true })
-                    : children}
-                </pre>
-              </div>
-            );
-          },
-
-          // ── Code element: handles block code inside pre and inline code ──
-          code({ className, children, isBlock, node, ...props }: {
-            className?: string;
-            children?: React.ReactNode;
-            node?: unknown;
-            isBlock?: boolean;
-          } & React.HTMLAttributes<HTMLElement>) {
-            void node;
-            if (isBlock) {
-              return (
-                <code className={`${className || ""} bg-transparent p-0 block font-mono`} {...props}>
-                  {children}
-                </code>
-              );
-            }
-
-            // Inline code (not wrapped in a pre block)
-            return (
-              <code
-                className="px-1.5 py-0.5 rounded-md bg-[var(--badge-bg)] border border-[var(--badge-border)] font-mono text-[0.8125rem] text-[var(--text-main)] font-semibold break-all [overflow-wrap:anywhere]"
-                {...props}
-              >
-                {children}
-              </code>
-            );
-          },
-
-          // ── Tables ──
-          table({ children }) {
-            return (
-              <div className="my-3 overflow-x-auto rounded-xl border border-[var(--border-color)] shadow-sm">
-                <table className="min-w-full text-xs md:text-sm border-collapse">{children}</table>
-              </div>
-            );
-          },
-          thead({ children }) {
-            return (
-              <thead className="bg-[var(--bg-surface)] border-b-2 border-[var(--border-color)]">{children}</thead>
-            );
-          },
-          tbody({ children }) {
-            return <tbody className="divide-y divide-[var(--border-color)]">{children}</tbody>;
-          },
-          tr({ children }) {
-            return <tr className="hover:bg-[var(--bg-surface)]/50 transition-colors">{children}</tr>;
-          },
-          th({ children, style }) {
-            return (
-              <th style={style} className="px-3 py-2 text-left text-[11px] font-extrabold uppercase tracking-wider text-[var(--text-muted)] border-r border-[var(--border-color)] last:border-r-0 whitespace-nowrap [overflow-wrap:anywhere]">
-                {children}
-              </th>
-            );
-          },
-          td({ children, style }) {
-            return (
-              <td style={style} className="px-3 py-2 border-r border-[var(--border-color)] last:border-r-0 break-words [overflow-wrap:anywhere] max-w-[220px]">
-                {children}
-              </td>
-            );
-          },
-
-          // ── Blockquotes ──
-          blockquote({ children }) {
-            return (
-              <blockquote className="my-3 pl-4 border-l-4 border-[var(--accent-indigo)] bg-[var(--badge-bg)] text-[var(--text-main)] italic rounded-r-xl py-2 pr-4 break-words [overflow-wrap:anywhere]">
-                {children}
-              </blockquote>
-            );
-          },
-
-          // ── Links ──
-          a({ href, children }) {
-            return (
-              <a
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[var(--accent-sky)] underline underline-offset-2 decoration-[var(--accent-sky)]/40 hover:decoration-[var(--accent-sky)] transition-colors font-medium break-all [overflow-wrap:anywhere]"
-              >
-                {children}
-              </a>
-            );
-          },
-
-          // ── Images ──
-          img({ src, alt }) {
-            if (!src) return null;
-            return (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={src}
-                alt={alt || ""}
-                className="my-3 rounded-xl max-w-full h-auto w-auto block border border-[var(--border-color)] shadow-md"
-                loading="lazy"
-              />
-            );
-          },
-
-          // ── Horizontal Rule ──
-          hr() {
-            return <hr className="my-4 border-t-2 border-[var(--border-color)]" />;
-          },
-
-          // ── Headings ──
-          h1({ children, id }) {
-            return (
-              <h1 id={id} className="text-xl md:text-2xl font-extrabold tracking-tight text-[var(--text-main)] pb-1.5 border-b border-[var(--border-color)] mt-5 mb-2.5 break-words [overflow-wrap:anywhere]">
-                {children}
-              </h1>
-            );
-          },
-          h2({ children, id }) {
-            return (
-              <h2 id={id} className="text-lg md:text-xl font-bold tracking-tight text-[var(--text-main)] pb-1 border-b border-[var(--border-color)]/60 mt-4 mb-2 break-words [overflow-wrap:anywhere]">
-                {children}
-              </h2>
-            );
-          },
-          h3({ children, id }) {
-            return (
-              <h3 id={id} className="text-base md:text-lg font-bold text-[var(--accent-indigo)] mt-3.5 mb-1.5 break-words [overflow-wrap:anywhere]">
-                {children}
-              </h3>
-            );
-          },
-          h4({ children, id }) {
-            return (
-              <h4 id={id} className="text-sm md:text-base font-bold text-[var(--text-main)] mt-3 mb-1 break-words [overflow-wrap:anywhere]">
-                {children}
-              </h4>
-            );
-          },
-
-          // ── Lists ──
-          ul({ children }) {
-            return <ul className="my-2 pl-5 space-y-1 list-disc marker:text-[var(--accent-primary)]">{children}</ul>;
-          },
-          ol({ children }) {
-            return <ol className="my-2 pl-5 space-y-1 list-decimal marker:text-[var(--text-muted)] marker:font-bold">{children}</ol>;
-          },
-          li({ children }) {
-            const hasTask = hasTaskCheckbox(children);
-            if (hasTask) {
-              return <li className="my-1 list-none ml-0 pl-0 flex items-start gap-2 min-w-0 min-h-[28px] break-words [overflow-wrap:anywhere] [&>p]:min-w-0 [&>p]:flex-1 [&>p]:break-words">{children}</li>;
-            }
-            return <li className="my-0.5 pl-1 break-words [overflow-wrap:anywhere]">{children}</li>;
-          },
-
-          // ── Task checkbox rendering ──
-          input({ type, checked, disabled, id, node, ...props }) {
-            if (type === "checkbox") {
-              const lineIndex = node?.position?.start?.line;
-              return (
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  disabled={!onToggleTask}
-                  onChange={(e) => {
-                    if (onToggleTask && lineIndex) {
-                      onToggleTask(lineIndex - 1, e.target.checked); // 0-indexed line
-                    }
-                  }}
-                  id={id}
-                  aria-label="Toggle task checklist item"
-                  className={`rounded accent-[var(--accent-primary)] mr-2 mt-1 align-middle w-4 h-4 shrink-0 ${onToggleTask ? 'cursor-pointer' : ''}`}
-                />
-              );
-            }
-            return <input type={type} checked={checked} disabled={disabled} id={id} {...props} />;
-          },
-
-          // ── Paragraphs ──
-          p({ children }) {
-            if (isValidElement(children) && (children.type === "img" || (children as { type?: unknown }).type === "div")) {
-              return <>{children}</>;
-            }
-            return <p className="my-2 leading-relaxed break-words [overflow-wrap:anywhere]">{children}</p>;
-          },
-
-          // ── Strong / Bold ──
-          strong({ children }) {
-            return <strong className="font-extrabold text-[var(--accent-indigo)]">{children}</strong>;
-          },
-
-          // ── Emphasis / Italic ──
-          em({ children }) {
-            return <em className="italic font-semibold">{children}</em>;
-          },
-
-          // ── Deleted / Strikethrough ──
-          del({ children }) {
-            return <del className="line-through text-[var(--text-muted)]">{children}</del>;
-          },
-        }}
-      >
-        {parsedContent}
-      </ReactMarkdown>
-    </div>
-  );
+    parts[i] = inlineParts.join("");
+  }
+  return parts.join("");
 }
-
-// ── Helpers ──
 
 /**
  * Recursively extracts plain text from React nodes, strings, and elements.
  * Critical for syntax-highlighted code blocks where children are AST span elements.
  */
-function extractText(node: React.ReactNode): string {
+function extractText(node: ReactNode): string {
   if (typeof node === "string") return node;
   if (typeof node === "number") return String(node);
-  if (!node) return "";
-  if (Array.isArray(node)) return node.map(extractText).join("");
+  if (!node || typeof node === "boolean") return "";
+  if (Array.isArray(node)) {
+    let out = "";
+    for (let i = 0; i < node.length; i++) {
+      out += extractText(node[i]);
+    }
+    return out;
+  }
   if (isValidElement(node)) {
-    const props = node.props as { children?: React.ReactNode };
-    return extractText(props.children);
+    return extractText((node.props as { children?: ReactNode }).children);
   }
   return "";
 }
 
-function hasTaskCheckbox(children: React.ReactNode): boolean {
+/**
+ * Checks whether any descendant is an input checkbox.
+ */
+function hasTaskCheckbox(children: ReactNode): boolean {
   if (!children) return false;
   if (isValidElement(children)) {
     const props = children.props as Record<string, unknown>;
@@ -326,39 +84,31 @@ function hasTaskCheckbox(children: React.ReactNode): boolean {
       return true;
     }
     if (props.children) {
-      return hasTaskCheckbox(props.children as React.ReactNode);
+      return hasTaskCheckbox(props.children as ReactNode);
     }
   }
   if (Array.isArray(children)) {
-    return children.some((c) => hasTaskCheckbox(c));
+    for (let i = 0; i < children.length; i++) {
+      if (hasTaskCheckbox(children[i])) return true;
+    }
   }
   return false;
 }
 
+// ── Copy Code Button ──
+
 function CopyCodeButton({ code }: { code: string }) {
   const [copied, setCopied] = useState(false);
 
+  useEffect(() => {
+    if (!copied) return;
+    const timer = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(timer);
+  }, [copied]);
+
   const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(code);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      const textarea = document.createElement("textarea");
-      textarea.value = code;
-      textarea.style.position = "fixed";
-      textarea.style.opacity = "0";
-      document.body.appendChild(textarea);
-      textarea.select();
-      try {
-        document.execCommand("copy");
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      } catch {
-        /* ignore */
-      }
-      document.body.removeChild(textarea);
-    }
+    const ok = await copyToClipboard(code);
+    if (ok) setCopied(true);
   };
 
   return (
@@ -383,3 +133,299 @@ function CopyCodeButton({ code }: { code: string }) {
     </button>
   );
 }
+
+// ── Static Component Map (Hoisted to avoid re-creation on every render) ──
+
+const STATIC_COMPONENTS: Partial<Components> = {
+  // Fenced code blocks container
+  pre({ children }) {
+    const codeElement = isValidElement(children)
+      ? children
+      : Array.isArray(children)
+      ? children.find(isValidElement)
+      : null;
+    const className = (codeElement?.props as { className?: string } | undefined)?.className || "";
+    const match = /language-(\w+)/.exec(className);
+    const lang = match?.[1];
+    const rawCode = extractText(children).replace(/\n$/, "");
+
+    if (lang === "mermaid") {
+      return <MermaidRenderer chart={rawCode} />;
+    }
+
+    return (
+      <div className="my-3 rounded-xl border border-[var(--border-color)] overflow-hidden bg-[var(--input-bg)] shadow-sm">
+        <div className="flex items-center justify-between px-3.5 py-1.5 bg-[var(--bg-surface)] border-b border-[var(--border-color)] select-none">
+          <span className="text-[11px] font-mono uppercase tracking-wider text-[var(--text-muted)] font-extrabold">
+            {lang || "code"}
+          </span>
+          <CopyCodeButton code={rawCode} />
+        </div>
+        <pre className="p-3.5 overflow-x-auto text-xs md:text-sm font-mono leading-relaxed m-0 bg-transparent text-[var(--text-main)]">
+          {React.Children.map(children, (child) =>
+            isValidElement(child)
+              ? cloneElement(child as ReactElement<{ isBlock?: boolean }>, { isBlock: true })
+              : child
+          )}
+        </pre>
+      </div>
+    );
+  },
+
+  // Code element: block code inside pre and inline code
+  code({
+    className,
+    children,
+    isBlock,
+    node,
+    ...props
+  }: React.ComponentPropsWithoutRef<"code"> & { node?: unknown; isBlock?: boolean }) {
+    void node;
+    if (isBlock) {
+      return (
+        <code className={`${className || ""} bg-transparent p-0 block font-mono`} {...props}>
+          {children}
+        </code>
+      );
+    }
+
+    return (
+      <code
+        className="px-1.5 py-0.5 rounded-md bg-[var(--badge-bg)] border border-[var(--badge-border)] font-mono text-[0.8125rem] text-[var(--text-main)] font-semibold break-all [overflow-wrap:anywhere]"
+        {...props}
+      >
+        {children}
+      </code>
+    );
+  },
+
+  // Tables
+  table: ({ children }) => (
+    <div className="my-3 overflow-x-auto rounded-xl border border-[var(--border-color)] shadow-sm">
+      <table className="min-w-full text-xs md:text-sm border-collapse">{children}</table>
+    </div>
+  ),
+  thead: ({ children }) => (
+    <thead className="bg-[var(--bg-surface)] border-b-2 border-[var(--border-color)]">{children}</thead>
+  ),
+  tbody: ({ children }) => (
+    <tbody className="divide-y divide-[var(--border-color)]">{children}</tbody>
+  ),
+  tr: ({ children }) => (
+    <tr className="hover:bg-[var(--bg-surface)]/50 transition-colors">{children}</tr>
+  ),
+  th: ({ children, style }) => (
+    <th
+      style={style}
+      className="px-3 py-2 text-left text-[11px] font-extrabold uppercase tracking-wider text-[var(--text-muted)] border-r border-[var(--border-color)] last:border-r-0 whitespace-nowrap [overflow-wrap:anywhere]"
+    >
+      {children}
+    </th>
+  ),
+  td: ({ children, style }) => (
+    <td
+      style={style}
+      className="px-3 py-2 border-r border-[var(--border-color)] last:border-r-0 break-words [overflow-wrap:anywhere] max-w-[220px]"
+    >
+      {children}
+    </td>
+  ),
+
+  // Blockquotes
+  blockquote: ({ children }) => (
+    <blockquote className="my-3 pl-4 border-l-4 border-[var(--accent-indigo)] bg-[var(--badge-bg)] text-[var(--text-main)] italic rounded-r-xl py-2 pr-4 break-words [overflow-wrap:anywhere]">
+      {children}
+    </blockquote>
+  ),
+
+  // Links
+  a: ({ href, children }) => (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-[var(--accent-sky)] underline underline-offset-2 decoration-[var(--accent-sky)]/40 hover:decoration-[var(--accent-sky)] transition-colors font-medium break-all [overflow-wrap:anywhere]"
+    >
+      {children}
+    </a>
+  ),
+
+  // Images
+  img: ({ src, alt }) => {
+    if (!src) return null;
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={src}
+        alt={alt || ""}
+        className="my-3 rounded-xl max-w-full h-auto w-auto block border border-[var(--border-color)] shadow-md"
+        loading="lazy"
+      />
+    );
+  },
+
+  // Horizontal Rule
+  hr: () => <hr className="my-4 border-t-2 border-[var(--border-color)]" />,
+
+  // Headings
+  h1: ({ children, id }) => (
+    <h1 id={id} className="text-xl md:text-2xl font-extrabold tracking-tight text-[var(--text-main)] pb-1.5 border-b border-[var(--border-color)] mt-5 mb-2.5 break-words [overflow-wrap:anywhere]">
+      {children}
+    </h1>
+  ),
+  h2: ({ children, id }) => (
+    <h2 id={id} className="text-lg md:text-xl font-bold tracking-tight text-[var(--text-main)] pb-1 border-b border-[var(--border-color)]/60 mt-4 mb-2 break-words [overflow-wrap:anywhere]">
+      {children}
+    </h2>
+  ),
+  h3: ({ children, id }) => (
+    <h3 id={id} className="text-base md:text-lg font-bold text-[var(--accent-indigo)] mt-3.5 mb-1.5 break-words [overflow-wrap:anywhere]">
+      {children}
+    </h3>
+  ),
+  h4: ({ children, id }) => (
+    <h4 id={id} className="text-sm md:text-base font-bold text-[var(--text-main)] mt-3 mb-1 break-words [overflow-wrap:anywhere]">
+      {children}
+    </h4>
+  ),
+  h5: ({ children, id }) => (
+    <h5 id={id} className="text-xs md:text-sm font-bold uppercase tracking-wide text-[var(--text-muted)] mt-2.5 mb-1 break-words [overflow-wrap:anywhere]">
+      {children}
+    </h5>
+  ),
+  h6: ({ children, id }) => (
+    <h6 id={id} className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] mt-2 mb-1 break-words [overflow-wrap:anywhere]">
+      {children}
+    </h6>
+  ),
+
+  // Lists
+  ul: ({ children }) => (
+    <ul className="my-2 pl-5 space-y-1 list-disc marker:text-[var(--accent-primary)]">{children}</ul>
+  ),
+  ol: ({ children }) => (
+    <ol className="my-2 pl-5 space-y-1 list-decimal marker:text-[var(--text-muted)] marker:font-bold">{children}</ol>
+  ),
+  li({ className, children, node, ...props }: React.ComponentPropsWithoutRef<"li"> & { node?: unknown }) {
+    void node;
+    const isTask = className?.includes("task-list-item") || hasTaskCheckbox(children);
+    if (isTask) {
+      return (
+        <li
+          className="my-1 list-none ml-0 pl-0 flex items-start gap-2 min-w-0 min-h-[28px] break-words [overflow-wrap:anywhere] [&>p]:min-w-0 [&>p]:flex-1 [&>p]:break-words"
+          {...props}
+        >
+          {children}
+        </li>
+      );
+    }
+    return (
+      <li className="my-0.5 pl-1 break-words [overflow-wrap:anywhere]" {...props}>
+        {children}
+      </li>
+    );
+  },
+
+  // Paragraphs
+  p({ children, node, ...props }: React.ComponentPropsWithoutRef<"p"> & { node?: unknown }) {
+    void node;
+    const singleChild = isValidElement(children)
+      ? children
+      : Array.isArray(children) && children.length === 1 && isValidElement(children[0])
+      ? children[0]
+      : null;
+    if (singleChild && (singleChild.type === "img" || (singleChild as { type?: unknown }).type === "div")) {
+      return <>{children}</>;
+    }
+    return (
+      <p className="my-2 leading-relaxed break-words [overflow-wrap:anywhere]" {...props}>
+        {children}
+      </p>
+    );
+  },
+
+  // Formatting
+  strong: ({ children }) => (
+    <strong className="font-extrabold text-[var(--accent-indigo)]">{children}</strong>
+  ),
+  em: ({ children }) => (
+    <em className="italic font-semibold">{children}</em>
+  ),
+  del: ({ children }) => (
+    <del className="line-through text-[var(--text-muted)]">{children}</del>
+  ),
+};
+
+// ── MarkdownRenderer Component ──
+
+/**
+ * Full-featured Markdown renderer supporting:
+ * - GitHub Flavored Markdown (tables, task lists, strikethrough, autolinks)
+ * - Syntax-highlighted fenced code blocks with language badge & copy button
+ * - Mermaid diagrams via ```mermaid fences
+ * - Sanitized raw HTML (safe formatting only)
+ * - Heading anchor IDs (`rehype-slug`)
+ * - Bidirectional page links (`[[slug]]`)
+ */
+export const MarkdownRenderer = React.memo(function MarkdownRenderer({
+  content,
+  onToggleTask,
+}: MarkdownRendererProps) {
+  const safeContent = typeof content === "string" ? content : "";
+  const isEmpty = !safeContent.trim();
+
+  const parsedContent = useMemo(
+    () => (isEmpty ? "" : parseBidirectionalLinks(safeContent)),
+    [safeContent, isEmpty]
+  );
+
+  const components = useMemo<Components>(
+    () => ({
+      ...STATIC_COMPONENTS,
+      input({ type, checked, disabled, id, node, ...props }) {
+        if (type === "checkbox") {
+          const lineIndex = node?.position?.start?.line;
+          return (
+            <input
+              type="checkbox"
+              checked={checked}
+              disabled={!onToggleTask}
+              onChange={(e) => {
+                if (onToggleTask && lineIndex) {
+                  onToggleTask(lineIndex - 1, e.target.checked);
+                }
+              }}
+              id={id}
+              aria-label="Toggle task checklist item"
+              className={`rounded accent-[var(--accent-primary)] mr-2 mt-1 align-middle w-4 h-4 shrink-0 ${
+                onToggleTask ? "cursor-pointer" : ""
+              }`}
+            />
+          );
+        }
+        return <input type={type} checked={checked} disabled={disabled} id={id} {...props} />;
+      },
+    }),
+    [onToggleTask]
+  );
+
+  if (isEmpty) {
+    return (
+      <div className="h-full flex items-center justify-center text-xs font-mono text-[var(--text-muted)] italic select-none">
+        Empty notes preview. Start typing in Write mode…
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-full min-w-0 break-words [overflow-wrap:anywhere] text-sm sm:text-[15px] leading-relaxed text-[var(--text-main)] select-text markdown-body">
+      <ReactMarkdown
+        remarkPlugins={REMARK_PLUGINS}
+        rehypePlugins={REHYPE_PLUGINS}
+        components={components}
+      >
+        {parsedContent}
+      </ReactMarkdown>
+    </div>
+  );
+});

@@ -144,7 +144,7 @@ Config: `next.config.ts` (security headers, `allowedDevOrigins`), `deploy.sh`, `
 | API auth | `Authorization: Bearer <token>`; slug must match |
 | Rate limit | In-memory: verify **5/60s/IP**, sensitive bcrypt routes **30/60s/IP**, uploads **12/10m/IP**, general **300/60s/IP** |
 | Headers | `X-Content-Type-Options`, `X-Frame-Options`, CSP `frame-ancestors 'self'`, etc. in `next.config.ts` |
-| Domain | Middleware 301 from `fileshare-live.onrender.com` / `fileshare.shptechnology.online` → `https://filesp.pages.dev` |
+| Domain | Middleware 301 from `fileshare-live.onrender.com` → `https://filesp.pages.dev` |
 
 **Not E2E encrypted.** Server can read notes and files. Do not claim zero-knowledge in UI copy.
 

@@ -69,9 +69,7 @@ export default {
       if (location) {
         const rewrittenLocation = location
           .replace(`https://${backendHost}`, "https://filesp.pages.dev")
-          .replace(`http://${backendHost}`, "https://filesp.pages.dev")
-          .replace("https://fileshare.shptechnology.online", "https://filesp.pages.dev")
-          .replace("http://fileshare.shptechnology.online", "https://filesp.pages.dev");
+          .replace(`http://${backendHost}`, "https://filesp.pages.dev");
         newHeaders.set("location", rewrittenLocation);
       }
 

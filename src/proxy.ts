@@ -12,11 +12,8 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Redirect old domains to canonical domain
-  if (
-    currentDomain.includes("onrender.com") ||
-    currentDomain.includes("shptechnology.online")
-  ) {
+  // Redirect legacy onrender.com to canonical domain
+  if (currentDomain.includes("onrender.com")) {
     const url = request.nextUrl.clone();
     url.hostname = "filesp.pages.dev";
     url.protocol = "https";

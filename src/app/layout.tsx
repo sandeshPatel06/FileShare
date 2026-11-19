@@ -360,8 +360,13 @@ export default function RootLayout({
             `,
           }}
         />
-        {/* Google AdSense Site Verification (Script loaded conditionally on content-rich pages) */}
+        {/* Google AdSense Site Verification & Account Meta */}
         <meta name="google-adsense-account" content="ca-pub-4947821599815451" />
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4947821599815451"
+          crossOrigin="anonymous"
+        />
       </head>
       <body className="antialiased bg-[var(--bg-main)] text-[var(--text-main)] min-h-dvh font-sans transition-colors duration-200">
         <a

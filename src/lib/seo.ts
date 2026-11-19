@@ -1,8 +1,7 @@
 /**
  * SEO & Canonical URL Configuration Helper
  * Enforces https://filesp.pages.dev as the canonical domain in production,
- * preventing accidental indexing of *.onrender.com, *.shptechnology.online,
- * or circular canonical redirect loops.
+ * preventing accidental indexing of *.onrender.com or circular canonical redirect loops.
  */
 
 export const CANONICAL_SITE_URL = "https://filesp.pages.dev";
@@ -15,12 +14,8 @@ export function getAppUrl(): string {
     return CANONICAL_SITE_URL;
   }
 
-  // If envUrl points to legacy domains (*.onrender.com, *shptechnology.online) or is missing, enforce canonical
-  if (
-    !envUrl ||
-    envUrl.includes("onrender.com") ||
-    envUrl.includes("shptechnology.online")
-  ) {
+  // If envUrl points to legacy onrender.com or is missing, enforce canonical
+  if (!envUrl || envUrl.includes("onrender.com")) {
     return CANONICAL_SITE_URL;
   }
 

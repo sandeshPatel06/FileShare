@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: fileshare-live
+    env: node
+    plan: free
+    buildCommand: ./deploy.sh
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NEXT_PUBLIC_APP_URL
+        value: https://filesp.pages.dev
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      # Backblaze B2 Object Storage (S3-Compatible)
+      - key: B2_ENDPOINT
+        value: s3.us-east-005.backblazeb2.com
+      - key: B2_KEY_ID
+        sync: false
+      - key: B2_APPLICATION_KEY
+        sync: false
+      - key: B2_BUCKET_NAME
+        value: filesharedev2
+      - key: B2_REGION
+        value: us-east-005

@@ -29,6 +29,12 @@ export const metadata: Metadata = {
     template: "%s | FileShare",
   },
   description: "Free online notepad without login for real-time Markdown collaboration and secure file sharing up to 500MB. Create a workspace instantly with no registration.",
+  applicationName: "FileShare",
+  appleWebApp: {
+    capable: true,
+    title: "FileShare",
+    statusBarStyle: "default",
+  },
   keywords: [
     "online notepad",
     "online notepad without login",
@@ -95,10 +101,10 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
       { url: "/favicon-48x48.png", sizes: "48x48", type: "image/png" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
       { url: "/icon.png", sizes: "512x512", type: "image/png" },
     ],
@@ -324,6 +330,11 @@ export default function RootLayout({
         />
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        {/* Favicon tags for search engine bots and crawlers */}
+        <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+        <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         {/*
           Network-aware font bootstrap: runs synchronously pre-paint:
           1. Reuses the cached tier (24h TTL) when fresh.

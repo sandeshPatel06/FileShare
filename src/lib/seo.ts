@@ -36,15 +36,19 @@ export function getDefaultOgImages(appUrl: string, customAlt?: string) {
   return [
     {
       url: `${appUrl}/og-image.png`,
+      secureUrl: `${appUrl}/og-image.png`,
       width: 1200,
       height: 630,
       alt: customAlt || "FileShare — Free Online Collaborative Notepad & 500MB File Vault",
+      type: "image/png",
     },
     {
       url: `${appUrl}/logo.png`,
+      secureUrl: `${appUrl}/logo.png`,
       width: 512,
       height: 512,
       alt: customAlt ? `${customAlt} Logo` : "FileShare Logo — Real-Time Notes & File Sharing Vault",
+      type: "image/png",
     },
   ];
 }

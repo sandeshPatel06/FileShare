@@ -63,6 +63,36 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        source: "/:path*(png|jpg|jpeg|gif|webp|svg|ico|woff|woff2)",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Access-Control-Allow-Methods", value: "GET, HEAD, OPTIONS" },
+          { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
+          { key: "Timing-Allow-Origin", value: "*" },
+          { key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" },
+        ],
+      },
+      {
+        source: "/og-image.png",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Access-Control-Allow-Methods", value: "GET, HEAD, OPTIONS" },
+          { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
+          { key: "Timing-Allow-Origin", value: "*" },
+          { key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" },
+        ],
+      },
+      {
+        source: "/logo.png",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Access-Control-Allow-Methods", value: "GET, HEAD, OPTIONS" },
+          { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
+          { key: "Timing-Allow-Origin", value: "*" },
+          { key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" },
+        ],
+      },
     ];
   },
   images: {

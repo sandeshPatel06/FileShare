@@ -8,6 +8,7 @@ touch dist/index.html
 
 if [ -d "public" ]; then
   cp -r public/* dist/ 2>/dev/null || true
+  cp public/_headers dist/_headers 2>/dev/null || true
 fi
 
 echo "Cloudflare Pages build successfully generated in dist/"

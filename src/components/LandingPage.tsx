@@ -23,12 +23,14 @@ import {
   Zap,
 } from "lucide-react";
 
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
 import { Footer } from "@/components/Footer";
 import { ThemeToggle } from "./ThemeToggle";
 import { useRecentSpaces } from "@/hooks/useRecentSpaces";
 import { generateSlug } from "@/lib/slugGenerator";
+
+const Modal = dynamic(() => import("@/components/ui/Modal").then((m) => m.Modal), { ssr: false });
 
 export interface LandingPageProps {
   defaultSlug: string;

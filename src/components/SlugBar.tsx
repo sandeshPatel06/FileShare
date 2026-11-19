@@ -2,12 +2,14 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Pencil, Lock, Unlock, Copy, CheckCheck, QrCode, PanelRightClose, PanelRightOpen, MoreVertical } from "lucide-react";
+import dynamic from "next/dynamic";
 import { showToast } from "@/components/ui/Toast";
-import { QRCodeModal } from "@/components/QRCodeModal";
-import { RenameSlugModal } from "@/components/RenameSlugModal";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { copyToClipboard } from "@/lib/clipboard";
 import { FloatingMenu } from "@/components/ui/FloatingMenu";
+
+const QRCodeModal = dynamic(() => import("@/components/QRCodeModal").then((m) => m.QRCodeModal), { ssr: false });
+const RenameSlugModal = dynamic(() => import("@/components/RenameSlugModal").then((m) => m.RenameSlugModal), { ssr: false });
 
 interface SlugBarProps {
   slug:        string;

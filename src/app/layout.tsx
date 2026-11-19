@@ -1,11 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import "./globals.css";
+import dynamic from "next/dynamic";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AdaptiveFontLoader } from "@/components/AdaptiveFontLoader";
-import { ToastProvider } from "@/components/ui/Toast";
-import { CookieConsent } from "@/components/ui/CookieConsent";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
+
+const ToastProvider = dynamic(() => import("@/components/ui/Toast").then((m) => m.ToastProvider));
+const CookieConsent = dynamic(() => import("@/components/ui/CookieConsent").then((m) => m.CookieConsent));
 
 const appUrl = getAppUrl();
 
@@ -341,35 +344,22 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         {/* Google Consent Mode v2 Initialization (GDPR & DPDP Act 2023 Default Denied with wait_for_update) */}
-        <Script id="google-consent-mode" strategy="beforeInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('consent', 'default', {
-              'analytics_storage': 'denied',
-              'ad_storage': 'denied',
-              'ad_user_data': 'denied',
-              'ad_personalization': 'denied',
-              'wait_for_update': 500
-            });
-          `}
-        </Script>
-        {/* Google Analytics (gtag.js) */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-QJ7L4HP72G"
-          strategy="lazyOnload"
+        <script
+          id="google-consent-mode"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('consent', 'default', {
+                'analytics_storage': 'denied',
+                'ad_storage': 'denied',
+                'ad_user_data': 'denied',
+                'ad_personalization': 'denied',
+                'wait_for_update': 500
+              });
+            `,
+          }}
         />
-        <Script id="google-analytics" strategy="lazyOnload">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-
-            gtag('config', 'G-QJ7L4HP72G', {
-              anonymize_ip: true
-            });
-          `}
-        </Script>
         {/* Google AdSense Site Verification (Script loaded conditionally on content-rich pages) */}
         <meta name="google-adsense-account" content="ca-pub-4947821599815451" />
       </head>
@@ -391,6 +381,7 @@ export default function RootLayout({
           <AdaptiveFontLoader />
           <ToastProvider />
           <CookieConsent />
+          <GoogleAnalytics />
         </ThemeProvider>
       </body>
     </html>

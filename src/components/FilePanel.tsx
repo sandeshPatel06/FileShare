@@ -4,7 +4,6 @@ import { UploadCloud, FolderOpen, FileUp, Search, LayoutGrid, LayoutList, X, Dow
 import { useFileList, FileItem } from "@/hooks/useFileList";
 import { FileCard } from "@/components/FileCard";
 import { showToast } from "@/components/ui/Toast";
-import { exportFilesOnlyAsZip } from "@/lib/exportZip";
 
 interface FilePanelProps {
   slug:  string;
@@ -119,12 +118,15 @@ export function FilePanel({ slug, token }: FilePanelProps) {
     if (downloadingZip || files.length === 0) return;
     setDownloadingZip(true);
     try {
+      const { exportFilesOnlyAsZip } = await import("@/lib/exportZip");
       await exportFilesOnlyAsZip({
         slug,
         files,
         token,
         onProgress: setZipStatus,
       });
+    } catch {
+      showToast("Failed to generate ZIP", "error");
     } finally {
       setDownloadingZip(false);
       setZipStatus("");

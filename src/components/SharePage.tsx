@@ -1,11 +1,16 @@
 "use client";
 import { useState, useEffect, useSyncExternalStore, useRef } from "react";
+import dynamic from "next/dynamic";
 import { SlugBar } from "@/components/SlugBar";
 import { TextEditor } from "@/components/TextEditor";
-import { FilePanel } from "@/components/FilePanel";
-import { PasswordGate } from "@/components/PasswordGate";
-import { PasswordModal } from "@/components/PasswordModal";
 import Link from "next/link";
+
+const FilePanel = dynamic(() => import("@/components/FilePanel").then((m) => m.FilePanel), {
+  loading: () => <div className="p-4 text-xs text-[var(--text-muted)] flex items-center justify-center">Loading vault...</div>,
+  ssr: false,
+});
+const PasswordGate = dynamic(() => import("@/components/PasswordGate").then((m) => m.PasswordGate), { ssr: false });
+const PasswordModal = dynamic(() => import("@/components/PasswordModal").then((m) => m.PasswordModal), { ssr: false });
 import { PanelRightClose, FolderOpen, ChevronUp, UploadCloud } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useRecentSpaces } from "@/hooks/useRecentSpaces";

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Shield, FileText, Lock, Globe, Database, Cookie, AlertCircle, Scale, UserCheck } from "lucide-react";
-import { CookieSettingsButton } from "@/components/ui/CookieConsent";
+import { CookieSettingsButton } from "@/components/ui/CookieSettingsButton";
 import { Footer } from "@/components/Footer";
 import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 

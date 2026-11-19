@@ -12,11 +12,13 @@ import {
   ArrowRight,
   Building2,
 } from "lucide-react";
-import { AdSenseScript } from "@/components/ads/AdSenseScript";
-import { AdBanner } from "@/components/ads/AdBanner";
+import dynamic from "next/dynamic";
 import { Footer } from "@/components/Footer";
 import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 import { ADSENSE_SLOTS } from "@/lib/ads";
+
+const AdSenseScript = dynamic(() => import("@/components/ads/AdSenseScript").then((m) => m.AdSenseScript));
+const AdBanner = dynamic(() => import("@/components/ads/AdBanner").then((m) => m.AdBanner));
 
 const appUrl = getAppUrl();
 

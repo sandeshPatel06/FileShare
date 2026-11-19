@@ -50,8 +50,8 @@ export function useFileList(slug: string, token?: string | null) {
       }
     }
 
-    // Initial fetch
-    fetchFiles();
+    // Initial fetch deferred slightly to allow instant UI paint
+    const timer = setTimeout(fetchFiles, 150);
 
     // Instant Real-time Updates via unified Server-Sent Events (SSE) multiplexer
     const unsubscribeSSE = subscribePageEvents(
@@ -74,6 +74,7 @@ export function useFileList(slug: string, token?: string | null) {
 
     return () => {
       active = false;
+      clearTimeout(timer);
       unsubscribeSSE();
       clearInterval(fallbackInterval);
     };

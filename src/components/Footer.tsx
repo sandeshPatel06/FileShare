@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Shield } from "lucide-react";
-import { CookieSettingsButton } from "@/components/ui/CookieConsent";
+import { CookieSettingsButton } from "@/components/ui/CookieSettingsButton";
 
 export function Footer() {
   return (

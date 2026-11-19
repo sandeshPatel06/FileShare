@@ -7,6 +7,8 @@ import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 
 const appUrl = getAppUrl();
 
+export const revalidate = 86400;
+
 export const metadata: Metadata = {
   title: "Privacy Policy (GDPR & DPDP)",
   description: "Privacy policy for FileShare (SHP Technology). Plain-language data protection notice compliant with the EU GDPR and India's DPDP Act, 2023.",

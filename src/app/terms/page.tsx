@@ -6,6 +6,8 @@ import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 
 const appUrl = getAppUrl();
 
+export const revalidate = 86400;
+
 export const metadata: Metadata = {
   title: "Terms and Conditions",
   description: "Terms and Conditions for FileShare (SHP Technology). Compliant with the Indian Information Technology Act, 2000 and global digital service regulations.",

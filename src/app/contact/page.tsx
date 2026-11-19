@@ -10,37 +10,51 @@ import {
   Send,
   MessageSquare,
   Building2,
-  CheckCircle2,
   ArrowLeft,
-  Loader2,
   User,
   ExternalLink,
+  Copy,
+  CheckCheck,
 } from "lucide-react";
 import { Footer } from "@/components/Footer";
+import { showToast } from "@/components/ui/Toast";
+import { copyToClipboard } from "@/lib/clipboard";
 
 export default function ContactPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [category, setCategory] = useState("support");
   const [message, setMessage] = useState("");
-  const [consent, setConsent] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [copiedEmail, setCopiedEmail] = useState(false);
+
+  const handleCopyEmail = async () => {
+    const ok = await copyToClipboard("sandeshpatel.sp.93@gmail.com");
+    if (ok) {
+      setCopiedEmail(true);
+      showToast("Email copied: sandeshpatel.sp.93@gmail.com", "success");
+      setTimeout(() => setCopiedEmail(false), 2000);
+    }
+  };
+
+  const handleCopyDraft = async () => {
+    if (!message.trim()) {
+      showToast("Please enter a message first", "error");
+      return;
+    }
+    const text = `Name: ${name || "N/A"}\nEmail: ${email || "N/A"}\nTopic: ${category}\n\nMessage:\n${message}`;
+    const ok = await copyToClipboard(text);
+    if (ok) {
+      showToast("Drafted message copied to clipboard!", "success");
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!consent) return;
-    setSubmitting(true);
-    // Create mailto fallback link for instant dispatch
-    setTimeout(() => {
-      const subject = encodeURIComponent(`[${category.toUpperCase()}] Inquiry from ${name}`);
-      const body = encodeURIComponent(
-        `Name: ${name}\nEmail: ${email}\nCategory: ${category}\n\nMessage:\n${message}\n\n[Consent given under GDPR / India DPDP Act 2023]`
-      );
-      window.location.href = `mailto:sandeshpatel.sp.93@gmail.com?subject=${subject}&body=${body}`;
-      setSubmitting(false);
-      setSubmitted(true);
-    }, 400);
+    const subject = encodeURIComponent(`[${category.toUpperCase()}] Inquiry from ${name || "User"}`);
+    const body = encodeURIComponent(
+      `Name: ${name || "N/A"}\nEmail: ${email || "N/A"}\nTopic: ${category}\n\nMessage:\n${message}`
+    );
+    window.location.href = `mailto:sandeshpatel.sp.93@gmail.com?subject=${subject}&body=${body}`;
   };
 
   return (
@@ -196,150 +210,127 @@ export default function ContactPage() {
             </div>
             <div className="p-3.5 rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)] space-y-1.5">
               <div><span className="text-[var(--text-subtle)] dark:text-[var(--text-muted)]">Grievance Officer:</span> Sandesh Patel</div>
-              <div><span className="text-[var(--text-subtle)] dark:text-[var(--text-muted)]">Statutory Email:</span> <a href="mailto:sandeshpatel.sp.93@gmail.com" className="text-[var(--accent-primary)] hover:underline break-all">sandeshpatel.sp.93@gmail.com</a></div>
-              <div><span className="text-[var(--text-subtle)] dark:text-[var(--text-muted)]">Abuse / DMCA:</span> <a href="mailto:sandeshpatel.sp.93@gmail.com" className="text-[var(--accent-primary)] hover:underline break-all">sandeshpatel.sp.93@gmail.com</a></div>
-              <div><span className="text-[var(--text-subtle)] dark:text-[var(--text-muted)]">Support:</span> <a href="mailto:sandeshpatel.sp.93@gmail.com" className="text-[var(--accent-primary)] hover:underline break-all">sandeshpatel.sp.93@gmail.com</a></div>
+              <div><span className="text-[var(--text-subtle)] dark:text-[var(--text-muted)]">Primary Email:</span> <a href="mailto:sandeshpatel.sp.93@gmail.com" className="text-[var(--accent-primary)] hover:underline break-all">sandeshpatel.sp.93@gmail.com</a></div>
+              <div><span className="text-[var(--text-subtle)] dark:text-[var(--text-muted)]">Response Time:</span> 12–24h for urgent security/abuse; 1–2 business days for support</div>
+              <div><span className="text-[var(--text-subtle)] dark:text-[var(--text-muted)]">Covered Channels:</span> Support, Privacy (DPDP &amp; GDPR), DMCA Takedowns &amp; Inquiries</div>
             </div>
           </div>
         </section>
 
-        {/* Contact Form */}
+        {/* Contact Form & Direct Dispatch */}
         <section className="bg-[var(--bg-surface)] p-6 sm:p-8 rounded-2xl border border-[var(--border-color)] space-y-6">
-          <div>
-            <h2 className="text-xl font-bold text-[var(--text-main)] mb-1">
-              Send a Message
-            </h2>
-            <p className="text-xs sm:text-sm text-[var(--text-muted)]">
-              Fill out the form below. When submitted, it opens your email client with your message ready to send.
-            </p>
-          </div>
-
-          {submitted ? (
-            <div className="p-6 rounded-xl bg-[var(--status-success-bg)] border border-[var(--status-success-border)] text-center space-y-2">
-              <CheckCircle2 className="w-8 h-8 text-[var(--status-success-text)] mx-auto" />
-              <h3 className="text-sm font-bold text-[var(--text-main)]">Message Prepared</h3>
-              <p className="text-xs text-[var(--text-muted)] max-w-md mx-auto">
-                Your email app should now open with your message. If it didn&apos;t, send your message directly to{" "}
-                <a href="mailto:sandeshpatel.sp.93@gmail.com" className="font-mono break-all text-[var(--accent-primary)] underline hover:opacity-80">
-                  sandeshpatel.sp.93@gmail.com
-                </a>.
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--border-color)]">
+            <div>
+              <h2 className="text-xl font-bold text-[var(--text-main)] mb-1">
+                Send a Message
+              </h2>
+              <p className="text-xs sm:text-sm text-[var(--text-muted)]">
+                Compose below to launch your email client, or copy the pre-formatted text directly into webmail.
               </p>
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="contact-name" className="block text-xs font-bold text-[var(--text-main)] mb-1 font-mono">
-                    Full Name <span className="text-[var(--status-danger-text)]" aria-hidden="true">*</span>
-                  </label>
-                  <input
-                    id="contact-name"
-                    name="name"
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Your name"
-                    aria-required="true"
-                    className="w-full px-3.5 py-2.5 rounded-lg bg-[var(--input-bg)] border border-[var(--border-color)] text-xs sm:text-sm text-[var(--text-main)] placeholder-[var(--text-subtle)] dark:placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-primary)]"
-                  />
-                </div>
+            <button
+              type="button"
+              onClick={handleCopyEmail}
+              className="self-start sm:self-center px-3 py-1.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] text-xs font-mono text-[var(--accent-primary)] flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              {copiedEmail ? <CheckCheck className="w-3.5 h-3.5 text-[var(--status-success-text)]" /> : <Copy className="w-3.5 h-3.5" />}
+              <span>{copiedEmail ? "Copied Email!" : "Copy Email"}</span>
+            </button>
+          </div>
 
-                <div>
-                  <label htmlFor="contact-email" className="block text-xs font-bold text-[var(--text-main)] mb-1 font-mono">
-                    Email Address <span className="text-[var(--status-danger-text)]" aria-hidden="true">*</span>
-                  </label>
-                  <input
-                    id="contact-email"
-                    name="email"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    aria-required="true"
-                    className="w-full px-3.5 py-2.5 rounded-lg bg-[var(--input-bg)] border border-[var(--border-color)] text-xs sm:text-sm text-[var(--text-main)] placeholder-[var(--text-subtle)] dark:placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-primary)]"
-                  />
-                </div>
-              </div>
-
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="contact-category" className="block text-xs font-bold text-[var(--text-main)] mb-1 font-mono">
-                  Topic <span className="text-[var(--status-danger-text)]" aria-hidden="true">*</span>
+                <label htmlFor="contact-name" className="block text-xs font-bold text-[var(--text-main)] mb-1 font-mono">
+                  Full Name <span className="text-[var(--status-danger-text)]" aria-hidden="true">*</span>
                 </label>
-                <select
-                  id="contact-category"
-                  name="category"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-lg bg-[var(--input-bg)] border border-[var(--border-color)] text-xs sm:text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--accent-primary)]"
-                >
-                  <option value="support">General Support</option>
-                  <option value="grievance">Data Privacy / DPDP Act</option>
-                  <option value="abuse">Abuse &amp; DMCA Takedown</option>
-                  <option value="security">Security Vulnerability</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="contact-message" className="block text-xs font-bold text-[var(--text-main)] mb-1 font-mono">
-                  Message <span className="text-[var(--status-danger-text)]" aria-hidden="true">*</span>
-                </label>
-                <textarea
-                  id="contact-message"
-                  name="message"
-                  rows={5}
+                <input
+                  id="contact-name"
+                  name="name"
+                  type="text"
                   required
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="How can we help? Include workspace URL (/s/[slug]) if relevant..."
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Your name"
                   aria-required="true"
                   className="w-full px-3.5 py-2.5 rounded-lg bg-[var(--input-bg)] border border-[var(--border-color)] text-xs sm:text-sm text-[var(--text-main)] placeholder-[var(--text-subtle)] dark:placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-primary)]"
                 />
               </div>
 
-              {/* Form Consent Checkbox */}
-              <div className="p-3.5 rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)]">
-                <label htmlFor="contact-consent-checkbox" className="flex items-start gap-2.5 cursor-pointer select-none">
-                  <input
-                    id="contact-consent-checkbox"
-                    name="consent"
-                    type="checkbox"
-                    required
-                    checked={consent}
-                    onChange={(e) => setConsent(e.target.checked)}
-                    aria-required="true"
-                    className="mt-0.5 w-4 h-4 rounded border-[var(--border-color)] text-[var(--accent-primary)] focus:ring-[var(--accent-primary)] cursor-pointer"
-                  />
-                  <span className="text-xs text-[var(--text-muted)] leading-relaxed">
-                    I consent to SHP Technology processing my name and email to respond to this request, under the India DPDP Act 2023 and EU GDPR. See our{" "}
-                    <Link href="/privacy" className="text-[var(--accent-primary)] underline hover:text-[var(--text-main)]">
-                      Privacy Policy
-                    </Link>.
-                  </span>
+              <div>
+                <label htmlFor="contact-email" className="block text-xs font-bold text-[var(--text-main)] mb-1 font-mono">
+                  Email Address <span className="text-[var(--status-danger-text)]" aria-hidden="true">*</span>
                 </label>
+                <input
+                  id="contact-email"
+                  name="email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  aria-required="true"
+                  className="w-full px-3.5 py-2.5 rounded-lg bg-[var(--input-bg)] border border-[var(--border-color)] text-xs sm:text-sm text-[var(--text-main)] placeholder-[var(--text-subtle)] dark:placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-primary)]"
+                />
               </div>
+            </div>
 
+            <div>
+              <label htmlFor="contact-category" className="block text-xs font-bold text-[var(--text-main)] mb-1 font-mono">
+                Topic <span className="text-[var(--status-danger-text)]" aria-hidden="true">*</span>
+              </label>
+              <select
+                id="contact-category"
+                name="category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[var(--input-bg)] border border-[var(--border-color)] text-xs sm:text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--accent-primary)]"
+              >
+                <option value="support">General Support &amp; Help</option>
+                <option value="grievance">Data Privacy / DPDP Act</option>
+                <option value="abuse">Abuse &amp; DMCA Takedown</option>
+                <option value="security">Security Vulnerability</option>
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="contact-message" className="block text-xs font-bold text-[var(--text-main)] mb-1 font-mono">
+                Message <span className="text-[var(--status-danger-text)]" aria-hidden="true">*</span>
+              </label>
+              <textarea
+                id="contact-message"
+                name="message"
+                rows={5}
+                required
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="How can we help? Include workspace link (/projects/[name]) if relevant..."
+                aria-required="true"
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[var(--input-bg)] border border-[var(--border-color)] text-xs sm:text-sm text-[var(--text-main)] placeholder-[var(--text-subtle)] dark:placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-primary)]"
+              />
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
               <button
                 type="submit"
-                disabled={submitting || !consent}
-                className="w-full sm:w-auto px-6 py-2.5 min-h-[44px] rounded-lg bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white text-xs sm:text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 cursor-pointer"
-                aria-label="Send message"
+                className="px-6 py-2.5 min-h-[44px] rounded-lg bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white text-xs sm:text-sm font-semibold transition-colors inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                aria-label="Open in email client"
               >
-                {submitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Preparing Email...
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4" />
-                    Send Message
-                  </>
-                )}
+                <Send className="w-4 h-4" />
+                <span>Open in Email App</span>
               </button>
-            </form>
-          )}
+
+              <button
+                type="button"
+                onClick={handleCopyDraft}
+                className="px-5 py-2.5 min-h-[44px] rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] hover:bg-[var(--bg-card-hover)] text-[var(--text-main)] text-xs sm:text-sm font-semibold transition-colors inline-flex items-center justify-center gap-2 cursor-pointer"
+                aria-label="Copy draft message to clipboard"
+              >
+                <Copy className="w-4 h-4 text-[var(--accent-primary)]" />
+                <span>Copy Draft to Clipboard</span>
+              </button>
+            </div>
+          </form>
         </section>
       </main>
 

@@ -8,8 +8,8 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/api/health"],
-        disallow: ["/api/", "/s/"],
+        allow: ["/", "/projects", "/guide", "/about", "/contact", "/resources", "/terms", "/privacy", "/cookies", "/refund", "/api/health"],
+        disallow: ["/api/", "/s/", "/projects/"],
       },
       {
         userAgent: "Mediapartners-Google",

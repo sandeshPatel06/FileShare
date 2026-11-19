@@ -20,6 +20,8 @@ import { ADSENSE_SLOTS } from "@/lib/ads";
 
 const appUrl = getAppUrl();
 
+export const revalidate = 86400;
+
 export const metadata: Metadata = {
   title: "About Us | Architecture & Privacy",
   description: "Learn why FileShare was created: our mission, how it works, our privacy values, and what makes it different.",
@@ -136,10 +138,10 @@ export default function AboutPage() {
               Why We Built FileShare
             </h2>
             <p className="text-[var(--text-muted)] leading-relaxed">
-              Sharing a quick note, a code snippet, or a 200 MB file between two devices should take seconds. Yet most services require an account, email confirmations, software downloads, or strict 25 MB email limits.
+              Sharing a quick note, a code snippet, or a large video or archive between two devices should take seconds. Yet most services require an account, email confirmations, software downloads, or strict 25 MB email limits.
             </p>
             <p className="text-[var(--text-muted)] leading-relaxed">
-              FileShare was created by <strong>Sandesh Patel</strong> at <strong>SHP Technology</strong> in <strong>Jabalpur, Madhya Pradesh, India</strong>, to eliminate that friction. You pick a link (or let us generate one), share it with anyone, and start typing or uploading immediately. No signups, no tracking passwords, and no hassle.
+              FileShare was built by <strong>Sandesh Patel</strong> at <strong>SHP Technology</strong> in <strong>Jabalpur, Madhya Pradesh, India</strong>, to eliminate that friction. Open any link, share it with peers, and start typing or uploading immediately — no signups, no passwords to manage, and no setup friction.
             </p>
           </section>
 
@@ -209,12 +211,12 @@ export default function AboutPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm text-[var(--text-muted)]">
               <article className="p-4 rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)]">
                 <h3 className="font-bold text-[var(--text-main)] mb-1">Instant Live Sync</h3>
-                <p>When you type, your changes appear on every other open tab in real time with no manual refresh needed and very light data usage.</p>
+                <p>When you type, updates appear instantly on connected screens without needing to refresh.</p>
               </article>
 
               <article className="p-4 rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)]">
                 <h3 className="font-bold text-[var(--text-main)] mb-1">Hybrid Database</h3>
-                <p>Powered by PostgreSQL for high-concurrency cloud hosting and SQLite for local speed, keeping operations fast and dependable.</p>
+                <p>Powered by PostgreSQL and high-performance SQLite for dependable, lightning-fast response times.</p>
               </article>
 
               <article className="p-4 rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)]">
@@ -224,7 +226,7 @@ export default function AboutPage() {
 
               <article className="p-4 rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)]">
                 <h3 className="font-bold text-[var(--text-main)] mb-1">Passphrase Protection</h3>
-                <p>Passwords are safely scrambled before we store them so we can never read them back. Your login session lasts only while your browser tab is open.</p>
+                <p>Workspaces can be protected with a custom passphrase (hashed using bcrypt). Unlocked sessions are strictly scoped to your current browser tab.</p>
               </article>
             </div>
           </section>
@@ -241,7 +243,7 @@ export default function AboutPage() {
               </h2>
             </div>
             <p className="text-[var(--text-muted)] leading-relaxed">
-              FileShare is 100% free to use. We do not sell user data, lock essential features behind paywalls, or read your private notes.
+              FileShare is 100% free to use. We do not sell user data or lock essential features behind paywalls.
             </p>
             <p className="text-[var(--text-muted)] leading-relaxed">
               To cover server, cloud storage, and bandwidth costs, we display non-intrusive ads via Google AdSense solely on public pages (like our Guide, Resources, and About pages).
@@ -250,8 +252,8 @@ export default function AboutPage() {
               <div className="font-semibold text-[var(--text-main)]">Our Clear Promises:</div>
               <ul className="list-disc pl-5 space-y-1">
                 <li><strong>No ads inside workspaces:</strong> Your editor and file vaults remain clean and distraction-free.</li>
-                <li><strong>No misleading ads:</strong> We never use deceptive banners or disguised download buttons.</li>
-                <li><strong>Zero tracking in workspaces:</strong> Your notes and files stay private.</li>
+                <li><strong>No misleading banners:</strong> We never use deceptive popups or disguised download buttons.</li>
+                <li><strong>Zero workspace tracking:</strong> We do not inject tracking or advertising scripts inside active workspaces.</li>
               </ul>
             </div>
           </section>

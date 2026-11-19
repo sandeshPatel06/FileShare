@@ -27,6 +27,9 @@ const defaultOrigins = [
 ];
 
 const nextConfig: NextConfig = {
+  compress: true,
+  poweredByHeader: false,
+  reactStrictMode: true,
   turbopack: {
     root: __dirname,
   },
@@ -43,7 +46,8 @@ const nextConfig: NextConfig = {
     // excluded from the proxy matcher in src/proxy.ts to avoid buffering
     // large bodies in memory on small instances.)
     proxyClientMaxBodySize: "520mb",
-  },  async headers() {
+  },
+  async headers() {
     return [
       {
         source: "/(.*)",
@@ -67,13 +71,19 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        source: "/_next/static/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
         source: "/:path*(png|jpg|jpeg|gif|webp|svg|ico|woff|woff2)",
         headers: [
           { key: "Access-Control-Allow-Origin", value: "*" },
           { key: "Access-Control-Allow-Methods", value: "GET, HEAD, OPTIONS" },
           { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
           { key: "Timing-Allow-Origin", value: "*" },
-          { key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" },
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
         ],
       },
       {

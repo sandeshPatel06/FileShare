@@ -7,6 +7,8 @@ import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 
 const appUrl = getAppUrl();
 
+export const revalidate = 86400;
+
 export const metadata: Metadata = {
   title: "Cookie Policy",
   description: "Detailed Cookie Policy for FileShare. Understand what cookies and browser storage technologies we use, why we use them, and how to manage your privacy preferences.",

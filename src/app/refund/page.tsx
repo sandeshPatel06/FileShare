@@ -6,6 +6,8 @@ import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 
 const appUrl = getAppUrl();
 
+export const revalidate = 86400;
+
 export const metadata: Metadata = {
   title: "Refund Policy",
   description: "Official Refund and Cancellation Policy for FileShare, operated by SHP Technology. Learn about our free service tier, voluntary contributions, and dispute resolutions.",

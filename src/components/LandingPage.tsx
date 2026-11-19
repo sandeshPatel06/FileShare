@@ -1,749 +1,1306 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
-  FileText,
-  Shield,
-  Zap,
-  Lock,
   ArrowRight,
-  QrCode,
-  FolderUp,
-  Wand2,
-  Globe,
-  Loader2,
-  CheckCircle2,
-  HelpCircle,
   BookOpen,
-  Clock,
-  Pin,
-  X,
-  ExternalLink,
+  Check,
   ChevronDown,
+  Clock,
+  Code2,
+  Copy,
+  Download,
+  FileArchive,
+  FileText,
+  Film,
+  FolderOpen,
+  HardDrive,
+  History,
+  Lock,
+  Pin,
+  PinOff,
+  Search,
+  ShieldCheck,
+  Shuffle,
   Smartphone,
+  Trash2,
+  Unlock,
+  Upload,
   Users,
-  Share2,
+  Wand2,
+  X,
+  Zap,
 } from "lucide-react";
-import { ThemeToggle } from "./ThemeToggle";
+
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Footer } from "@/components/Footer";
-import { ARTICLES } from "@/lib/articles";
+import { ThemeToggle } from "./ThemeToggle";
 import { useRecentSpaces } from "@/hooks/useRecentSpaces";
 import { generateSlug } from "@/lib/slugGenerator";
+import { ARTICLES } from "@/lib/articles";
 
-interface LandingPageProps {
+export interface LandingPageProps {
   defaultSlug: string;
 }
 
-export function LandingPage({}: LandingPageProps) {
-  const router = useRouter();
-  const [activeSlug, setActiveSlug] = useState<string | null>(null);
-  const [showRecentModal, setShowRecentModal] = useState(false);
-  const { recentSpaces, removeRecentSpace, togglePin, clearRecentSpaces } = useRecentSpaces();
+type PreviewTabId = "notes" | "vault" | "phone" | "security";
 
-  const handleCreateNewSpace = async (prefix?: string) => {
-    const loadingKey = prefix || "new";
-    setActiveSlug(loadingKey);
-    try {
-      const url = prefix
-        ? `/api/pages/create?new=true&prefix=${encodeURIComponent(prefix)}`
-        : "/api/pages/create?new=true";
-      const res = await fetch(url);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.slug) {
-          router.push(`/projects/${data.slug}`);
-          return;
-        }
-      }
-    } catch {
-      // Fallback to client-generated slug if offline / API error
-    }
-    const fallback = generateSlug(prefix);
-    router.push(`/projects/${fallback}`);
+interface QuickChip {
+  emoji: string;
+  label: string;
+  slug: string;
+}
+
+interface ComparisonRow {
+  feature: string;
+  fileshare: string;
+  drive: string;
+  pastebin: string;
+  wetransfer: string;
+}
+
+interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+const QUICK_CHIPS: QuickChip[] = [
+  { emoji: "📝", label: "notes", slug: "meeting-notes" },
+  { emoji: "📁", label: "file-drop", slug: "file-drop" },
+  { emoji: "📱", label: "phone-transfer", slug: "phone-transfer" },
+  { emoji: "⚡", label: "scratchpad", slug: "scratchpad" },
+];
+
+const COMPARISON_ROWS: ComparisonRow[] = [
+  {
+    feature: "Account Required",
+    fileshare: "None — 100% free & instant",
+    drive: "Must create/sign in to Google",
+    pastebin: "Required for large text",
+    wetransfer: "Must verify email address",
+  },
+  {
+    feature: "Live Real-Time Sync",
+    fileshare: "Yes — instant updates as you type",
+    drive: "Yes, but slow on big documents",
+    pastebin: "No (static pages only)",
+    wetransfer: "No (file transfer only)",
+  },
+  {
+    feature: "File Size Limit",
+    fileshare: "500 MB per file (Free)",
+    drive: "Uses up limited cloud storage",
+    pastebin: "Text only (no files)",
+    wetransfer: "2 GB (expires in a few days)",
+  },
+  {
+    feature: "Phone to PC Transfer",
+    fileshare: "Scan QR code with camera (No app)",
+    drive: "Must download mobile app",
+    pastebin: "Manual copy-pasting",
+    wetransfer: "Must email download link",
+  },
+  {
+    feature: "Password Lock",
+    fileshare: "1-click optional password",
+    drive: "Complex permissions & sharing",
+    pastebin: "Paid Pro account only",
+    wetransfer: "Paid subscription only",
+  },
+];
+
+// Verbatim match with Schema.org FAQPage JSON-LD in src/app/page.tsx
+const FAQ_ITEMS: FaqItem[] = [
+  {
+    question: "Is FileShare free to use, and do I need to register?",
+    answer:
+      "Yes, FileShare is 100% free with zero registration required. There are no forms to fill out, no email confirmations, and no subscriptions. You can start typing or uploading immediately.",
+  },
+  {
+    question: "What is the file size upload limit?",
+    answer:
+      "You can upload files up to 500 MB each. FileShare supports multi-file uploads including videos, zip archives, images, PDFs, and code files.",
+  },
+  {
+    question: "How does real-time synchronization work?",
+    answer:
+      "FileShare uses instant live sync so changes appear across all connected browsers in milliseconds. When anyone edits notes or uploads a file, it shows up automatically without refreshing.",
+  },
+  {
+    question: "Can I protect my workspace with a password?",
+    answer:
+      "Yes. Click Lock Space in the top bar to set a password. Anyone visiting the link will need to enter your password to view or edit notes and files.",
+  },
+  {
+    question: "How do I open my workspace on mobile devices?",
+    answer:
+      "Click the QR code button in the top bar. Scan it with your phone's camera to instantly open and edit your workspace on mobile.",
+  },
+  {
+    question:
+      "How is FileShare different from Pastebin, Google Drive, or WeTransfer?",
+    answer:
+      "Unlike Pastebin, FileShare syncs your typing live, renders rich Markdown diagrams, and supports 500MB file uploads. Unlike Google Drive or WeTransfer, there is no account to create, no email addresses needed, and workspaces open instantly with a link.",
+  },
+  {
+    question: "Can I write Markdown and render Mermaid diagrams?",
+    answer:
+      "Yes. FileShare supports GitHub Flavored Markdown (headings, task lists, tables, syntax-highlighted code blocks) and renders Mermaid flowcharts and diagrams automatically in real time.",
+  },
+];
+
+const INITIAL_PREVIEW_TASKS = [
+  { id: "t1", text: "Meeting Agenda: Review Q4 product roadmap", done: true },
+  { id: "t2", text: "Upload design mockups & presentation (PDF)", done: true },
+  { id: "t3", text: "Send shareable link to team members", done: false },
+];
+
+const VAULT_PREVIEW_FILES = [
+  {
+    id: "f1",
+    name: "quarterly-report-final.pdf",
+    size: "4.2 MB",
+    meta: "Ready to download",
+    uploading: false,
+    progress: 100,
+    kind: "doc" as const,
+  },
+  {
+    id: "f2",
+    name: "project-design-assets.zip",
+    size: "38.5 MB",
+    meta: "Ready to download",
+    uploading: false,
+    progress: 100,
+    kind: "archive" as const,
+  },
+  {
+    id: "f3",
+    name: "product-demo-video.mp4",
+    size: "248 MB",
+    meta: "Uploading • 14.2 MB/s",
+    uploading: true,
+    progress: 82,
+    kind: "video" as const,
+  },
+];
+
+const QR_MATRIX: number[][] = [
+  [1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1],
+  [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1],
+  [1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1],
+  [1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1],
+  [1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1],
+  [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1],
+  [1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1],
+  [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+  [1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1],
+  [0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0],
+  [1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1],
+  [0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1],
+  [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1],
+  [1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0],
+  [1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1],
+  [1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0],
+  [1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1],
+  [1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0],
+  [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0],
+  [1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1],
+];
+
+function sanitizeSlug(raw: string): string {
+  return raw
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-_/\s]/g, "")
+    .replace(/[\s/]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 64);
+}
+
+function formatRelativeTime(timestamp: number, now: number): string {
+  const diffSec = Math.max(0, Math.floor((now - timestamp) / 1000));
+  if (diffSec < 60) return "Just now";
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  const diffDay = Math.floor(diffHr / 24);
+  if (diffDay < 30) return `${diffDay}d ago`;
+  return new Date(timestamp).toLocaleDateString();
+}
+
+export function LandingPage({ defaultSlug }: LandingPageProps) {
+  const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const { recentSpaces, removeRecentSpace, togglePin, clearRecentSpaces } =
+    useRecentSpaces();
+
+  // URL input state
+  const [slugInput, setSlugInput] = useState<string>("");
+  const [suggestedSlug, setSuggestedSlug] = useState<string>(defaultSlug);
+
+  // Preview interactive state
+  const [activeTab, setActiveTab] = useState<PreviewTabId>("notes");
+  const [previewTasks, setPreviewTasks] = useState(INITIAL_PREVIEW_TASKS);
+  const [copiedFileId, setCopiedFileId] = useState<string | null>(null);
+  const [isPreviewLocked, setIsPreviewLocked] = useState<boolean>(false);
+  const [isFormattedFlash, setIsFormattedFlash] = useState<boolean>(false);
+
+  // FAQ state
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+
+  // Recent Spaces Modal state
+  const [isRecentModalOpen, setIsRecentModalOpen] = useState<boolean>(false);
+  const [recentQuery, setRecentQuery] = useState<string>("");
+  const [clientNow, setClientNow] = useState<number>(0);
+
+  const handleOpenRecentModal = () => {
+    setClientNow(Date.now());
+    setIsRecentModalOpen(true);
   };
 
-  const featuredWorkspaces = [
-    { prefix: "general", title: "General Workspace", icon: "💬" },
-    { prefix: "notes", title: "Live Markdown Notes", icon: "📝" },
-    { prefix: "code", title: "Code Snippet Vault", icon: "⚡" },
-    { prefix: "docs", title: "Sandbox & Docs", icon: "🚀" },
-  ];
+  const effectivePreviewSlug = useMemo(() => {
+    const cleaned = sanitizeSlug(slugInput);
+    return cleaned || suggestedSlug || "team-notes";
+  }, [slugInput, suggestedSlug]);
 
-  const featuredArticles = ARTICLES.slice(0, 4);
+  const sortedRecentSpaces = useMemo(() => {
+    const q = recentQuery.trim().toLowerCase();
+    return [...recentSpaces]
+      .filter((space) => (!q ? true : space.slug.toLowerCase().includes(q)))
+      .sort((a, b) => {
+        if (Boolean(a.pinned) !== Boolean(b.pinned)) {
+          return a.pinned ? -1 : 1;
+        }
+        return b.lastVisited - a.lastVisited;
+      });
+  }, [recentSpaces, recentQuery]);
+
+  const navigateToSpace = (rawSlug: string) => {
+    const cleaned = sanitizeSlug(rawSlug) || generateSlug();
+    router.push(`/projects/${cleaned}`);
+  };
+
+  const handleOpenCustomSpace = () => {
+    const cleaned = sanitizeSlug(slugInput);
+    navigateToSpace(cleaned || suggestedSlug);
+  };
+
+  const handleHeroFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    handleOpenCustomSpace();
+  };
+
+  const handleRandomSpace = () => {
+    const fresh = generateSlug();
+    router.push(`/projects/${fresh}`);
+  };
+
+  const handleShufflePlaceholder = () => {
+    const fresh = generateSlug();
+    setSuggestedSlug(fresh);
+    setSlugInput(fresh);
+    inputRef.current?.focus();
+  };
+
+  const handleTogglePreviewTask = (id: string) => {
+    setPreviewTasks((prev) =>
+      prev.map((task) =>
+        task.id === id ? { ...task, done: !task.done } : task
+      )
+    );
+  };
+
+  const handleCopyPreviewLink = (fileId: string) => {
+    setCopiedFileId(fileId);
+    window.setTimeout(() => {
+      setCopiedFileId((curr) => (curr === fileId ? null : curr));
+    }, 1600);
+  };
+
+  const handleTriggerFormatDemo = () => {
+    setIsFormattedFlash(true);
+    window.setTimeout(() => setIsFormattedFlash(false), 1400);
+  };
 
   return (
-    <div className="min-h-dvh flex flex-col bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-200 overflow-x-clip">
-      {/* Header / Navbar */}
-      <header className="sticky top-0 z-40 bg-[var(--header-bg)] border-b border-[var(--border-color)]">
-        <div className="max-w-6xl mx-auto px-3 sm:px-6 h-14 flex items-center justify-between">
+    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] selection:bg-[var(--badge-bg)] selection:text-[var(--accent-text)]">
+      {/* Header */}
+      <header className="sticky top-0 z-40 border-b border-[var(--border-color)] bg-[var(--header-bg)] backdrop-blur-md">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center gap-2" aria-label="FileShare Home">
-              <div className="w-7 h-7 rounded-md bg-[var(--accent-primary)] flex items-center justify-center shrink-0">
-                <FileText className="w-4 h-4 text-white" aria-hidden="true" />
-              </div>
-              <span className="font-bold text-base tracking-tight text-[var(--text-main)]">
-                FileShare
+            <Link
+              href="/"
+              className="flex items-center gap-2.5 text-sm font-semibold tracking-tight text-[var(--text-main)]"
+            >
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--badge-border)] bg-[var(--badge-bg)] text-[var(--accent-text)]">
+                <FolderOpen className="h-4 w-4" />
               </span>
+              <span className="text-base font-bold">FileShare</span>
             </Link>
 
-            {/* Navigation links */}
-            <nav aria-label="Main Navigation" className="hidden md:flex items-center gap-5 text-xs font-medium text-[var(--text-muted)]">
-              <Link href="/resources" className="py-1 hover:text-[var(--text-main)] transition-colors">Resources</Link>
-              <Link href="/guide" className="py-1 hover:text-[var(--text-main)] transition-colors">User Guide</Link>
-              <Link href="/about" className="py-1 hover:text-[var(--text-main)] transition-colors">About</Link>
-              <Link href="/contact" className="py-1 hover:text-[var(--text-main)] transition-colors">Contact</Link>
+            <nav
+              aria-label="Navigation"
+              className="hidden items-center gap-5 text-xs font-medium text-[var(--text-muted)] md:flex"
+            >
+              <a href="#how-it-works" className="transition-colors hover:text-[var(--text-main)]">
+                How It Works
+              </a>
+              <a href="#features" className="transition-colors hover:text-[var(--text-main)]">
+                Features
+              </a>
+              <a href="#compare" className="transition-colors hover:text-[var(--text-main)]">
+                Compare
+              </a>
+              <Link href="/guide" className="transition-colors hover:text-[var(--text-main)]">
+                User Guide
+              </Link>
+              <a href="#faq" className="transition-colors hover:text-[var(--text-main)]">
+                FAQ
+              </a>
             </nav>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-2.5">
+          <div className="flex items-center gap-2">
+            {recentSpaces.length > 0 && (
+              <button
+                type="button"
+                onClick={handleOpenRecentModal}
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] px-2.5 text-xs font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--accent-primary)] hover:text-[var(--text-main)] cursor-pointer"
+              >
+                <History className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Recent</span>
+                <span className="rounded bg-[var(--badge-bg)] px-1.5 py-0.5 font-mono text-[10px] text-[var(--accent-text)]">
+                  {recentSpaces.length}
+                </span>
+              </button>
+            )}
+
             <ThemeToggle />
+
             <Button
-              onClick={() => router.push("/projects")}
-              className="!px-3 sm:!px-4 !py-1.5 !rounded-md text-xs !font-semibold bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white min-h-[36px]"
-              iconRight={<ArrowRight className="w-3.5 h-3.5" />}
+              variant="primary"
+              size="sm"
+              icon={<Zap className="h-3.5 w-3.5" />}
+              onClick={handleRandomSpace}
             >
-              Try Now
+              Instant Space ⚡
             </Button>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1">
-        {/* Hero Section */}
-        <section className="pt-6 pb-8 sm:pt-10 sm:pb-12 md:pt-12 md:pb-14 border-b border-[var(--border-color)]">
-          <div className="max-w-4xl mx-auto px-4 text-center">
-            {/* Value Proposition Badges */}
-            <div className="inline-flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-xs font-mono bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] mb-3 sm:mb-4 max-w-full">
-              <span className="text-[var(--status-success-text)] flex items-center gap-1.5 font-medium whitespace-nowrap">
-                <CheckCircle2 className="w-3.5 h-3.5 shrink-0" aria-hidden="true" /> No Sign-Up Needed
-              </span>
-              <span className="hidden sm:inline text-[var(--border-color)] select-none" aria-hidden="true">•</span>
-              <span className="text-[var(--accent-text)] flex items-center gap-1.5 font-medium whitespace-nowrap">
-                <Zap className="w-3.5 h-3.5 shrink-0" aria-hidden="true" /> Instant Live Sync
-              </span>
-              <span className="hidden sm:inline text-[var(--border-color)] select-none" aria-hidden="true">•</span>
-              <span className="text-[var(--accent-sky)] flex items-center gap-1.5 font-medium whitespace-nowrap">
-                <Shield className="w-3.5 h-3.5 shrink-0" aria-hidden="true" /> 500MB Free Vault
-              </span>
+      <main>
+        {/* Hero Section — Clean, Friendly & Easy to Use */}
+        <section className="relative border-b border-[var(--border-color)] bg-[var(--bg-main)] pt-10 pb-16 sm:pt-14 sm:pb-20">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6 text-center">
+            {/* Value Badge */}
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--badge-border)] bg-[var(--badge-bg)] px-3 py-1 text-xs font-medium text-[var(--accent-text)]">
+              <span className="h-2 w-2 rounded-full bg-[var(--status-success-text)] animate-pulse" />
+              <span>100% Free • No Sign-Up • Open Instantly</span>
             </div>
 
-            <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[var(--text-main)] mb-3 sm:mb-4 leading-tight sm:leading-tight text-balance">
-              Free Online Notepad &amp; Instant File Sharing
+            {/* Main Headline */}
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-[var(--text-main)] mb-4 leading-tight text-balance">
+              Write notes. Share files. <br />
+              <span className="text-[var(--accent-text)]">Zero registration required.</span>
             </h1>
 
-            <p className="max-w-[65ch] mx-auto text-xs sm:text-sm md:text-base text-[var(--text-muted)] mb-4 sm:mb-5 leading-normal sm:leading-relaxed text-pretty">
-              Write live Markdown notes, sketch diagrams, and share files up to 500MB with anyone through a single link. No account, forms, or passwords required.
+            {/* Subtitle */}
+            <p className="mx-auto max-w-2xl text-sm sm:text-base text-[var(--text-muted)] leading-relaxed mb-8 text-pretty">
+              Create an instant workspace with a single link. Type together in real time, drop heavy files up to 500MB, or scan a QR code to transfer photos between your phone and computer.
             </p>
 
-            {/* Hero Main Action Card */}
-            <div className="max-w-md mx-auto bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl sm:rounded-2xl p-5 sm:p-6 shadow-sm text-center space-y-4">
-              <div className="space-y-1.5">
-                <h2 className="text-base sm:text-lg font-bold text-[var(--text-main)] text-balance">
-                  Start working together in seconds
-                </h2>
-                <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed text-pretty">
-                  Create notes, sketch diagrams, and share files up to 500MB with anyone. Zero sign-up, zero installation.
-                </p>
-              </div>
+            {/* Easy-To-Use URL Creation Card */}
+            <div className="mx-auto max-w-xl rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] p-4 sm:p-5 shadow-lg text-left">
+              <form onSubmit={handleHeroFormSubmit} className="space-y-3">
+                <div>
+                  <label htmlFor="workspace-input" className="block text-xs font-semibold text-[var(--text-main)] mb-1.5">
+                    Choose your workspace link:
+                  </label>
+                  <div className="flex items-center rounded-xl border border-[var(--border-color)] bg-[var(--input-bg)] px-3 py-2.5 focus-within:border-[var(--accent-primary)] transition-colors">
+                    <span className="shrink-0 select-none font-mono text-xs text-[var(--text-muted)] pr-1">
+                      filesp.pages.dev/projects/
+                    </span>
+                    <input
+                      id="workspace-input"
+                      ref={inputRef}
+                      type="text"
+                      value={slugInput}
+                      onChange={(e) => setSlugInput(e.target.value)}
+                      placeholder={suggestedSlug}
+                      aria-label="Workspace room name"
+                      autoComplete="off"
+                      spellCheck={false}
+                      className="w-full bg-transparent font-mono text-xs sm:text-sm font-medium text-[var(--text-main)] placeholder:text-[var(--text-muted)] focus:outline-none"
+                    />
+                    {slugInput && (
+                      <button
+                        type="button"
+                        onClick={() => setSlugInput("")}
+                        aria-label="Clear room name"
+                        className="ml-1 rounded p-1 text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleShufflePlaceholder}
+                      title="Suggest another random name"
+                      aria-label="Suggest another random name"
+                      className="ml-1 rounded p-1 text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer"
+                    >
+                      <Shuffle className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
 
-              <Button
-                onClick={() => router.push("/projects")}
-                className="w-full !py-3 min-h-[46px] !rounded-lg !font-semibold text-sm bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white flex items-center justify-center gap-2"
-                iconRight={<ArrowRight className="w-4 h-4" />}
-              >
-                Try Now
-              </Button>
-
-              <div className="pt-3 border-t border-[var(--border-color)] flex items-center justify-center gap-3 text-[11px] font-mono text-[var(--text-muted)]">
-                <span>100% Free</span>
-                <span aria-hidden="true">•</span>
-                <span>No Account Needed</span>
-                <span aria-hidden="true">•</span>
-                <span>Instant Setup</span>
-              </div>
-            </div>
-
-            {/* Modal Dialog for Recent Workspaces */}
-            <Modal
-              open={showRecentModal}
-              onClose={() => setShowRecentModal(false)}
-              title="Recent Spaces"
-              maxWidth="max-w-sm"
-              footer={
-                <div className="flex items-center justify-between w-full">
+                <div className="flex flex-col sm:flex-row items-center gap-2.5">
                   <Button
-                    size="xs"
-                    variant="danger"
-                    onClick={() => {
-                      clearRecentSpaces();
-                      setShowRecentModal(false);
-                    }}
-                    icon={<X className="w-3.5 h-3.5" />}
+                    type="submit"
+                    variant="primary"
+                    size="md"
+                    className="w-full sm:flex-1 !py-3 !text-sm !font-semibold shadow-sm"
+                    iconRight={<ArrowRight className="h-4 w-4" />}
                   >
-                    Clear History
+                    Open Workspace
                   </Button>
                   <Button
-                    size="xs"
+                    type="button"
                     variant="secondary"
-                    onClick={() => setShowRecentModal(false)}
+                    size="md"
+                    className="w-full sm:w-auto !py-3 !text-sm !font-medium"
+                    icon={<Zap className="h-4 w-4 text-[var(--accent-text)]" />}
+                    onClick={handleRandomSpace}
                   >
-                    Close
+                    Random Space ⚡
                   </Button>
                 </div>
-              }
-            >
-              <div className="space-y-1.5 max-h-[55vh] overflow-y-auto">
-                {recentSpaces.length === 0 ? (
-                  <div className="flex flex-col items-center gap-2 py-8 text-[var(--text-muted)]">
-                    <Clock className="w-8 h-8 opacity-30" />
-                    <p className="text-xs text-center">No recent spaces yet.<br />Open a workspace to see it here.</p>
-                  </div>
-                ) : (
-                  recentSpaces.map((item) => {
-                    const ago = (() => {
-                      const diff = Date.now() - item.lastVisited;
-                      const mins = Math.floor(diff / 60000);
-                      if (mins < 1) return "just now";
-                      if (mins < 60) return `${mins}m ago`;
-                      const hrs = Math.floor(mins / 60);
-                      if (hrs < 24) return `${hrs}h ago`;
-                      return `${Math.floor(hrs / 24)}d ago`;
-                    })();
-                    return (
-                      <div
-                        key={item.slug}
-                        className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] hover:border-[var(--accent-primary)]/60 transition-colors group"
-                      >
-                        {/* Pin button */}
-                        <button
-                          type="button"
-                          onClick={() => togglePin(item.slug)}
-                          title={item.pinned ? "Unpin" : "Pin to top"}
-                          aria-label={item.pinned ? "Unpin workspace" : "Pin workspace to top"}
-                          className={`shrink-0 p-1 rounded transition-colors cursor-pointer ${
-                            item.pinned
-                              ? "text-[var(--accent-text)]"
-                              : "text-[var(--text-muted)] opacity-0 group-hover:opacity-100"
-                          }`}
-                        >
-                          <Pin className={`w-3 h-3 ${item.pinned ? "fill-current" : ""}`} />
-                        </button>
+              </form>
 
-                        {/* Info */}
-                        <div className="flex-1 min-w-0 text-left">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="font-mono font-semibold text-xs text-[var(--text-main)] truncate">
-                              /projects/{item.slug}
-                            </span>
-                            {item.pinned && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--accent-primary)]/15 text-[var(--accent-text)] font-medium shrink-0">
-                                Pinned
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-[11px] text-[var(--text-muted)] mt-0.5">{ago}</div>
-                        </div>
+              {/* Quick ideas chips */}
+              <div className="mt-3.5 pt-3 border-t border-[var(--border-color)] flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div className="flex flex-wrap items-center gap-1.5 text-[var(--text-muted)]">
+                  <span>Quick ideas:</span>
+                  {QUICK_CHIPS.map((chip) => (
+                    <button
+                      key={chip.slug}
+                      type="button"
+                      onClick={() => navigateToSpace(chip.slug)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[var(--bg-main)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] text-[var(--text-main)] hover:text-[var(--accent-text)] transition-colors cursor-pointer text-xs"
+                    >
+                      <span>{chip.emoji}</span>
+                      <span>{chip.label}</span>
+                    </button>
+                  ))}
+                </div>
 
-                        {/* Open link */}
-                        <Link
-                          href={`/projects/${item.slug}`}
-                          onClick={() => setShowRecentModal(false)}
-                          title={`Open /projects/${item.slug}`}
-                          className="shrink-0 flex items-center gap-1 text-[11px] font-semibold text-[var(--accent-text)] hover:underline py-1 px-1.5"
-                        >
-                          Open
-                          <ExternalLink className="w-3 h-3" />
-                        </Link>
-
-                        {/* Remove button */}
-                        <button
-                          type="button"
-                          onClick={() => removeRecentSpace(item.slug)}
-                          title="Remove from history"
-                          aria-label="Remove from history"
-                          className="shrink-0 p-1 rounded text-[var(--text-muted)] hover:text-[var(--status-danger-text)] opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    );
-                  })
+                {recentSpaces.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleOpenRecentModal}
+                    className="text-[var(--accent-text)] font-semibold hover:underline cursor-pointer flex items-center gap-1"
+                  >
+                    <History className="h-3.5 w-3.5" />
+                    <span>Recent ({recentSpaces.length})</span>
+                  </button>
                 )}
               </div>
-            </Modal>
+            </div>
 
-            {/* Quick Link to Knowledge Base */}
-            <div className="mt-3 sm:mt-4 text-xs text-[var(--text-muted)] flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-center">
-              <span>New to FileShare?</span>
-              <Link href="/guide" className="text-[var(--accent-text)] hover:underline inline-flex items-center gap-1 font-medium min-h-[32px] sm:min-h-[36px]">
-                Read the Complete User Guide <ArrowRight className="w-3 h-3" aria-hidden="true" />
-              </Link>
+            {/* Interactive Browser Window Mockup ("Show, Don't Tell") */}
+            <div className="mt-12 overflow-hidden rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] shadow-xl text-left">
+              {/* Window Header */}
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-color)] bg-[var(--header-bg)] px-4 py-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-red-500/80" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-amber-500/80" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/80" />
+                </div>
+
+                <div className="flex max-w-sm flex-1 items-center justify-center gap-1.5 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] px-3 py-1 font-mono text-[11px] text-[var(--text-muted)]">
+                  <Lock className="h-3 w-3 text-[var(--accent-text)]" />
+                  <span className="truncate">filesp.pages.dev/projects/{effectivePreviewSlug}</span>
+                </div>
+
+                <div className="flex items-center gap-1.5 text-xs font-medium text-[var(--status-success-text)]">
+                  <span className="h-2 w-2 rounded-full bg-[var(--status-success-text)]" />
+                  <span>Live Sync</span>
+                </div>
+              </div>
+
+              {/* Mockup Tab Selector */}
+              <div
+                role="tablist"
+                aria-label="Workspace preview tabs"
+                className="flex items-center gap-1 overflow-x-auto border-b border-[var(--border-color)] bg-[var(--bg-main)] px-3 pt-2"
+              >
+                {(
+                  [
+                    { id: "notes", emoji: "📝", label: "Live Notes" },
+                    { id: "vault", emoji: "📁", label: "500MB File Vault" },
+                    { id: "phone", emoji: "📱", label: "Phone to PC" },
+                    { id: "security", emoji: "🔒", label: "Password Lock" },
+                  ] as const
+                ).map((tab) => {
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      role="tab"
+                      type="button"
+                      aria-selected={isActive}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`inline-flex shrink-0 items-center gap-1.5 rounded-t-lg border border-b-0 px-3.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
+                        isActive
+                          ? "border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)]"
+                          : "border-transparent bg-transparent text-[var(--text-muted)] hover:text-[var(--text-main)]"
+                      }`}
+                    >
+                      <span>{tab.emoji}</span>
+                      <span>{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Viewport content */}
+              <div className="p-4 sm:p-6 min-h-[300px]">
+                {/* TAB 1: LIVE NOTES */}
+                {activeTab === "notes" && (
+                  <div className="grid gap-4 md:grid-cols-12">
+                    <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4 md:col-span-7 space-y-3">
+                      <div className="flex items-center justify-between pb-2 border-b border-[var(--border-color)] text-xs">
+                        <span className="font-semibold text-[var(--text-main)] flex items-center gap-1.5">
+                          <Code2 className="h-3.5 w-3.5 text-[var(--accent-text)]" />
+                          meeting-agenda.md
+                        </span>
+                        <button
+                          type="button"
+                          onClick={handleTriggerFormatDemo}
+                          className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-mono border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer"
+                        >
+                          <Wand2 className="h-3 w-3 text-[var(--accent-text)]" />
+                          <span>{isFormattedFlash ? "Cleaned!" : "Tidy Text"}</span>
+                        </button>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="text-sm font-bold text-[var(--text-main)]">
+                          Sprint Planning &amp; Tasks
+                        </div>
+                        <div className="space-y-1.5">
+                          {previewTasks.map((task) => (
+                            <button
+                              key={task.id}
+                              type="button"
+                              onClick={() => handleTogglePreviewTask(task.id)}
+                              className="flex w-full items-center gap-2.5 rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] px-3 py-2 text-left text-xs transition-colors hover:border-[var(--accent-primary)] cursor-pointer"
+                            >
+                              <span
+                                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
+                                  task.done
+                                    ? "border-[var(--status-success-text)] bg-[var(--status-success-bg)] text-[var(--status-success-text)]"
+                                    : "border-[var(--border-color)] bg-[var(--input-bg)]"
+                                }`}
+                              >
+                                {task.done && <Check className="h-3 w-3" />}
+                              </span>
+                              <span className={task.done ? "text-[var(--text-muted)] line-through" : "text-[var(--text-main)]"}>
+                                {task.text}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="pt-2 text-[11px] text-[var(--text-muted)] flex items-center justify-between">
+                        <span>Click any checklist item above to toggle</span>
+                        <span className="text-[var(--accent-text)]">● 3 collaborators editing</span>
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4 md:col-span-5 flex flex-col justify-between">
+                      <div className="space-y-3">
+                        <div className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+                          How it works
+                        </div>
+                        <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                          Anyone with the link can write at the same time. There are no save buttons—every word syncs across all open screens automatically in milliseconds.
+                        </p>
+                        <div className="p-3 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-color)] text-xs space-y-1.5">
+                          <div className="font-semibold text-[var(--text-main)]">What you can write:</div>
+                          <div className="text-[var(--text-muted)]">• Bullet points &amp; checklists</div>
+                          <div className="text-[var(--text-muted)]">• Code blocks &amp; tables</div>
+                          <div className="text-[var(--text-muted)]">• Mermaid flowcharts</div>
+                        </div>
+                      </div>
+
+                      <div className="pt-2">
+                        <Button
+                          variant="secondary"
+                          size="xs"
+                          className="w-full"
+                          onClick={handleOpenCustomSpace}
+                          iconRight={<ArrowRight className="h-3.5 w-3.5" />}
+                        >
+                          Try it live now
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 2: 500MB FILE VAULT */}
+                {activeTab === "vault" && (
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--badge-border)] bg-[var(--badge-bg)] text-[var(--accent-text)]">
+                          <Upload className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <div className="text-xs font-semibold text-[var(--text-main)]">
+                            Drag &amp; drop any file up to 500MB
+                          </div>
+                          <div className="text-[11px] text-[var(--text-muted)]">
+                            Videos, ZIPs, PDFs, APKs, photos, and documents download directly in the browser.
+                          </div>
+                        </div>
+                      </div>
+                      <Button
+                        variant="secondary"
+                        size="xs"
+                        icon={<ArrowRight className="h-3.5 w-3.5" />}
+                        onClick={handleOpenCustomSpace}
+                      >
+                        Open Vault
+                      </Button>
+                    </div>
+
+                    <div className="space-y-2.5">
+                      {VAULT_PREVIEW_FILES.map((file) => (
+                        <div
+                          key={file.id}
+                          className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-3.5 flex flex-col gap-2"
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--accent-text)]">
+                                {file.kind === "video" && <Film className="h-4 w-4" />}
+                                {file.kind === "archive" && <FileArchive className="h-4 w-4" />}
+                                {file.kind === "doc" && <FileText className="h-4 w-4" />}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="truncate font-semibold text-xs text-[var(--text-main)]">
+                                  {file.name}
+                                </div>
+                                <div className="text-[11px] text-[var(--text-muted)]">
+                                  {file.size} • {file.meta}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              {file.uploading ? (
+                                <span className="rounded-md bg-[var(--badge-bg)] px-2 py-1 font-mono text-[11px] font-medium text-[var(--accent-text)]">
+                                  {file.progress}%
+                                </span>
+                              ) : (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCopyPreviewLink(file.id)}
+                                    className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] px-2.5 py-1 text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer"
+                                  >
+                                    {copiedFileId === file.id ? (
+                                      <>
+                                        <Check className="h-3.5 w-3.5 text-[var(--status-success-text)]" />
+                                        <span>Copied!</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Copy className="h-3.5 w-3.5" />
+                                        <span>Copy Link</span>
+                                      </>
+                                    )}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={handleOpenCustomSpace}
+                                    className="inline-flex items-center gap-1 rounded-lg border border-[var(--badge-border)] bg-[var(--badge-bg)] px-2.5 py-1 text-xs font-medium text-[var(--accent-text)] hover:opacity-90 cursor-pointer"
+                                  >
+                                    <Download className="h-3.5 w-3.5" />
+                                    <span>Download</span>
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+
+                          {file.uploading && (
+                            <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-main)]">
+                              <div
+                                className="h-full rounded-full bg-[var(--accent-primary)] transition-all"
+                                style={{ width: `${file.progress}%` }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 3: PHONE TO PC */}
+                {activeTab === "phone" && (
+                  <div className="grid gap-4 md:grid-cols-2 items-center">
+                    <div className="flex flex-col justify-between rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4 space-y-4">
+                      <div>
+                        <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-main)] mb-1">
+                          <Smartphone className="h-4 w-4 text-[var(--accent-text)]" />
+                          Send Photos &amp; Files from Phone to PC
+                        </div>
+                        <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                          Tired of messaging yourself on WhatsApp or using cables? Just scan this QR code with your phone camera to open this exact workspace on your mobile.
+                        </p>
+                      </div>
+
+                      <div className="space-y-1.5 text-xs text-[var(--text-muted)]">
+                        <div className="flex items-center gap-2">
+                          <Check className="h-3.5 w-3.5 text-[var(--status-success-text)]" />
+                          <span>No app download or Bluetooth pairing</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Check className="h-3.5 w-3.5 text-[var(--status-success-text)]" />
+                          <span>Works on iPhone, iPad, and Android</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Check className="h-3.5 w-3.5 text-[var(--status-success-text)]" />
+                          <span>Drop photos straight onto your desktop</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-center justify-center p-4 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] text-center space-y-2">
+                      <div className="p-2.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-main)]">
+                        <svg
+                          viewBox="0 0 20 20"
+                          className="h-28 w-28"
+                          role="img"
+                          aria-label="Workspace QR code"
+                        >
+                          {QR_MATRIX.map((row, rIdx) =>
+                            row.map((cell, cIdx) =>
+                              cell === 1 ? (
+                                <rect
+                                  key={`${rIdx}-${cIdx}`}
+                                  x={cIdx}
+                                  y={rIdx}
+                                  width="1"
+                                  height="1"
+                                  fill="var(--text-main)"
+                                />
+                              ) : null
+                            )
+                          )}
+                        </svg>
+                      </div>
+                      <div className="font-mono text-xs text-[var(--text-muted)]">
+                        Point camera to scan
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 4: PASSWORD LOCK */}
+                {activeTab === "security" && (
+                  <div className="grid gap-4 md:grid-cols-2 items-center">
+                    <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4 space-y-3">
+                      <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-main)]">
+                        <Lock className="h-4 w-4 text-[var(--status-success-text)]" />
+                        Private Password Protection
+                      </div>
+                      <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                        Sharing sensitive work, client contracts, or private drafts? Set a password in one click. Only people who know the password will be able to view or edit notes and files.
+                      </p>
+                      <div className="pt-1">
+                        <button
+                          type="button"
+                          onClick={() => setIsPreviewLocked((v) => !v)}
+                          className="inline-flex items-center gap-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-semibold text-[var(--text-main)] hover:border-[var(--accent-primary)] transition-colors cursor-pointer"
+                        >
+                          {isPreviewLocked ? (
+                            <>
+                              <Lock className="h-4 w-4 text-[var(--status-success-text)]" />
+                              <span>Password Lock: Enabled (Click to test unlock)</span>
+                            </>
+                          ) : (
+                            <>
+                              <Unlock className="h-4 w-4 text-[var(--text-muted)]" />
+                              <span>Password Lock: Disabled (Click to enable)</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4 text-center space-y-3">
+                      <div className="w-10 h-10 rounded-full bg-[var(--status-success-bg)] text-[var(--status-success-text)] mx-auto flex items-center justify-center">
+                        <ShieldCheck className="h-5 w-5" />
+                      </div>
+                      <div className="text-sm font-bold text-[var(--text-main)]">
+                        {isPreviewLocked ? "Room is Password-Locked" : "Public Room Mode"}
+                      </div>
+                      <p className="text-xs text-[var(--text-muted)]">
+                        {isPreviewLocked
+                          ? "Visitors must type the correct password to unlock this room."
+                          : "Anyone with the link can open and edit. Add a password whenever you need privacy."}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </section>
 
-        {/* 3-Step Educational Workflow Overview */}
-        <section className="py-8 sm:py-12 md:py-14 max-w-6xl mx-auto px-4 sm:px-6">
-          <header className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-2 sm:mb-3">
-              Three-Step Workflow
-            </h2>
-            <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
-              Start working together in seconds with three simple steps.
-            </p>
-          </header>
-
-          <ol className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 list-none p-0 m-0">
-            <li>
-              <article className="h-full bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 md:p-6 relative flex flex-col">
-                <span className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-[var(--badge-bg)] text-[var(--badge-text)] border border-[var(--badge-border)] flex items-center justify-center font-mono font-bold text-xs sm:text-sm mb-3 sm:mb-4" aria-hidden="true">
-                  01
-                </span>
-                <h3 className="text-sm sm:text-base font-bold mb-1.5 sm:mb-2 text-[var(--text-main)]">1. Choose a Name</h3>
-                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                  Type any custom link like <code className="px-1.5 py-0.5 rounded bg-[var(--bg-main)] border border-[var(--border-color)] font-mono text-[var(--accent-text)]">/s/notes</code> or click Random Space. Your workspace opens right away.
-                </p>
-              </article>
-            </li>
-
-            <li>
-              <article className="h-full bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 md:p-6 relative flex flex-col">
-                <span className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-[var(--badge-bg)] text-[var(--badge-text)] border border-[var(--badge-border)] flex items-center justify-center font-mono font-bold text-xs sm:text-sm mb-3 sm:mb-4" aria-hidden="true">
-                  02
-                </span>
-                <h3 className="text-sm sm:text-base font-bold mb-1.5 sm:mb-2 text-[var(--text-main)]">2. Write &amp; Upload</h3>
-                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                  Take notes in Markdown, sketch diagrams, and drop files up to 500MB. Edits update live across all open screens.
-                </p>
-              </article>
-            </li>
-
-            <li>
-              <article className="h-full bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 md:p-6 relative flex flex-col">
-                <span className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-[var(--badge-bg)] text-[var(--badge-text)] border border-[var(--badge-border)] flex items-center justify-center font-mono font-bold text-xs sm:text-sm mb-3 sm:mb-4" aria-hidden="true">
-                  03
-                </span>
-                <h3 className="text-sm sm:text-base font-bold mb-1.5 sm:mb-2 text-[var(--text-main)]">3. Share &amp; Lock</h3>
-                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                  Share the link or scan the QR code from your phone. You can also add an optional password to keep your space private.
-                </p>
-              </article>
-            </li>
-          </ol>
-        </section>
-
-        {/* Real-World Use Cases */}
-        <section className="py-8 sm:py-12 md:py-14 max-w-6xl mx-auto px-4 sm:px-6">
-          <header className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] mb-2.5 sm:mb-3">
-              <Share2 className="w-3.5 h-3.5 text-[var(--accent-text)]" aria-hidden="true" />
-              <span>Everyday Use Cases</span>
-            </div>
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-2 sm:mb-3 text-balance">
-              Built for Fast Real-World Productivity
-            </h2>
-            <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed text-pretty">
-              Whether swapping files between devices or writing live meeting notes, FileShare gets it done without friction.
-            </p>
-          </header>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-            <article className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 flex flex-col justify-between hover:border-[var(--accent-primary)] transition-colors">
-              <div>
-                <div className="w-9 h-9 rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-text)] border border-[var(--accent-primary)]/20 flex items-center justify-center mb-3">
-                  <Smartphone className="w-5 h-5" aria-hidden="true" />
-                </div>
-                <h3 className="text-sm font-bold text-[var(--text-main)] mb-1.5">Phone to PC Transfer</h3>
-                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                  Need to send a photo, code snippet, or APK from your smartphone to your laptop? Scan the QR code, drop the file, and download it instantly on PC.
-                </p>
-              </div>
-              <div className="pt-3 mt-3 border-t border-[var(--border-color)] flex items-center gap-1.5 text-[11px] font-mono text-[var(--text-muted)]">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[var(--status-success-text)] shrink-0" />
-                <span>No apps or cables needed</span>
-              </div>
-            </article>
-
-            <article className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 flex flex-col justify-between hover:border-[var(--accent-primary)] transition-colors">
-              <div>
-                <div className="w-9 h-9 rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-text)] border border-[var(--accent-primary)]/20 flex items-center justify-center mb-3">
-                  <Users className="w-5 h-5" aria-hidden="true" />
-                </div>
-                <h3 className="text-sm font-bold text-[var(--text-main)] mb-1.5">Live Meeting Notes</h3>
-                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                  Take notes during calls or interviews. Send the link to teammates and everyone sees edits in real time with zero login walls or permission requests.
-                </p>
-              </div>
-              <div className="pt-3 mt-3 border-t border-[var(--border-color)] flex items-center gap-1.5 text-[11px] font-mono text-[var(--text-muted)]">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[var(--status-success-text)] shrink-0" />
-                <span>Millisecond live sync</span>
-              </div>
-            </article>
-
-            <article className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 flex flex-col justify-between hover:border-[var(--accent-primary)] transition-colors">
-              <div>
-                <div className="w-9 h-9 rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-text)] border border-[var(--accent-primary)]/20 flex items-center justify-center mb-3">
-                  <FolderUp className="w-5 h-5" aria-hidden="true" />
-                </div>
-                <h3 className="text-sm font-bold text-[var(--text-main)] mb-1.5">500MB Quick File Drop</h3>
-                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                  Hit an email attachment limit? Drop large ZIPs, videos, PDFs, or design assets up to 500MB and send a single direct link that opens anywhere.
-                </p>
-              </div>
-              <div className="pt-3 mt-3 border-t border-[var(--border-color)] flex items-center gap-1.5 text-[11px] font-mono text-[var(--text-muted)]">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[var(--status-success-text)] shrink-0" />
-                <span>Direct browser downloads</span>
-              </div>
-            </article>
-
-            <article className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 flex flex-col justify-between hover:border-[var(--accent-primary)] transition-colors">
-              <div>
-                <div className="w-9 h-9 rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-text)] border border-[var(--accent-primary)]/20 flex items-center justify-center mb-3">
-                  <Lock className="w-5 h-5" aria-hidden="true" />
-                </div>
-                <h3 className="text-sm font-bold text-[var(--text-main)] mb-1.5">Private Client Handoff</h3>
-                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                  Sharing sensitive API tokens, server configs, or client deliverables? Set a workspace password so only authorized parties can unlock the content.
-                </p>
-              </div>
-              <div className="pt-3 mt-3 border-t border-[var(--border-color)] flex items-center gap-1.5 text-[11px] font-mono text-[var(--text-muted)]">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[var(--status-success-text)] shrink-0" />
-                <span>Bcrypt encrypted lock</span>
-              </div>
-            </article>
-          </div>
-        </section>
-
-        {/* Workspace Capabilities */}
-        <section className="py-8 sm:py-12 md:py-14 bg-[var(--bg-surface)] border-t border-b border-[var(--border-color)]">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <header className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-2 sm:mb-3">
-                Built-in Workspace Tools
+        {/* How It Works — 3 Simple Steps */}
+        <section id="how-it-works" className="border-b border-[var(--border-color)] bg-[var(--bg-surface)] py-14 sm:py-16">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6">
+            <div className="text-center max-w-xl mx-auto mb-10">
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-2">
+                How It Works
               </h2>
-              <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
-                A fast, distraction-free workspace built for quick notes and easy file sharing.
+              <p className="text-xs sm:text-sm text-[var(--text-muted)]">
+                Start working in 5 seconds with three simple steps.
               </p>
-            </header>
+            </div>
 
-            <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 list-none p-0 m-0">
-              <li>
-                <article className="h-full bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 hover:border-[var(--accent-primary)] transition-colors">
-                  <Zap className="w-5 h-5 text-[var(--accent-text)] mb-2" aria-hidden="true" />
-                  <h3 className="text-sm font-bold mb-1 text-[var(--text-main)]">Instant Live Sync</h3>
-                  <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                    Notes and uploads update instantly on every screen without needing to refresh the page.
-                  </p>
-                </article>
-              </li>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 space-y-3">
+                <span className="w-8 h-8 rounded-lg bg-[var(--badge-bg)] text-[var(--accent-text)] border border-[var(--badge-border)] flex items-center justify-center font-bold text-sm">
+                  1
+                </span>
+                <h3 className="font-bold text-base text-[var(--text-main)]">Pick Any Name</h3>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  Type a custom URL like <code className="px-1.5 py-0.5 rounded bg-[var(--bg-main)] text-[var(--accent-text)] font-mono">/projects/meeting</code> or click Random Space. Your workspace opens right away.
+                </p>
+              </div>
 
-              <li>
-                <article className="h-full bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 hover:border-[var(--accent-primary)] transition-colors">
-                  <FolderUp className="w-5 h-5 text-[var(--accent-text)] mb-2" aria-hidden="true" />
-                  <h3 className="text-sm font-bold mb-1 text-[var(--text-main)]">500MB File Sharing</h3>
-                  <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                    Upload documents, images, videos, zip archives, and code files up to 500MB each.
-                  </p>
-                </article>
-              </li>
+              <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 space-y-3">
+                <span className="w-8 h-8 rounded-lg bg-[var(--badge-bg)] text-[var(--accent-text)] border border-[var(--badge-border)] flex items-center justify-center font-bold text-sm">
+                  2
+                </span>
+                <h3 className="font-bold text-base text-[var(--text-main)]">Type &amp; Drop Files</h3>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  Take notes together in real time and attach files up to 500MB. Everyone sees changes live without refreshing the page.
+                </p>
+              </div>
 
-              <li>
-                <article className="h-full bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 hover:border-[var(--accent-primary)] transition-colors">
-                  <Wand2 className="w-5 h-5 text-[var(--accent-text)] mb-2" aria-hidden="true" />
-                  <h3 className="text-sm font-bold mb-1 text-[var(--text-main)]">One-Click Formatter</h3>
-                  <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                    Clean up spacing, headers, and task lists in one click without altering your code blocks.
-                  </p>
-                </article>
-              </li>
+              <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 space-y-3">
+                <span className="w-8 h-8 rounded-lg bg-[var(--badge-bg)] text-[var(--accent-text)] border border-[var(--badge-border)] flex items-center justify-center font-bold text-sm">
+                  3
+                </span>
+                <h3 className="font-bold text-base text-[var(--text-main)]">Share the Link</h3>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  Share the link with anyone, scan the QR code from your phone, or add an optional password for private collaboration.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
 
-              <li>
-                <article className="h-full bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 hover:border-[var(--accent-primary)] transition-colors">
-                  <Lock className="w-5 h-5 text-[var(--accent-text)] mb-2" aria-hidden="true" />
-                  <h3 className="text-sm font-bold mb-1 text-[var(--text-main)]">Password Lock</h3>
-                  <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                    Protect confidential notes and files with an optional password only you and your team know.
-                  </p>
-                </article>
-              </li>
+        {/* 4 Everyday Use Cases */}
+        <section id="features" className="border-b border-[var(--border-color)] bg-[var(--bg-main)] py-14 sm:py-16">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6">
+            <div className="text-center max-w-xl mx-auto mb-10">
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-2">
+                Built for Everyday Tasks
+              </h2>
+              <p className="text-xs sm:text-sm text-[var(--text-muted)]">
+                Fast, friction-free productivity between your devices and your team.
+              </p>
+            </div>
 
-              <li>
-                <article className="h-full bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 hover:border-[var(--accent-primary)] transition-colors">
-                  <QrCode className="w-5 h-5 text-[var(--accent-text)] mb-2" aria-hidden="true" />
-                  <h3 className="text-sm font-bold mb-1 text-[var(--text-main)]">Mobile QR Handoff</h3>
-                  <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                    Scan the built-in QR code with your phone camera to take your workspace anywhere instantly.
-                  </p>
-                </article>
-              </li>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6 space-y-3 hover:border-[var(--accent-primary)] transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-[var(--badge-bg)] text-[var(--accent-text)] flex items-center justify-center">
+                  <Smartphone className="h-5 w-5" />
+                </div>
+                <h3 className="font-bold text-base text-[var(--text-main)]">Phone to PC Transfer</h3>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  Need to send a photo or document from your phone to your laptop? Scan the workspace QR code on your PC screen, upload the photo from your phone, and download it instantly on PC.
+                </p>
+              </div>
 
-              <li>
-                <article className="h-full bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 hover:border-[var(--accent-primary)] transition-colors">
-                  <Globe className="w-5 h-5 text-[var(--accent-text)] mb-2" aria-hidden="true" />
-                  <h3 className="text-sm font-bold mb-1 text-[var(--text-main)]">No Sign-Up Needed</h3>
-                  <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                    No email, no forms, and no setup. Open any link in your browser and start working right away.
-                  </p>
-                </article>
-              </li>
-            </ul>
+              <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6 space-y-3 hover:border-[var(--accent-primary)] transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-[var(--badge-bg)] text-[var(--accent-text)] flex items-center justify-center">
+                  <Users className="h-5 w-5" />
+                </div>
+                <h3 className="font-bold text-base text-[var(--text-main)]">Live Shared Meeting Notes</h3>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  Co-edit meeting minutes, study guides, or brainstorm lists with friends or coworkers. Zero sign-up, zero Google Drive access requests, and zero delay.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6 space-y-3 hover:border-[var(--accent-primary)] transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-[var(--badge-bg)] text-[var(--accent-text)] flex items-center justify-center">
+                  <HardDrive className="h-5 w-5" />
+                </div>
+                <h3 className="font-bold text-base text-[var(--text-main)]">500MB Quick File Drop</h3>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  Email attachment capped at 25MB? Drop heavy videos, ZIP files, PDFs, or design assets up to 500MB and send a single link that downloads directly in the browser.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6 space-y-3 hover:border-[var(--accent-primary)] transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-[var(--badge-bg)] text-[var(--accent-text)] flex items-center justify-center">
+                  <Lock className="h-5 w-5" />
+                </div>
+                <h3 className="font-bold text-base text-[var(--text-main)]">Password-Locked Sharing</h3>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  Sharing sensitive client work, credentials, or personal notes? Add an optional password so only authorized people with the passphrase can view the content.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
 
         {/* Platform Comparison Matrix */}
-        <section className="py-8 sm:py-12 md:py-14 max-w-5xl mx-auto px-4 sm:px-6">
-          <header className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-2 sm:mb-3">
-              Platform Comparison
-            </h2>
-            <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
-              See how FileShare compares to traditional cloud drives and paste tools.
-            </p>
-          </header>
+        <section id="compare" className="border-b border-[var(--border-color)] bg-[var(--bg-surface)] py-14 sm:py-16">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6">
+            <div className="text-center max-w-xl mx-auto mb-8">
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-2">
+                Why People Prefer FileShare
+              </h2>
+              <p className="text-xs sm:text-sm text-[var(--text-muted)]">
+                See how FileShare compares to traditional cloud drives and paste tools.
+              </p>
+            </div>
 
-          <div className="overflow-x-auto max-w-full bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl shadow-sm">
-            <table className="w-full min-w-[640px] text-left text-xs sm:text-sm">
-              <caption className="sr-only">Platform comparison: FileShare vs Cloud Drives vs Standard Pastebin</caption>
-              <thead>
-                <tr className="border-b border-[var(--border-color)] bg-[var(--bg-main)]">
-                  <th scope="col" className="p-2.5 sm:p-3.5 md:p-4 font-bold text-[var(--text-main)]">Capability</th>
-                  <th scope="col" className="p-2.5 sm:p-3.5 md:p-4 font-bold text-[var(--accent-text)]">FileShare</th>
-                  <th scope="col" className="p-2.5 sm:p-3.5 md:p-4 font-medium text-[var(--text-muted)]">Cloud Drives (Google Drive)</th>
-                  <th scope="col" className="p-2.5 sm:p-3.5 md:p-4 font-medium text-[var(--text-muted)]">Standard Pastebin</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[var(--border-color)] text-xs text-[var(--text-muted)]">
-                <tr>
-                  <th scope="row" className="p-2.5 sm:p-3.5 md:p-4 font-medium text-[var(--text-main)]">Sign-Up &amp; Login</th>
-                  <td className="p-2.5 sm:p-3.5 md:p-4 font-bold text-[var(--status-success-text)]">None (Instant access)</td>
-                  <td className="p-2.5 sm:p-3.5 md:p-4">Mandatory Account</td>
-                  <td className="p-2.5 sm:p-3.5 md:p-4">Optional / Limited</td>
-                </tr>
-                <tr>
-                  <th scope="row" className="p-2.5 sm:p-3.5 md:p-4 font-medium text-[var(--text-main)]">Live Typing Collaboration</th>
-                  <td className="p-2.5 sm:p-3.5 md:p-4 font-bold text-[var(--status-success-text)]">Instant live updates</td>
-                  <td className="p-2.5 sm:p-3.5 md:p-4">Delayed saving</td>
-                  <td className="p-2.5 sm:p-3.5 md:p-4 text-[var(--status-danger-text)]">None (Static pages)</td>
-                </tr>
-                <tr>
-                  <th scope="row" className="p-2.5 sm:p-3.5 md:p-4 font-medium text-[var(--text-main)]">File Attachment Limit</th>
-                  <td className="p-2.5 sm:p-3.5 md:p-4 font-bold text-[var(--status-success-text)]">500MB Free per file</td>
-                  <td className="p-2.5 sm:p-3.5 md:p-4">Uses account storage</td>
-                  <td className="p-2.5 sm:p-3.5 md:p-4 text-[var(--status-danger-text)]">None (Text only)</td>
-                </tr>
-                <tr>
-                  <th scope="row" className="p-2.5 sm:p-3.5 md:p-4 font-medium text-[var(--text-main)]">Markdown &amp; Diagrams</th>
-                  <td className="p-2.5 sm:p-3.5 md:p-4 font-bold text-[var(--status-success-text)]">Built-in live preview</td>
-                  <td className="p-2.5 sm:p-3.5 md:p-4">Needs add-ons</td>
-                  <td className="p-2.5 sm:p-3.5 md:p-4 text-[var(--status-danger-text)]">Plain text only</td>
-                </tr>
-                <tr>
-                  <th scope="row" className="p-2.5 sm:p-3.5 md:p-4 font-medium text-[var(--text-main)]">Mobile Phone Handoff</th>
-                  <td className="p-2.5 sm:p-3.5 md:p-4 font-bold text-[var(--status-success-text)]">Instant QR code scan</td>
-                  <td className="p-2.5 sm:p-3.5 md:p-4">Requires mobile app</td>
-                  <td className="p-2.5 sm:p-3.5 md:p-4">Manual copy-pasting</td>
-                </tr>
-                <tr>
-                  <th scope="row" className="p-2.5 sm:p-3.5 md:p-4 font-medium text-[var(--text-main)]">Password Protection</th>
-                  <td className="p-2.5 sm:p-3.5 md:p-4 font-bold text-[var(--status-success-text)]">One-click password lock</td>
-                  <td className="p-2.5 sm:p-3.5 md:p-4">Complex permissions</td>
-                  <td className="p-2.5 sm:p-3.5 md:p-4">Usually public</td>
-                </tr>
-              </tbody>
-            </table>
+            <div className="overflow-x-auto rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] shadow-xs">
+              <table className="w-full min-w-[640px] border-collapse text-left text-xs sm:text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--border-color)] bg-[var(--bg-surface)]">
+                    <th className="px-4 py-3.5 font-bold text-[var(--text-main)]">Feature</th>
+                    <th className="border-x border-[var(--badge-border)] bg-[var(--badge-bg)] px-4 py-3.5 font-bold text-[var(--accent-text)]">
+                      FileShare
+                    </th>
+                    <th className="px-4 py-3.5 font-medium text-[var(--text-muted)]">Google Drive</th>
+                    <th className="px-4 py-3.5 font-medium text-[var(--text-muted)]">Standard Pastebin</th>
+                    <th className="px-4 py-3.5 font-medium text-[var(--text-muted)]">WeTransfer</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--border-color)] text-xs text-[var(--text-muted)]">
+                  {COMPARISON_ROWS.map((row) => (
+                    <tr key={row.feature} className="hover:bg-[var(--bg-card-hover)] transition-colors">
+                      <td className="px-4 py-3.5 font-semibold text-[var(--text-main)]">
+                        {row.feature}
+                      </td>
+                      <td className="border-x border-[var(--badge-border)] bg-[var(--badge-bg)] px-4 py-3.5 font-semibold text-[var(--status-success-text)]">
+                        <span className="flex items-center gap-1.5">
+                          <Check className="h-3.5 w-3.5 shrink-0" />
+                          <span>{row.fileshare}</span>
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5">{row.drive}</td>
+                      <td className="px-4 py-3.5">{row.pastebin}</td>
+                      <td className="px-4 py-3.5">{row.wetransfer}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
 
-        {/* Featured Educational Resources & Guides Section */}
-        <section className="py-8 sm:py-12 md:py-14 max-w-6xl mx-auto px-4 sm:px-6">
-          <header className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] mb-2.5 sm:mb-3">
-                <BookOpen className="w-3.5 h-3.5 text-[var(--accent-text)]" aria-hidden="true" />
-                <span>Knowledge Base</span>
-              </div>
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[var(--text-main)] text-balance">
-                Helpful Guides &amp; Tips
-              </h2>
-              <p className="text-xs sm:text-sm text-[var(--text-muted)] mt-1 text-pretty">
-                Read quick tutorials on Markdown tricks, shortcuts, and productive workflows.
-              </p>
-            </div>
-            <Link
-              href="/resources"
-              className="text-xs sm:text-sm font-semibold text-[var(--accent-text)] hover:underline inline-flex items-center gap-1 min-h-[36px]"
-            >
-              View All 8 Articles <ArrowRight className="w-4 h-4" aria-hidden="true" />
-            </Link>
-          </header>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-            {featuredArticles.map((article) => (
-              <article
-                key={article.slug}
-                className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 md:p-6 flex flex-col justify-between hover:border-[var(--accent-primary)] transition-colors group"
-              >
+        {/* Guides & Resources Section */}
+        {ARTICLES.length > 0 && (
+          <section id="guides" className="border-b border-[var(--border-color)] bg-[var(--bg-main)] py-14 sm:py-16">
+            <div className="mx-auto max-w-5xl px-4 sm:px-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-3 mb-8">
                 <div>
-                  <div className="flex items-center justify-between text-xs text-[var(--text-muted)] font-mono mb-2">
-                    <span className="text-[var(--accent-text)] font-medium">{article.category}</span>
-                    <span>{article.readTime}</span>
-                  </div>
-                  <h3 className="text-sm sm:text-base font-bold text-[var(--text-main)] group-hover:text-[var(--accent-text)] transition-colors mb-2 text-balance">
-                    <Link href={`/resources/${article.slug}`}>
-                      {article.title}
-                    </Link>
-                  </h3>
-                  <p className="text-xs text-[var(--text-muted)] leading-relaxed line-clamp-3 mb-4 text-pretty">
-                    {article.description}
+                  <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-1">
+                    Helpful Guides &amp; Tips
+                  </h2>
+                  <p className="text-xs sm:text-sm text-[var(--text-muted)]">
+                    Quick tutorials on getting the most out of your workspaces.
                   </p>
                 </div>
-                <div className="pt-3 border-t border-[var(--border-color)] flex items-center justify-between text-xs">
-                  <span className="text-[var(--text-muted)] font-mono">{article.date}</span>
-                  <Link
-                    href={`/resources/${article.slug}`}
-                    className="font-semibold text-[var(--accent-text)] inline-flex items-center gap-1 group-hover:gap-1.5 transition-all py-1"
-                  >
-                    Read Guide <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
-                  </Link>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
+                <Link
+                  href="/resources"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--accent-text)] hover:underline"
+                >
+                  <BookOpen className="h-3.5 w-3.5" />
+                  <span>View all guides</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
 
-        {/* Starter Public Workspaces */}
-        <section className="py-6 sm:py-8 bg-[var(--bg-surface)] border-t border-b border-[var(--border-color)]">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6">
-            <h3 className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider text-center mb-3 sm:mb-4">
-              Starter Workspaces
-            </h3>
-            <nav aria-label="Starter public workspaces" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
-              {featuredWorkspaces.map((item) => {
-                const isItemActive = activeSlug === item.prefix;
-                return (
-                  <Button
-                    key={item.prefix}
-                    size="md"
-                    disabled={Boolean(activeSlug)}
-                    onClick={() => handleCreateNewSpace(item.prefix)}
-                    className="!justify-start !items-center gap-2.5 !p-2.5 sm:!p-3 !rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] !text-left !font-semibold disabled:opacity-50 min-h-[44px] sm:min-h-[48px]"
-                    icon={<span className="text-lg" aria-hidden="true">{item.icon}</span>}
-                    iconRight={
-                      isItemActive ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--accent-text)]" />
-                      ) : (
-                        <ArrowRight className="w-3.5 h-3.5 text-[var(--text-muted)]" />
-                      )
-                    }
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {ARTICLES.slice(0, 3).map((article) => (
+                  <Link
+                    key={article.slug}
+                    href={`/resources/${article.slug}`}
+                    className="group rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 hover:border-[var(--accent-primary)] hover:bg-[var(--bg-card-hover)] transition-all flex flex-col justify-between"
                   >
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-xs truncate text-[var(--text-main)]">
-                        {item.title}
+                    <div>
+                      <div className="flex items-center justify-between text-[11px] font-mono text-[var(--text-muted)] mb-2">
+                        <span className="text-[var(--accent-text)] font-semibold">{article.category}</span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {article.readTime}
+                        </span>
                       </div>
-                      <div className="text-[11px] font-mono text-[var(--text-muted)]">New /projects/{item.prefix}-...</div>
+                      <h3 className="text-sm font-bold text-[var(--text-main)] group-hover:text-[var(--accent-text)] transition-colors mb-2">
+                        {article.title}
+                      </h3>
+                      <p className="text-xs text-[var(--text-muted)] line-clamp-3 leading-relaxed mb-4">
+                        {article.description}
+                      </p>
                     </div>
-                  </Button>
+                    <div className="pt-3 border-t border-[var(--border-color)] flex items-center justify-between text-xs text-[var(--text-muted)]">
+                      <span>{article.date}</span>
+                      <span className="font-semibold text-[var(--accent-text)] flex items-center gap-1">
+                        Read <ArrowRight className="h-3 w-3" />
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* FAQ Section */}
+        <section id="faq" className="border-b border-[var(--border-color)] bg-[var(--bg-surface)] py-14 sm:py-16">
+          <div className="mx-auto max-w-3xl px-4 sm:px-6">
+            <div className="text-center max-w-xl mx-auto mb-8">
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-2">
+                Frequently Asked Questions
+              </h2>
+              <p className="text-xs sm:text-sm text-[var(--text-muted)]">
+                Everything you need to know about FileShare.
+              </p>
+            </div>
+
+            <div className="divide-y divide-[var(--border-color)] rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] overflow-hidden">
+              {FAQ_ITEMS.map((item, idx) => {
+                const isOpen = openFaqIndex === idx;
+                return (
+                  <div key={item.question}>
+                    <button
+                      type="button"
+                      aria-expanded={isOpen}
+                      onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                      className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-[var(--bg-card-hover)] cursor-pointer"
+                    >
+                      <span className="text-sm font-semibold text-[var(--text-main)]">
+                        {item.question}
+                      </span>
+                      <ChevronDown
+                        className={`h-4 w-4 shrink-0 transition-transform duration-200 ${
+                          isOpen ? "rotate-180 text-[var(--accent-text)]" : "text-[var(--text-muted)]"
+                        }`}
+                      />
+                    </button>
+                    {isOpen && (
+                      <div className="px-5 pb-4 text-xs sm:text-sm leading-relaxed text-[var(--text-muted)]">
+                        {item.answer}
+                      </div>
+                    )}
+                  </div>
                 );
               })}
-            </nav>
+            </div>
           </div>
         </section>
 
-        {/* Common Questions & Answers Accordion */}
-        <section className="py-8 sm:py-12 md:py-14 max-w-3xl mx-auto px-4 sm:px-6">
-          <header className="text-center max-w-[65ch] mx-auto mb-6 sm:mb-8">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] mb-2.5 sm:mb-3">
-              <HelpCircle className="w-3.5 h-3.5 text-[var(--accent-text)]" aria-hidden="true" />
-              <span>Questions &amp; Answers</span>
-            </div>
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-2 sm:mb-3 text-balance">
-              Frequently Asked Questions
+        {/* Bottom CTA Banner */}
+        <section className="bg-[var(--bg-main)] py-14 sm:py-20">
+          <div className="mx-auto max-w-4xl px-4 sm:px-6 text-center space-y-5">
+            <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-[var(--text-main)]">
+              Start in 5 seconds. No account needed.
             </h2>
-            <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed text-pretty">
-              Everything you need to know about FileShare workspaces, real-time collaboration, and security.
+            <p className="text-xs sm:text-base text-[var(--text-muted)] max-w-lg mx-auto leading-relaxed">
+              Open a free workspace right now. Take live notes, send large files up to 500MB, and share with anyone through a single link.
             </p>
-          </header>
-
-          <div className="space-y-3">
-            <details className="group bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 transition-colors open:border-[var(--accent-primary)]/60">
-              <summary className="flex items-center justify-between gap-3 text-sm font-bold text-[var(--text-main)] cursor-pointer select-none list-none outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded">
-                <span>Is FileShare free to use, and do I need to register?</span>
-                <ChevronDown className="w-4 h-4 shrink-0 text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200" aria-hidden="true" />
-              </summary>
-              <p className="text-xs text-[var(--text-muted)] leading-relaxed pt-2.5 text-pretty">
-                Yes, FileShare is 100% free with zero registration required. There are no forms to fill out, no email confirmations, and no subscriptions. You can start typing or uploading immediately.
-              </p>
-            </details>
-
-            <details className="group bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 transition-colors open:border-[var(--accent-primary)]/60">
-              <summary className="flex items-center justify-between gap-3 text-sm font-bold text-[var(--text-main)] cursor-pointer select-none list-none outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded">
-                <span>What is the file size upload limit?</span>
-                <ChevronDown className="w-4 h-4 shrink-0 text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200" aria-hidden="true" />
-              </summary>
-              <p className="text-xs text-[var(--text-muted)] leading-relaxed pt-2.5 text-pretty">
-                You can upload files up to 500 MB each. FileShare supports multi-file uploads including videos, zip archives, images, PDFs, audio, and code files.
-              </p>
-            </details>
-
-            <details className="group bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 transition-colors open:border-[var(--accent-primary)]/60">
-              <summary className="flex items-center justify-between gap-3 text-sm font-bold text-[var(--text-main)] cursor-pointer select-none list-none outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded">
-                <span>How does real-time synchronization work?</span>
-                <ChevronDown className="w-4 h-4 shrink-0 text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200" aria-hidden="true" />
-              </summary>
-              <p className="text-xs text-[var(--text-muted)] leading-relaxed pt-2.5 text-pretty">
-                FileShare uses instant live sync so changes appear across all connected browsers in milliseconds. When anyone edits notes or uploads a file, it shows up automatically without refreshing.
-              </p>
-            </details>
-
-            <details className="group bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 transition-colors open:border-[var(--accent-primary)]/60">
-              <summary className="flex items-center justify-between gap-3 text-sm font-bold text-[var(--text-main)] cursor-pointer select-none list-none outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded">
-                <span>Can I protect my workspace with a password?</span>
-                <ChevronDown className="w-4 h-4 shrink-0 text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200" aria-hidden="true" />
-              </summary>
-              <p className="text-xs text-[var(--text-muted)] leading-relaxed pt-2.5 text-pretty">
-                Yes. Click Lock Space in the top bar to set a password. Anyone visiting the link will need to enter your password to view or edit notes and files.
-              </p>
-            </details>
-
-            <details className="group bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 transition-colors open:border-[var(--accent-primary)]/60">
-              <summary className="flex items-center justify-between gap-3 text-sm font-bold text-[var(--text-main)] cursor-pointer select-none list-none outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded">
-                <span>How do I open my workspace on mobile devices?</span>
-                <ChevronDown className="w-4 h-4 shrink-0 text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200" aria-hidden="true" />
-              </summary>
-              <p className="text-xs text-[var(--text-muted)] leading-relaxed pt-2.5 text-pretty">
-                Click the QR code button in the top bar. Scan it with your phone&apos;s camera to instantly open and edit your workspace on mobile.
-              </p>
-            </details>
-
-            <details className="group bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 transition-colors open:border-[var(--accent-primary)]/60">
-              <summary className="flex items-center justify-between gap-3 text-sm font-bold text-[var(--text-main)] cursor-pointer select-none list-none outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded">
-                <span>How is FileShare different from Pastebin, Google Drive, or WeTransfer?</span>
-                <ChevronDown className="w-4 h-4 shrink-0 text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200" aria-hidden="true" />
-              </summary>
-              <p className="text-xs text-[var(--text-muted)] leading-relaxed pt-2.5 text-pretty">
-                Unlike Pastebin, FileShare syncs your typing live, renders rich Markdown diagrams, and supports 500MB file uploads. Unlike Google Drive or WeTransfer, there is no account to create, no email addresses needed, and workspaces open instantly with a link.
-              </p>
-            </details>
-
-            <details className="group bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 sm:p-5 transition-colors open:border-[var(--accent-primary)]/60">
-              <summary className="flex items-center justify-between gap-3 text-sm font-bold text-[var(--text-main)] cursor-pointer select-none list-none outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded">
-                <span>Can I write Markdown and render Mermaid diagrams?</span>
-                <ChevronDown className="w-4 h-4 shrink-0 text-[var(--text-muted)] group-open:rotate-180 transition-transform duration-200" aria-hidden="true" />
-              </summary>
-              <p className="text-xs text-[var(--text-muted)] leading-relaxed pt-2.5 text-pretty">
-                Yes. FileShare supports GitHub Flavored Markdown (headings, task lists, tables, syntax-highlighted code blocks) and renders Mermaid flowcharts and diagrams automatically in real time.
-              </p>
-            </details>
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Button
+                variant="primary"
+                size="lg"
+                icon={<Zap className="h-4 w-4" />}
+                onClick={handleRandomSpace}
+                className="w-full sm:w-auto !px-6 !py-3"
+              >
+                Create Instant Workspace ⚡
+              </Button>
+              <Button
+                variant="secondary"
+                size="lg"
+                iconRight={<ArrowRight className="h-4 w-4" />}
+                onClick={() => {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                  inputRef.current?.focus();
+                }}
+                className="w-full sm:w-auto !px-6 !py-3"
+              >
+                Choose Custom Link
+              </Button>
+            </div>
           </div>
         </section>
       </main>
 
       <Footer />
+
+      {/* Recent Spaces History Modal */}
+      <Modal
+        open={isRecentModalOpen}
+        onClose={() => setIsRecentModalOpen(false)}
+        title={`Recent Workspaces (${recentSpaces.length})`}
+        footer={
+          <div className="flex w-full items-center justify-between gap-2">
+            <Button
+              variant="danger"
+              size="sm"
+              icon={<Trash2 className="h-3.5 w-3.5" />}
+              disabled={recentSpaces.length === 0}
+              onClick={() => {
+                clearRecentSpaces();
+                setRecentQuery("");
+              }}
+            >
+              Clear History
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setIsRecentModalOpen(false)}
+            >
+              Close
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-3">
+          {recentSpaces.length > 0 && (
+            <div className="flex items-center gap-2 rounded-xl border border-[var(--border-color)] bg-[var(--input-bg)] px-3 py-2 focus-within:border-[var(--accent-primary)]">
+              <Search className="h-4 w-4 shrink-0 text-[var(--text-muted)]" />
+              <input
+                type="text"
+                value={recentQuery}
+                onChange={(e) => setRecentQuery(e.target.value)}
+                placeholder="Search your workspaces..."
+                aria-label="Filter recent workspaces"
+                className="w-full bg-transparent text-xs text-[var(--text-main)] placeholder:text-[var(--text-muted)] focus:outline-none"
+              />
+              {recentQuery && (
+                <button
+                  type="button"
+                  onClick={() => setRecentQuery("")}
+                  aria-label="Clear filter"
+                  className="text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+          )}
+
+          {sortedRecentSpaces.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-[var(--border-color)] bg-[var(--bg-surface)] px-4 py-8 text-center">
+              <History className="mx-auto h-6 w-6 text-[var(--text-muted)] opacity-50" />
+              <p className="mt-2 text-sm font-medium text-[var(--text-main)]">
+                {recentSpaces.length === 0
+                  ? "No recent spaces yet"
+                  : "No matching workspaces found"}
+              </p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">
+                {recentSpaces.length === 0
+                  ? "Rooms you visit will appear here so you can easily return to them."
+                  : "Try searching for a different room name."}
+              </p>
+            </div>
+          ) : (
+            <ul className="max-h-80 space-y-2 overflow-y-auto pr-1">
+              {sortedRecentSpaces.map((space) => (
+                <li
+                  key={space.slug}
+                  className="flex items-center justify-between gap-2 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] px-3 py-2.5 transition-colors hover:border-[var(--accent-primary)]"
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsRecentModalOpen(false);
+                      navigateToSpace(space.slug);
+                    }}
+                    className="flex min-w-0 flex-1 flex-col text-left cursor-pointer"
+                  >
+                    <span className="truncate font-mono text-xs font-semibold text-[var(--text-main)]">
+                      /projects/{space.slug}
+                    </span>
+                    <span className="mt-0.5 flex items-center gap-2 text-[11px] text-[var(--text-muted)]">
+                      {space.pinned && (
+                        <span className="rounded bg-[var(--badge-bg)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--accent-text)]">
+                          Pinned
+                        </span>
+                      )}
+                      <span>
+                        {clientNow
+                          ? formatRelativeTime(space.lastVisited, clientNow)
+                          : "Visited recently"}
+                      </span>
+                    </span>
+                  </button>
+
+                  <div className="flex shrink-0 items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => togglePin(space.slug)}
+                      title={space.pinned ? "Unpin space" : "Pin space"}
+                      aria-label={
+                        space.pinned
+                          ? `Unpin ${space.slug}`
+                          : `Pin ${space.slug}`
+                      }
+                      className={`rounded-lg p-1.5 transition-colors hover:bg-[var(--bg-card-hover)] cursor-pointer ${
+                        space.pinned
+                          ? "text-[var(--accent-text)]"
+                          : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
+                      }`}
+                    >
+                      {space.pinned ? (
+                        <PinOff className="h-3.5 w-3.5" />
+                      ) : (
+                        <Pin className="h-3.5 w-3.5" />
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => removeRecentSpace(space.slug)}
+                      title="Remove from history"
+                      aria-label={`Remove ${space.slug} from history`}
+                      className="rounded-lg p-1.5 text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-card-hover)] hover:text-[var(--status-danger-text)] cursor-pointer"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }

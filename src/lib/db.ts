@@ -45,7 +45,14 @@ const hasPg = Boolean(process.env.DATABASE_URL);
 if (hasPg) {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { Pool } = require("pg");
+    const { Pool, types } = require("pg");
+    // Force TIMESTAMP WITHOUT TIME ZONE (OID 1114) to be parsed as UTC, preventing
+    // node-postgres from misinterpreting UTC server timestamps as local timezone (e.g. IST +05:30)
+    types?.setTypeParser?.(1114, (str: string) => {
+      if (!str) return null;
+      const iso = str.includes("T") ? (str.endsWith("Z") ? str : `${str}Z`) : `${str.replace(" ", "T")}Z`;
+      return new Date(iso);
+    });
     let connectionString = process.env.DATABASE_URL || "";
     if (connectionString.includes("sslmode=") && !connectionString.includes("uselibpqcompat")) {
       const sep = connectionString.includes("?") ? "&" : "?";
@@ -108,6 +115,11 @@ if (hasPg) {
             "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           );
         `);
+
+        // High-performance query indexes
+        await pgPool.query(`CREATE INDEX IF NOT EXISTS idx_files_slug ON files(slug);`);
+        await pgPool.query(`CREATE INDEX IF NOT EXISTS idx_files_storedName ON files("storedName");`);
+        await pgPool.query(`CREATE INDEX IF NOT EXISTS idx_redirects_oldSlug ON redirects("oldSlug");`);
       } catch (err) {
         console.error("PostgreSQL table provisioning error:", err);
       }
@@ -132,6 +144,9 @@ if (hasPg) {
     sqliteDb = new Database(dbPath);
     try {
       sqliteDb?.pragma("journal_mode = WAL");
+      sqliteDb?.pragma("synchronous = NORMAL");
+      sqliteDb?.pragma("temp_store = MEMORY");
+      sqliteDb?.pragma("cache_size = -64000");
     } catch {
       // WAL pragma may fail on ephemeral filesystems
     }
@@ -163,6 +178,10 @@ if (hasPg) {
         newSlug TEXT NOT NULL,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       );
+
+      CREATE INDEX IF NOT EXISTS idx_files_slug ON files(slug);
+      CREATE INDEX IF NOT EXISTS idx_files_storedName ON files(storedName);
+      CREATE INDEX IF NOT EXISTS idx_redirects_oldSlug ON redirects(oldSlug);
     `);
   } catch (err) {
     console.warn("better-sqlite3 unavailable, using in-memory fallback store:", err);

@@ -24,6 +24,8 @@ import { ADSENSE_SLOTS } from "@/lib/ads";
 
 const appUrl = getAppUrl();
 
+export const revalidate = 86400;
+
 export const metadata: Metadata = {
   title: "User Guide & Documentation | FileShare",
   description: "Learn how to use FileShare: real-time notes, one-click formatting, simple diagrams, file sharing up to 500 MB, and password protection without creating an account.",
@@ -328,7 +330,7 @@ export default function GuidePage() {
             </h2>
           </div>
           <p className="text-sm leading-relaxed text-[var(--text-muted)]">
-            If your notes get messy while typing quickly during a meeting or class, use the built-in one-click cleaner. Just click the magic wand icon or press <kbd className="px-1.5 py-0.5 rounded bg-[var(--bg-surface)] border border-[var(--border-color)] font-mono text-xs">Cmd/Ctrl + Shift + F</kbd> to tidy everything up instantly.
+            If your notes get messy while typing quickly during a meeting or class, use the built-in formatter. Click the <strong>Format</strong> button (<Sparkles className="w-3.5 h-3.5 inline text-[var(--accent-primary)]" />) in the editor toolbar or press <kbd className="px-1.5 py-0.5 rounded bg-[var(--bg-surface)] border border-[var(--border-color)] font-mono text-xs">Cmd/Ctrl + Shift + F</kbd> to clean up headings, task lists, and spacing automatically.
           </p>
           <div className="p-5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-3">
             <div className="flex items-center gap-2 font-semibold text-sm text-[var(--text-main)]">
@@ -438,7 +440,7 @@ sequenceDiagram
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-4">
             <div className="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)]">
               <HardDrive className="w-5 h-5 text-[var(--accent-primary)] mb-2" />
-              <h3 className="font-semibold text-sm mb-1 text-[var(--text-main)]">500 MB Per File</h3>
+              <h3 className="font-semibold text-sm mb-1 text-[var(--text-main)]">Large File Vault</h3>
               <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                 Upload photos, videos, PDFs, ZIP folders, audio tracks, or documents with simple drag-and-drop.
               </p>
@@ -483,7 +485,7 @@ sequenceDiagram
                 <strong>Setting a Password:</strong> Click the <strong>Lock</strong> icon at the top of the screen, type a password, and click save. Anyone who visits the link will need to enter this password before they can see notes or download files.
               </p>
               <p>
-                <strong>Temporary Login Session:</strong> Once you enter the password, your browser tab stays unlocked while you work. When you close the tab, the workspace locks again. Your password is protected safely with secure encryption so nobody else can see it.
+                <strong>Temporary Session:</strong> Once you enter the password, your browser tab stays unlocked while you work. When you close the tab, the workspace locks again. Your password is protected using secure one-way hashing on the server.
               </p>
               <p>
                 <strong>Changing or Removing:</strong> Anyone who knows the password can change it or remove it at any time from the same lock menu.
@@ -548,34 +550,28 @@ sequenceDiagram
               </thead>
               <tbody className="divide-y divide-[var(--border-color)] text-[var(--text-muted)]">
                 <tr>
-                  <td className="p-3 font-semibold text-[var(--text-main)]">Tidy Notes</td>
+                  <td className="p-3 font-semibold text-[var(--text-main)]">Format Document</td>
                   <td className="p-3 font-mono whitespace-nowrap">Cmd + Shift + F</td>
                   <td className="p-3 font-mono whitespace-nowrap">Ctrl + Shift + F</td>
                   <td className="p-3">Cleans headings, lists, and spacing in one click</td>
                 </tr>
                 <tr>
-                  <td className="p-3 font-semibold text-[var(--text-main)]">Bold Text</td>
-                  <td className="p-3 font-mono whitespace-nowrap">Cmd + B</td>
-                  <td className="p-3 font-mono whitespace-nowrap">Ctrl + B</td>
-                  <td className="p-3">Makes selected words **bold**</td>
+                  <td className="p-3 font-semibold text-[var(--text-main)]">Force Save Notes</td>
+                  <td className="p-3 font-mono whitespace-nowrap">Cmd + S</td>
+                  <td className="p-3 font-mono whitespace-nowrap">Ctrl + S</td>
+                  <td className="p-3">Instantly saves notes to server without waiting for debounce</td>
                 </tr>
                 <tr>
-                  <td className="p-3 font-semibold text-[var(--text-main)]">Italic Text</td>
-                  <td className="p-3 font-mono whitespace-nowrap">Cmd + I</td>
-                  <td className="p-3 font-mono whitespace-nowrap">Ctrl + I</td>
-                  <td className="p-3">Makes selected words *italic*</td>
+                  <td className="p-3 font-semibold text-[var(--text-main)]">Command Palette</td>
+                  <td className="p-3 font-mono whitespace-nowrap">/ (Slash)</td>
+                  <td className="p-3 font-mono whitespace-nowrap">/ (Slash)</td>
+                  <td className="p-3">Opens insert menu for headings, tables, checklists, and diagrams</td>
                 </tr>
                 <tr>
-                  <td className="p-3 font-semibold text-[var(--text-main)]">Code Block</td>
-                  <td className="p-3 font-mono whitespace-nowrap">Cmd + Shift + C</td>
-                  <td className="p-3 font-mono whitespace-nowrap">Ctrl + Shift + C</td>
-                  <td className="p-3">Inserts code formatting brackets</td>
-                </tr>
-                <tr>
-                  <td className="p-3 font-semibold text-[var(--text-main)]">Toggle File Panel</td>
-                  <td className="p-3 font-mono whitespace-nowrap">Cmd + \</td>
-                  <td className="p-3 font-mono whitespace-nowrap">Ctrl + \</td>
-                  <td className="p-3">Shows or hides the file vault side panel</td>
+                  <td className="p-3 font-semibold text-[var(--text-main)]">Dismiss / Exit Zen</td>
+                  <td className="p-3 font-mono whitespace-nowrap">Esc</td>
+                  <td className="p-3 font-mono whitespace-nowrap">Esc</td>
+                  <td className="p-3">Exits full-screen Zen mode and closes open popups</td>
                 </tr>
               </tbody>
             </table>

@@ -7,6 +7,8 @@ import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 
 const appUrl = getAppUrl();
 
+export const revalidate = 86400;
+
 export const metadata: Metadata = {
   title: "Engineering Resources & Guides",
   description: "Explore in-depth engineering articles on real-time collaborative note-taking, secure file vaults, modern Markdown syntax, and privacy-first remote productivity.",
@@ -62,17 +64,17 @@ export default function ResourcesPage() {
         <div className="mb-10 border-b border-[var(--border-color)] pb-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] mb-3">
             <BookOpen className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
-            <span>Knowledge Base & Technical Publications</span>
+            <span>Knowledge Base & Practical Guides</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
-            FileShare Resources & Engineering Guides
+            FileShare Resources & Practical Guides
           </h1>
           <p className="max-w-2xl text-sm sm:text-base text-[var(--text-muted)] leading-relaxed">
-            In-depth architectural analysis, security frameworks, and productivity blueprints for distributed software teams, educators, and privacy-conscious collaborators.
+            Practical workflows, security best practices, and productivity blueprints for teams, students, and privacy-conscious collaborators.
           </p>
           <div className="mt-4 flex flex-wrap gap-2 text-xs">
             <span className="px-2.5 py-1 rounded-full bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-subtle)] dark:text-[var(--text-muted)] flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3 text-[var(--status-success-text)]" /> Peer-reviewed technical practices
+              <ShieldCheck className="w-3 h-3 text-[var(--status-success-text)]" /> Production-tested workflows
             </span>
             <span className="px-2.5 py-1 rounded-full bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-subtle)] dark:text-[var(--text-muted)] flex items-center gap-1">
               <Sparkles className="w-3 h-3 text-[var(--accent-primary)]" /> Practical workflows & templates

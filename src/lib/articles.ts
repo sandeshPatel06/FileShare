@@ -184,7 +184,7 @@ By transitioning routine file exchanges from bloated email attachments to secure
   {
     slug: "markdown-guide-developers",
     title: "The Developer's Modern Markdown Handbook: From Syntax to Live Diagrams",
-    description: "Master modern GitHub Flavored Markdown, syntax-highlighted code blocks, mathematical equations, and interactive Mermaid.js architecture diagrams in real-time workspaces.",
+    description: "Master modern GitHub Flavored Markdown, syntax-highlighted code blocks, and interactive Mermaid.js architecture diagrams in real-time workspaces.",
     date: "September 18, 2026",
     readTime: "8 min read",
     category: "Developer Tools",

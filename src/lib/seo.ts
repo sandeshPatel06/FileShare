@@ -1,6 +1,6 @@
 /**
  * SEO & Canonical URL Configuration Helper
- * Enforces https://fileshare.shptechnology.online as the canonical domain in production,
+ * Enforces https://filesp.pages.dev as the canonical domain in production,
  * preventing accidental indexing of *.onrender.com or circular canonical redirect loops.
  */
 

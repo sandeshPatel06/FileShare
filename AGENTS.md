@@ -12,7 +12,7 @@ This document is the **source of truth for AI agents and automated coding tools*
 
 Product: **zero-registration** real-time Markdown workspaces + 500 MB file vault, password-optional, SSE sync, hybrid DB, B2/local storage.
 
-Live canonical URL: `https://fileshare.shptechnology.online`
+Live canonical URL: `https://filesp.pages.dev`
 
 ---
 
@@ -144,7 +144,7 @@ Config: `next.config.ts` (security headers, `allowedDevOrigins`), `deploy.sh`, `
 | API auth | `Authorization: Bearer <token>`; slug must match |
 | Rate limit | In-memory: verify **5/60s/IP**, sensitive bcrypt routes **30/60s/IP**, uploads **12/10m/IP**, general **300/60s/IP** |
 | Headers | `X-Content-Type-Options`, `X-Frame-Options`, CSP `frame-ancestors 'self'`, etc. in `next.config.ts` |
-| Domain | Middleware 301 from `fileshare-live.onrender.com` → canonical host |
+| Domain | Middleware 301 from `fileshare-live.onrender.com` / `fileshare.shptechnology.online` → `https://filesp.pages.dev` |
 
 **Not E2E encrypted.** Server can read notes and files. Do not claim zero-knowledge in UI copy.
 

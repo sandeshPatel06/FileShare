@@ -5,7 +5,7 @@ Human- and agent-readable **project atlas** for FileShare after a full source de
 | Field | Value |
 |-------|--------|
 | Repo | `sandeshPatel06/file-share` |
-| Live | https://fileshare.shptechnology.online |
+| Live | https://filesp.pages.dev |
 | Stack | Next.js 16 App Router · React 19 · TS · Tailwind 4 · PG/SQLite · B2 · SSE |
 | Version pin | `package.json` → `next@16.2.4`, `react@19.2.4` |
 | Companion docs | `AGENTS.md` (agent rules) · `task.md` (fix backlog) · `README.md` (setup) |
@@ -214,7 +214,7 @@ Fonts: Plus Jakarta Sans (UI), JetBrains Mono (code).
 
 ```
 Browser
-  → fileshare.shptechnology.online (canonical)
+  → filesp.pages.dev (canonical)
   → Next.js on Render (or local)
        → PostgreSQL (DATABASE_URL) or SQLite file
        → uploads/ disk and/or Backblaze B2

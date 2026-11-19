@@ -73,8 +73,8 @@ export default function PrivacyPage() {
             <div className="p-4 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs font-mono space-y-1 break-all">
               <div><strong>Entity:</strong> SHP Technology (Operating &quot;FileShare&quot;)</div>
               <div><strong>Registered Address:</strong> 1st floor, SHP Technology, Near Underground Bridge, Madan Mahal Station, Jabalpur, Madhya Pradesh 482001, India</div>
-              <div><strong>Official Email:</strong> support@fileshare.shptechnology.online</div>
-              <div><strong>Grievance Officer Email:</strong> grievance@fileshare.shptechnology.online</div>
+              <div><strong>Official Email:</strong> sandeshpatel.sp.93@gmail.com</div>
+              <div><strong>Grievance Officer Email:</strong> sandeshpatel.sp.93@gmail.com</div>
             </div>
             <p className="text-[var(--text-muted)]">
               FileShare operates on a foundational commitment to <strong>data minimization</strong>. You are never required to register an account, create a username, or submit personal phone numbers or government IDs to create or participate in workspaces.
@@ -193,7 +193,7 @@ export default function PrivacyPage() {
               <div><strong>Designation:</strong> Data Protection &amp; Grievance Redressal Officer</div>
               <div><strong>Entity:</strong> SHP Technology</div>
               <div><strong>Office Address:</strong> 1st floor, SHP Technology, Near Underground Bridge, Madan Mahal Station, Jabalpur, Madhya Pradesh 482001, India</div>
-              <div><strong>Dedicated Email:</strong> grievance@fileshare.shptechnology.online</div>
+              <div><strong>Dedicated Email:</strong> sandeshpatel.sp.93@gmail.com</div>
               <div><strong>Acknowledgment SLA:</strong> Within 48 hours</div>
               <div><strong>Resolution SLA:</strong> Within 30 calendar days</div>
             </div>
@@ -215,7 +215,7 @@ export default function PrivacyPage() {
               <li>FileShare does not knowingly process, profile, or track children under 18 years of age.</li>
               <li>We do not undertake behavioral tracking or targeted advertising directed at children.</li>
               <li>We do not process personal data that is likely to cause any detrimental effect on the well-being of a child.</li>
-              <li>If a parent or legal guardian discovers that a child has uploaded personal data, they may contact <code className="font-mono text-xs break-all">grievance@fileshare.shptechnology.online</code> for immediate expedited erasure.</li>
+              <li>If a parent or legal guardian discovers that a child has uploaded personal data, they may contact <code className="font-mono text-xs break-all">sandeshpatel.sp.93@gmail.com</code> for immediate expedited erasure.</li>
             </ul>
           </section>
 

@@ -35,7 +35,7 @@ export default function ContactPage() {
       const body = encodeURIComponent(
         `Name: ${name}\nEmail: ${email}\nCategory: ${category}\n\nMessage:\n${message}\n\n[Consent given under GDPR / India DPDP Act 2023]`
       );
-      window.location.href = `mailto:support@fileshare.shptechnology.online?subject=${subject}&body=${body}`;
+      window.location.href = `mailto:sandeshpatel.sp.93@gmail.com?subject=${subject}&body=${body}`;
       setSubmitting(false);
       setSubmitted(true);
     }, 400);
@@ -103,9 +103,9 @@ export default function ContactPage() {
             </div>
             <div className="p-3.5 rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)] space-y-1">
               <div><span className="text-[var(--text-subtle)] dark:text-[var(--text-muted)]">Grievance Redressal Officer:</span> Sandesh Patel</div>
-              <div><span className="text-[var(--text-subtle)] dark:text-[var(--text-muted)]">Statutory Email:</span> grievance@fileshare.shptechnology.online</div>
-              <div><span className="text-[var(--text-subtle)] dark:text-[var(--text-muted)]">Abuse / DMCA:</span> abuse@fileshare.shptechnology.online</div>
-              <div><span className="text-[var(--text-subtle)] dark:text-[var(--text-muted)]">Support:</span> support@fileshare.shptechnology.online</div>
+              <div><span className="text-[var(--text-subtle)] dark:text-[var(--text-muted)]">Statutory Email:</span> sandeshpatel.sp.93@gmail.com</div>
+              <div><span className="text-[var(--text-subtle)] dark:text-[var(--text-muted)]">Abuse / DMCA:</span> sandeshpatel.sp.93@gmail.com</div>
+              <div><span className="text-[var(--text-subtle)] dark:text-[var(--text-muted)]">Support:</span> sandeshpatel.sp.93@gmail.com</div>
             </div>
           </div>
         </section>
@@ -123,10 +123,10 @@ export default function ContactPage() {
               </p>
             </div>
             <a
-              href="mailto:support@fileshare.shptechnology.online"
+              href="mailto:sandeshpatel.sp.93@gmail.com"
               className="text-xs font-mono text-[var(--accent-primary)] hover:underline break-all"
             >
-              support@fileshare.shptechnology.online
+              sandeshpatel.sp.93@gmail.com
             </a>
           </div>
 
@@ -141,10 +141,10 @@ export default function ContactPage() {
               </p>
             </div>
             <a
-              href="mailto:abuse@fileshare.shptechnology.online"
+              href="mailto:sandeshpatel.sp.93@gmail.com"
               className="text-xs font-mono text-[var(--status-danger-text)] hover:underline break-all"
             >
-              abuse@fileshare.shptechnology.online
+              sandeshpatel.sp.93@gmail.com
             </a>
           </div>
 
@@ -180,7 +180,7 @@ export default function ContactPage() {
               <CheckCircle2 className="w-8 h-8 text-[var(--status-success-text)] mx-auto" />
               <h3 className="text-sm font-bold text-[var(--text-main)]">Thank You for Reaching Out</h3>
               <p className="text-xs text-[var(--text-muted)] max-w-md mx-auto">
-                Your email client has been prepared. If your mail client did not open automatically, please send your email directly to <code className="font-mono break-all text-[var(--accent-primary)]">support@fileshare.shptechnology.online</code>.
+                Your email client has been prepared. If your mail client did not open automatically, please send your email directly to <code className="font-mono break-all text-[var(--accent-primary)]">sandeshpatel.sp.93@gmail.com</code>.
               </p>
             </div>
           ) : (

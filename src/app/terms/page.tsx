@@ -70,7 +70,7 @@ export default function TermsPage() {
               <div><strong>Operating Entity:</strong> SHP Technology</div>
               <div><strong>Operator:</strong> Sandesh Patel</div>
               <div><strong>Registered Office:</strong> 1st floor, SHP Technology, Near Underground Bridge, Madan Mahal Station, Jabalpur, Madhya Pradesh 482001, India</div>
-              <div><strong>Contact Email:</strong> support@fileshare.shptechnology.online</div>
+              <div><strong>Contact Email:</strong> sandeshpatel.sp.93@gmail.com</div>
             </div>
             <p className="text-[var(--text-muted)]">
               By accessing, creating, editing, uploading to, or viewing any workspace on FileShare, you explicitly agree to comply with and be bound by these Terms, our Privacy Policy, Cookie Policy, and Refund Policy. If you disagree with any portion of these agreements, you must cease using the Service immediately.
@@ -163,7 +163,7 @@ export default function TermsPage() {
             </ul>
             <div className="p-3.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs font-mono space-y-1 break-all">
               <div><strong>Grievance &amp; Abuse Officer:</strong> Sandesh Patel</div>
-              <div><strong>Email:</strong> grievance@fileshare.shptechnology.online / abuse@fileshare.shptechnology.online</div>
+              <div><strong>Email:</strong> sandeshpatel.sp.93@gmail.com</div>
               <div><strong>Address:</strong> 1st floor, SHP Technology, Near Underground Bridge, Madan Mahal Station, Jabalpur, Madhya Pradesh 482001, India</div>
             </div>
           </section>

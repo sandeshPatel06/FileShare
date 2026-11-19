@@ -119,7 +119,30 @@ export function RenameSlugModal({ open, onClose, slug, token }: RenameSlugModalP
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Rename Workspace URL" maxWidth="max-w-sm sm:max-w-md">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Rename Workspace URL"
+      maxWidth="max-w-sm sm:max-w-md"
+      footer={
+        <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5 w-full">
+          <Button variant="secondary" size="md" onClick={onClose} className="font-bold w-full sm:w-auto min-h-[44px]">
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            disabled={!!slugError || !newSlug || newSlug === slug || checking}
+            loading={saving}
+            onClick={handleSave}
+            icon={available === false ? <ArrowRight size={15} /> : <Check size={15} />}
+            className="font-bold w-full sm:w-auto min-h-[44px]"
+          >
+            {available === false ? "Open Existing Space" : "Save New URL"}
+          </Button>
+        </div>
+      }
+    >
       <div className="flex flex-col gap-3.5 pt-0.5 min-w-0 max-w-full overflow-x-hidden">
         {/* Current URL Card */}
         <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] min-w-0 max-w-full overflow-hidden">
@@ -149,8 +172,12 @@ export function RenameSlugModal({ open, onClose, slug, token }: RenameSlugModalP
               value={newSlug}
               onChange={(e) => handleSlugChange(e.target.value.toLowerCase())}
               onKeyDown={(e) => {
-                if (e.key === "Enter") handleSave();
-                if (e.key === "Escape") onClose();
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  if (!slugError && newSlug && newSlug !== slug && !checking) {
+                    handleSave();
+                  }
+                }
               }}
               placeholder="my-custom-space"
               className={`
@@ -193,37 +220,19 @@ export function RenameSlugModal({ open, onClose, slug, token }: RenameSlugModalP
         </div>
 
         {/* Danger Zone: Permanent Deletion */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-2.5 rounded-xl bg-[var(--status-danger-bg)] border border-[var(--status-danger-border)] text-xs min-w-0 max-w-full overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 rounded-xl bg-[var(--status-danger-bg)] border border-[var(--status-danger-border)] text-xs min-w-0 max-w-full overflow-hidden">
           <div className="min-w-0 max-w-full">
-            <p className="font-bold text-[var(--status-danger-text)]">Delete Workspace</p>
-            <p className="text-xs text-[var(--text-muted)]">Permanently erase notes and all files.</p>
+            <p className="font-bold text-[var(--status-danger-text)] text-sm">Delete Workspace</p>
+            <p className="text-xs text-[var(--text-muted)] mt-0.5">Permanently erase notes and all files.</p>
           </div>
           <Button
             variant="danger"
             size="md"
             onClick={() => setShowDeleteConfirm(true)}
-            icon={<Trash2 size={14} />}
-            className="w-full sm:w-auto"
+            icon={<Trash2 size={15} />}
+            className="w-full sm:w-auto min-h-[44px] shrink-0"
           >
             Delete
-          </Button>
-        </div>
-
-        {/* Modal Action Controls */}
-        <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5 pt-3 mt-1 border-t border-[var(--border-color)] shrink-0">
-          <Button variant="secondary" size="md" onClick={onClose} className="font-bold w-full sm:w-auto">
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            size="md"
-            disabled={!!slugError || !newSlug || newSlug === slug || checking}
-            loading={saving}
-            onClick={handleSave}
-            icon={available === false ? <ArrowRight size={15} /> : <Check size={15} />}
-            className="font-bold w-full sm:w-auto"
-          >
-            {available === false ? "Open Existing Space" : "Save New URL"}
           </Button>
         </div>
       </div>

@@ -77,21 +77,68 @@ export function PasswordModal({ open, onClose, slug, isProtected, token, onSucce
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={isProtected ? "Change Password" : "Set Password"} maxWidth="max-w-sm sm:max-w-md">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={isProtected ? "Change Password" : "Set Password"}
+      maxWidth="max-w-sm sm:max-w-md"
+      footer={
+        <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5 w-full">
+          <Button
+            type="button"
+            variant="secondary"
+            size="md"
+            onClick={() => {
+              reset();
+              onClose();
+            }}
+            className="font-bold w-full sm:w-auto min-h-[44px]"
+          >
+            Cancel
+          </Button>
+          {isProtected && (
+            <Button
+              type="button"
+              size="md"
+              variant="danger"
+              icon={<Unlock size={16} />}
+              loading={loading}
+              onClick={handleRemove}
+              className="font-bold w-full sm:w-auto min-h-[44px]"
+            >
+              Remove Password
+            </Button>
+          )}
+          <Button
+            type="submit"
+            form="password-modal-form"
+            size="md"
+            variant="primary"
+            icon={<KeyRound size={16} />}
+            loading={loading}
+            className="font-bold w-full sm:w-auto min-h-[44px]"
+          >
+            {isProtected ? "Update Password" : "Set Password"}
+          </Button>
+        </div>
+      }
+    >
       <div className="flex flex-col gap-3.5 pt-0.5 min-w-0 max-w-full overflow-x-hidden">
         {isProtected && (
           <div className="p-2.5 rounded-xl bg-[var(--badge-bg)] border border-[var(--badge-border)] flex items-center gap-2 min-w-0 max-w-full">
-            <Lock size={14} className="text-[var(--accent-indigo)] shrink-0" />
-            <span className="text-xs font-bold text-[var(--badge-text)] min-w-0 break-words">This page is currently password-protected.</span>
+            <Lock size={15} className="text-[var(--accent-indigo)] shrink-0" />
+            <span className="text-xs font-bold text-[var(--badge-text)] min-w-0 break-words">
+              This space is currently password-protected.
+            </span>
           </div>
         )}
 
-        <form onSubmit={handleSet} className="space-y-3.5 min-w-0 max-w-full">
+        <form id="password-modal-form" onSubmit={handleSet} className="space-y-3.5 min-w-0 max-w-full">
           <div>
-            <label htmlFor="new-password-input" className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
+            <label htmlFor="new-password-input" className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1 font-mono">
               New Password
             </label>
-            <div className="relative mt-1">
+            <div className="relative">
               <input
                 autoFocus
                 id="new-password-input"
@@ -106,48 +153,43 @@ export function PasswordModal({ open, onClose, slug, isProtected, token, onSucce
                 type="button"
                 onClick={() => setShowPw(!showPw)}
                 aria-label={showPw ? "Hide password" : "Show password"}
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors cursor-pointer p-2 rounded-lg min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] flex items-center justify-center"
+                className="absolute right-1 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-main)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] transition-colors cursor-pointer p-2 rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
-                {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
 
           <div>
-            <label htmlFor="confirm-password-input" className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
+            <label htmlFor="confirm-password-input" className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1 font-mono">
               Confirm Password
             </label>
-            <input
-              id="confirm-password-input"
-              name="confirmPassword"
-              type="password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              placeholder="Re-enter password"
-              className="mt-1 w-full bg-[var(--input-bg)] border border-[var(--border-color)] focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--border-glow)] rounded-xl px-3.5 py-2.5 text-base sm:text-sm text-[var(--text-main)] placeholder-[var(--text-subtle)] dark:placeholder-[var(--text-muted)] outline-none transition-all font-mono font-bold min-h-[44px] sm:min-h-[40px]"
-            />
-          </div>
-
-          {error && <p className="text-xs font-bold text-[var(--status-danger-text)] flex items-center gap-1.5 pt-0.5 break-words min-w-0 max-w-full">{error}</p>}
-
-          <div className="flex flex-col-reverse sm:flex-row gap-2.5 pt-2 border-t border-[var(--border-color)] mt-2 shrink-0">
-            <Button type="submit" size="md" icon={<KeyRound size={16} />} loading={loading} className="flex-1 font-bold w-full sm:w-auto">
-              Set Password
-            </Button>
-            {isProtected && (
-              <Button
+            <div className="relative">
+              <input
+                id="confirm-password-input"
+                name="confirmPassword"
+                type={showPw ? "text" : "password"}
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                placeholder="Re-enter password"
+                className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--border-glow)] rounded-xl px-3.5 py-2.5 pr-12 text-base sm:text-sm text-[var(--text-main)] placeholder-[var(--text-subtle)] dark:placeholder-[var(--text-muted)] outline-none transition-all font-mono font-bold min-h-[44px] sm:min-h-[40px]"
+              />
+              <button
                 type="button"
-                size="md"
-                variant="danger"
-                icon={<Unlock size={16} />}
-                loading={loading}
-                onClick={handleRemove}
-                className="font-bold w-full sm:w-auto"
+                onClick={() => setShowPw(!showPw)}
+                aria-label={showPw ? "Hide password" : "Show password"}
+                className="absolute right-1 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-main)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] transition-colors cursor-pointer p-2 rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
-                Remove
-              </Button>
-            )}
+                {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
+
+          {error && (
+            <p className="text-xs font-bold text-[var(--status-danger-text)] flex items-center gap-1.5 pt-0.5 break-words min-w-0 max-w-full">
+              {error}
+            </p>
+          )}
         </form>
       </div>
     </Modal>

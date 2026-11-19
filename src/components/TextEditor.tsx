@@ -1081,8 +1081,8 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
 
   return (
     <section className={`
-      flex flex-col h-full w-full bg-[var(--bg-main)] transition-colors duration-150 overflow-hidden select-none
-      ${zenMode ? "fixed inset-0 z-[9999] bg-[var(--bg-main)]" : "relative"}
+      flex-1 min-h-0 h-full flex flex-col w-full bg-[var(--bg-main)] transition-colors duration-150 overflow-hidden select-none
+      ${zenMode ? "fixed inset-0 z-[9999]" : "relative"}
     `}>
       {/* Hidden File Input */}
       <input
@@ -1494,15 +1494,15 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
       )}
 
       {/* Main Workspace Canvas (Full Width & Height, Zero Outer Padding) */}
-      <main className="flex-1 min-h-0 flex overflow-hidden relative bg-[var(--bg-main)]">
+      <main className="flex-1 min-h-0 h-full flex overflow-hidden relative bg-[var(--bg-main)]">
         {loading ? (
-          <div className="w-full space-y-4 animate-pulse p-4 sm:p-6">
+          <div className="w-full h-full space-y-4 animate-pulse p-4 sm:p-6">
             {[85, 70, 92, 60, 78].map((w, i) => (
               <div key={i} className="skeleton h-5 rounded-lg" style={{ width: `${w}%` }} />
             ))}
           </div>
         ) : (
-          <div className="w-full h-full flex min-h-0 max-w-full overflow-hidden">
+          <div className="flex-1 w-full h-full flex min-h-0 max-w-full overflow-hidden">
             {/* Outline Sidebar Pane */}
             {showOutline && (
               <>
@@ -1648,7 +1648,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
       </main>
 
       {/* Bottom Status Bar (IDE Utility Style) */}
-      <footer className="h-7 min-h-7 px-2.5 sm:px-3 bg-[var(--bg-surface)] border-t border-[var(--border-color)] text-[11px] leading-none text-[var(--text-muted)] flex items-center justify-between gap-2 font-mono select-none shrink-0 overflow-hidden">
+      <footer className="h-7 min-h-7 max-h-7 px-2.5 sm:px-3 bg-[var(--bg-surface)] border-t border-[var(--border-color)] text-[11px] leading-none text-[var(--text-muted)] flex items-center justify-between gap-2 font-mono select-none shrink-0 overflow-hidden">
         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 overflow-hidden whitespace-nowrap truncate">
           <span>{readTime} min read</span>
           <span className="text-[var(--border-color)]">·</span>
@@ -1700,7 +1700,24 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
       </footer>
 
       {/* Starter Templates Modal */}
-      <Modal open={showTemplateModal} onClose={() => setShowTemplateModal(false)} title="Starter Markdown Templates" maxWidth="max-w-md">
+      <Modal
+        open={showTemplateModal}
+        onClose={() => setShowTemplateModal(false)}
+        title="Starter Markdown Templates"
+        maxWidth="max-w-md"
+        footer={
+          <div className="flex justify-end w-full">
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => setShowTemplateModal(false)}
+              className="w-full sm:w-auto font-bold min-h-[44px]"
+            >
+              Close
+            </Button>
+          </div>
+        }
+      >
         <div className="grid grid-cols-1 gap-2.5 pt-0.5">
           {TEMPLATES.map((tmpl) => (
             <article

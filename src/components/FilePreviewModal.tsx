@@ -102,10 +102,32 @@ export function FilePreviewModal({ file, token, open, onClose }: FilePreviewModa
   if (!open || !file) return null;
 
   return (
-    <Modal open={open} onClose={onClose} title={file.originalName} maxWidth="max-w-lg sm:max-w-xl md:max-w-2xl">
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={file.originalName}
+      maxWidth="max-w-lg sm:max-w-xl md:max-w-2xl"
+      footer={
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center sm:justify-end gap-2.5 w-full">
+          <Button variant="secondary" size="md" onClick={onClose} className="font-bold w-full sm:w-auto min-h-[44px]">
+            Close
+          </Button>
+          <a href={fullDownloadUrl} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto block">
+            <Button variant="outline" size="md" icon={<ExternalLink size={15} />} className="font-bold w-full min-h-[44px]">
+              Open<span className="hidden sm:inline"> in New Tab</span>
+            </Button>
+          </a>
+          <a href={fullDownloadUrl} download={file.originalName} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto sm:flex-1 block">
+            <Button variant="primary" size="md" icon={<Download size={15} />} className="w-full font-extrabold min-h-[44px]">
+              Download<span className="hidden sm:inline"> File</span>
+            </Button>
+          </a>
+        </div>
+      }
+    >
       <div className="flex flex-col items-center gap-3.5 text-center pt-0.5 w-full min-w-0 max-w-full overflow-x-hidden">
         {/* Preview Frame — single bounded media area */}
-        <div className="w-full min-w-0 max-w-full min-h-[180px] max-h-[50vh] rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)] flex items-center justify-center overflow-hidden p-3 relative shadow-inner shrink-0">
+        <div className="w-full min-w-0 max-w-full min-h-[160px] max-h-[45dvh] sm:max-h-[50vh] rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)] flex items-center justify-center overflow-hidden p-3 relative shadow-inner shrink-0">
           {isImage ? (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
@@ -113,14 +135,14 @@ export function FilePreviewModal({ file, token, open, onClose }: FilePreviewModa
               alt={file.originalName}
               decoding="async"
               loading="lazy"
-              className="max-h-[46vh] w-auto max-w-full object-contain rounded-lg shadow-md"
+              className="max-h-[40dvh] sm:max-h-[46vh] w-auto max-w-full object-contain rounded-lg shadow-md"
             />
           ) : isVideo ? (
             <video
               src={previewUrl}
               controls
               autoPlay={false}
-              className="max-h-[46vh] w-full h-auto max-w-full rounded-lg"
+              className="max-h-[40dvh] sm:max-h-[46vh] w-full h-auto max-w-full rounded-lg"
             />
           ) : isAudio ? (
             <div className="w-full min-w-0 p-3 sm:p-6 flex flex-col items-center justify-center gap-3 bg-[var(--bg-card)] rounded-lg">
@@ -143,14 +165,14 @@ export function FilePreviewModal({ file, token, open, onClose }: FilePreviewModa
               </div>
               <div className="w-full flex items-center justify-center gap-2 mt-1">
                 <a href={fullDownloadUrl} target="_blank" rel="noopener noreferrer" className="flex-1 max-w-xs">
-                  <Button variant="primary" size="md" icon={<ExternalLink size={15} />} className="w-full font-extrabold">
+                  <Button variant="primary" size="md" icon={<ExternalLink size={15} />} className="w-full font-extrabold min-h-[44px]">
                     Open PDF Document
                   </Button>
                 </a>
               </div>
             </div>
           ) : isTextLike ? (
-            <div className="w-full min-w-0 max-w-full h-[40vh] min-h-[180px] max-h-[300px] overflow-y-auto overflow-x-hidden overscroll-contain p-3 sm:p-4 font-mono text-xs text-[var(--text-main)] bg-[var(--bg-card)] rounded-lg border border-[var(--border-color)] text-left leading-relaxed select-text">
+            <div className="w-full min-w-0 max-w-full h-[36vh] min-h-[160px] max-h-[280px] overflow-y-auto overflow-x-hidden overscroll-contain p-3 sm:p-4 font-mono text-xs text-[var(--text-main)] bg-[var(--bg-card)] rounded-lg border border-[var(--border-color)] text-left leading-relaxed select-text">
               {loadingText ? (
                 <div className="h-full flex flex-col items-center justify-center text-[var(--text-muted)] gap-2">
                   <Loader2 size={20} className="animate-spin text-[var(--accent-indigo)]" />
@@ -178,25 +200,18 @@ export function FilePreviewModal({ file, token, open, onClose }: FilePreviewModa
           <input
             readOnly
             value={fullDownloadUrl}
-            className="flex-1 min-w-0 w-full px-3 py-2 text-sm text-[var(--text-main)] bg-transparent outline-none font-mono truncate select-all font-bold"
+            aria-label="Direct file download link"
+            className="flex-1 min-w-0 w-full px-3 py-2 text-xs sm:text-sm text-[var(--text-main)] bg-transparent outline-none font-mono truncate select-all font-bold"
           />
-          <Button size="md" variant={copied ? "success" : "secondary"} icon={copied ? <CheckCheck size={15} /> : <Copy size={15} />} onClick={handleCopyLink} className="font-bold shrink-0 whitespace-nowrap">
-            {copied ? "Copied" : "Copy Link"}
+          <Button
+            size="md"
+            variant={copied ? "success" : "secondary"}
+            icon={copied ? <CheckCheck size={15} className="text-white" /> : <Copy size={15} />}
+            onClick={handleCopyLink}
+            className="font-bold shrink-0 whitespace-nowrap min-h-[40px] px-3 text-xs sm:text-sm"
+          >
+            {copied ? "Copied!" : "Copy Link"}
           </Button>
-        </div>
-
-        {/* Action Controls */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full min-w-0 max-w-full pt-2.5 border-t border-[var(--border-color)] shrink-0">
-          <a href={fullDownloadUrl} download={file.originalName} target="_blank" rel="noopener noreferrer" className="w-full sm:flex-1">
-            <Button variant="primary" size="md" icon={<Download size={15} />} className="w-full font-extrabold">
-              Download<span className="hidden sm:inline"> File</span>
-            </Button>
-          </a>
-          <a href={fullDownloadUrl} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
-            <Button variant="secondary" size="md" icon={<ExternalLink size={15} />} className="font-bold w-full">
-              Open<span className="hidden sm:inline"> in New Tab</span>
-            </Button>
-          </a>
         </div>
       </div>
     </Modal>

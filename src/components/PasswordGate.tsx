@@ -78,13 +78,13 @@ export function PasswordGate({ slug, onUnlocked }: PasswordGateProps) {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password..."
                 aria-label="Workspace password"
-                className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--border-glow)] rounded-2xl px-4 py-3.5 pr-12 text-base sm:text-sm text-[var(--text-main)] placeholder-[var(--text-subtle)] dark:placeholder-[var(--text-muted)] outline-none font-mono"
+                className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--border-glow)] rounded-2xl px-4 py-3.5 pr-12 text-base sm:text-sm text-[var(--text-main)] placeholder-[var(--text-subtle)] dark:placeholder-[var(--text-muted)] outline-none font-mono min-h-[48px]"
               />
               <button
                 type="button"
                 onClick={() => setShowPw(!showPw)}
                 aria-label={showPw ? "Hide password" : "Show password"}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-main)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl transition-colors"
               >
                 {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -116,7 +116,7 @@ export function PasswordGate({ slug, onUnlocked }: PasswordGateProps) {
               icon={<KeyRound size={18} />}
               iconRight={<ArrowRight size={18} />}
               disabled={!password}
-              className="w-full py-3.5 text-sm font-bold tracking-wide"
+              className="w-full py-3.5 text-sm sm:text-base font-bold tracking-wide min-h-[48px] rounded-2xl"
             >
               Unlock Workspace
             </Button>

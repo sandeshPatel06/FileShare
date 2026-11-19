@@ -22,10 +22,11 @@ export function Button({
   className = "",
   ...props
 }: ButtonProps) {
-  const baseStyles = "inline-flex items-center justify-center font-bold rounded-xl transition-all duration-200 outline-none select-none disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none hover:scale-[1.015] active:scale-[0.97] cursor-pointer";
+  const baseStyles =
+    "inline-flex items-center justify-center font-bold rounded-xl transition-all duration-200 outline-none select-none disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none hover:scale-[1.015] active:scale-[0.97] disabled:hover:scale-100 disabled:active:scale-100 cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-main)]";
 
   const sizes = {
-    xs: "px-2.5 py-1 min-h-[44px] sm:min-h-[32px] text-xs gap-1 rounded-md font-semibold",
+    xs: "px-2.5 py-1 min-h-[44px] sm:min-h-[32px] text-xs gap-1.5 rounded-lg font-semibold",
     sm: "px-3 py-1.5 min-h-[44px] sm:min-h-[36px] text-sm gap-1.5 rounded-lg font-bold",
     md: "px-3.5 py-2 min-h-[44px] sm:min-h-[40px] text-sm gap-2 rounded-xl font-bold",
     lg: "px-5 py-2.5 min-h-[44px] text-sm sm:text-base gap-2 rounded-xl font-bold",
@@ -34,35 +35,40 @@ export function Button({
 
   const variants = {
     primary:
-      "bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white shadow-md border border-[var(--badge-border)]",
+      "bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white shadow-sm border border-[var(--badge-border)] focus-visible:ring-[var(--accent-primary)]",
     glow:
-      "bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white shadow-md border border-[var(--badge-border)]",
+      "bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white shadow-md shadow-[0_0_16px_var(--border-glow)] border border-[var(--badge-border)] focus-visible:ring-[var(--accent-primary)]",
     secondary:
-      "bg-[var(--badge-bg)] text-[var(--text-main)] hover:bg-[var(--border-color)] border border-[var(--border-color)] shadow-sm",
+      "bg-[var(--bg-card)] text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] active:bg-[var(--border-color)] border border-[var(--border-color)] shadow-xs focus-visible:ring-[var(--accent-primary)]",
     ghost:
-      "bg-transparent text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 border border-transparent",
+      "bg-transparent text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 border border-transparent focus-visible:ring-[var(--accent-primary)]",
     outline:
-      "bg-transparent border border-[var(--border-color)] text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/5",
+      "bg-transparent border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] focus-visible:ring-[var(--accent-primary)]",
     danger:
-      "bg-[var(--status-danger-bg)] text-[var(--status-danger-text)] border border-[var(--status-danger-border)] hover:opacity-90 shadow-sm",
+      "bg-red-600 hover:bg-red-700 active:bg-red-800 text-white border border-red-500/40 shadow-sm focus-visible:ring-red-500",
     success:
-      "bg-[var(--status-success-bg)] text-[var(--status-success-text)] border border-[var(--status-success-border)] hover:opacity-90 shadow-sm",
+      "bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white border border-emerald-500/40 shadow-sm focus-visible:ring-emerald-500",
   };
 
   return (
     <button
       type={type}
       disabled={disabled || loading}
+      aria-busy={loading}
       className={`${baseStyles} ${sizes[size]} ${variants[variant]} ${className}`}
       {...props}
     >
       {loading ? (
-        <Loader2 size={size === "xs" ? 12 : size === "sm" ? 14 : size === "xl" ? 22 : 16} className="animate-spin text-current shrink-0" />
+        <Loader2
+          size={size === "xs" ? 13 : size === "sm" ? 14 : size === "xl" ? 20 : 16}
+          className="animate-spin text-current shrink-0"
+          aria-hidden="true"
+        />
       ) : (
-        icon
+        icon && <span className="shrink-0 flex items-center justify-center">{icon}</span>
       )}
       {children}
-      {!loading && iconRight}
+      {!loading && iconRight && <span className="shrink-0 flex items-center justify-center">{iconRight}</span>}
     </button>
   );
 }

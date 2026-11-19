@@ -5,32 +5,21 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
-  BookOpen,
   Check,
   ChevronDown,
-  Clock,
   Code2,
-  Copy,
-  Download,
   FileArchive,
   FileText,
-  Film,
   FolderOpen,
   HardDrive,
   History,
   Lock,
   Pin,
-  PinOff,
   Search,
-  ShieldCheck,
   Shuffle,
   Smartphone,
   Trash2,
-  Unlock,
   Upload,
-  Users,
-  Wand2,
-  X,
   Zap,
 } from "lucide-react";
 
@@ -40,13 +29,10 @@ import { Footer } from "@/components/Footer";
 import { ThemeToggle } from "./ThemeToggle";
 import { useRecentSpaces } from "@/hooks/useRecentSpaces";
 import { generateSlug } from "@/lib/slugGenerator";
-import { ARTICLES } from "@/lib/articles";
 
 export interface LandingPageProps {
   defaultSlug: string;
 }
-
-type PreviewTabId = "notes" | "vault" | "phone" | "security";
 
 interface QuickChip {
   emoji: string;
@@ -69,7 +55,7 @@ interface FaqItem {
 
 const QUICK_CHIPS: QuickChip[] = [
   { emoji: "📝", label: "notes", slug: "meeting-notes" },
-  { emoji: "📁", label: "file-drop", slug: "file-drop" },
+  { emoji: "📁", label: "vault", slug: "file-vault" },
   { emoji: "📱", label: "phone-transfer", slug: "phone-transfer" },
   { emoji: "⚡", label: "scratchpad", slug: "scratchpad" },
 ];
@@ -152,65 +138,6 @@ const FAQ_ITEMS: FaqItem[] = [
   },
 ];
 
-const INITIAL_PREVIEW_TASKS = [
-  { id: "t1", text: "Meeting Agenda: Review Q4 product roadmap", done: true },
-  { id: "t2", text: "Upload design mockups & presentation (PDF)", done: true },
-  { id: "t3", text: "Send shareable link to team members", done: false },
-];
-
-const VAULT_PREVIEW_FILES = [
-  {
-    id: "f1",
-    name: "quarterly-report-final.pdf",
-    size: "4.2 MB",
-    meta: "Ready to download",
-    uploading: false,
-    progress: 100,
-    kind: "doc" as const,
-  },
-  {
-    id: "f2",
-    name: "project-design-assets.zip",
-    size: "38.5 MB",
-    meta: "Ready to download",
-    uploading: false,
-    progress: 100,
-    kind: "archive" as const,
-  },
-  {
-    id: "f3",
-    name: "product-demo-video.mp4",
-    size: "248 MB",
-    meta: "Uploading • 14.2 MB/s",
-    uploading: true,
-    progress: 82,
-    kind: "video" as const,
-  },
-];
-
-const QR_MATRIX: number[][] = [
-  [1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1],
-  [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1],
-  [1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1],
-  [1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1],
-  [1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1],
-  [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1],
-  [1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1],
-  [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-  [1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1],
-  [0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0],
-  [1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1],
-  [0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1],
-  [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1],
-  [1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0],
-  [1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1],
-  [1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0],
-  [1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1],
-  [1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0],
-  [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0],
-  [1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1],
-];
-
 function sanitizeSlug(raw: string): string {
   return raw
     .trim()
@@ -241,19 +168,10 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
   const { recentSpaces, removeRecentSpace, togglePin, clearRecentSpaces } =
     useRecentSpaces();
 
-  // URL input state
   const [slugInput, setSlugInput] = useState<string>("");
   const [suggestedSlug, setSuggestedSlug] = useState<string>(defaultSlug);
-
-  // Preview interactive state
-  const [activeTab, setActiveTab] = useState<PreviewTabId>("notes");
-  const [previewTasks, setPreviewTasks] = useState(INITIAL_PREVIEW_TASKS);
-  const [copiedFileId, setCopiedFileId] = useState<string | null>(null);
-  const [isPreviewLocked, setIsPreviewLocked] = useState<boolean>(false);
-  const [isFormattedFlash, setIsFormattedFlash] = useState<boolean>(false);
-
-  // FAQ state
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+  const [copiedFile, setCopiedFile] = useState(false);
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   // Recent Spaces Modal state
   const [isRecentModalOpen, setIsRecentModalOpen] = useState<boolean>(false);
@@ -309,74 +227,43 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
     inputRef.current?.focus();
   };
 
-  const handleTogglePreviewTask = (id: string) => {
-    setPreviewTasks((prev) =>
-      prev.map((task) =>
-        task.id === id ? { ...task, done: !task.done } : task
-      )
-    );
-  };
-
-  const handleCopyPreviewLink = (fileId: string) => {
-    setCopiedFileId(fileId);
-    window.setTimeout(() => {
-      setCopiedFileId((curr) => (curr === fileId ? null : curr));
-    }, 1600);
-  };
-
-  const handleTriggerFormatDemo = () => {
-    setIsFormattedFlash(true);
-    window.setTimeout(() => setIsFormattedFlash(false), 1400);
+  const handleCopySample = () => {
+    setCopiedFile(true);
+    setTimeout(() => setCopiedFile(false), 1500);
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] selection:bg-[var(--badge-bg)] selection:text-[var(--accent-text)]">
+    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col selection:bg-[var(--badge-bg)] selection:text-[var(--accent-text)]">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-[var(--border-color)] bg-[var(--header-bg)] backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-6">
-            <Link
-              href="/"
-              className="flex items-center gap-2.5 text-sm font-semibold tracking-tight text-[var(--text-main)]"
-            >
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-[var(--badge-border)] bg-[var(--badge-bg)] text-[var(--accent-text)]">
-                <FolderOpen className="h-4 w-4" />
-              </span>
-              <span className="text-base font-bold">FileShare</span>
-            </Link>
+      <header className="sticky top-0 z-40 border-b border-[var(--border-color)] bg-[var(--header-bg)]/90 backdrop-blur-md">
+        <div className="mx-auto flex h-13 max-w-5xl items-center justify-between px-4 sm:px-6">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-sm font-bold tracking-tight text-[var(--text-main)]"
+          >
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--accent-primary)] text-white">
+              <FolderOpen className="h-4 w-4" />
+            </span>
+            <span>FileShare</span>
+          </Link>
 
-            <nav
-              aria-label="Navigation"
-              className="hidden items-center gap-5 text-xs font-medium text-[var(--text-muted)] md:flex"
-            >
-              <a href="#how-it-works" className="transition-colors hover:text-[var(--text-main)]">
-                How It Works
-              </a>
-              <a href="#features" className="transition-colors hover:text-[var(--text-main)]">
-                Features
-              </a>
-              <a href="#compare" className="transition-colors hover:text-[var(--text-main)]">
-                Compare
-              </a>
-              <Link href="/guide" className="transition-colors hover:text-[var(--text-main)]">
-                User Guide
-              </Link>
-              <a href="#faq" className="transition-colors hover:text-[var(--text-main)]">
-                FAQ
-              </a>
-            </nav>
-          </div>
+          <nav aria-label="Main" className="hidden sm:flex items-center gap-4 text-xs font-medium text-[var(--text-muted)]">
+            <a href="#features" className="hover:text-[var(--text-main)] transition-colors">Features</a>
+            <a href="#compare" className="hover:text-[var(--text-main)] transition-colors">Compare</a>
+            <Link href="/guide" className="hover:text-[var(--text-main)] transition-colors">Guide</Link>
+            <a href="#faq" className="hover:text-[var(--text-main)] transition-colors">FAQ</a>
+          </nav>
 
           <div className="flex items-center gap-2">
             {recentSpaces.length > 0 && (
               <button
                 type="button"
                 onClick={handleOpenRecentModal}
-                className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] px-2.5 text-xs font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--accent-primary)] hover:text-[var(--text-main)] cursor-pointer"
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] px-2.5 text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer transition-colors"
               >
                 <History className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Recent</span>
-                <span className="rounded bg-[var(--badge-bg)] px-1.5 py-0.5 font-mono text-[10px] text-[var(--accent-text)]">
+                <span className="rounded bg-[var(--badge-bg)] px-1.5 py-0.2 font-mono text-[10px] text-[var(--accent-text)]">
                   {recentSpaces.length}
                 </span>
               </button>
@@ -390,630 +277,267 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
               icon={<Zap className="h-3.5 w-3.5" />}
               onClick={handleRandomSpace}
             >
-              Instant Space ⚡
+              New Space
             </Button>
           </div>
         </div>
       </header>
 
-      <main>
-        {/* Hero Section — Clean, Friendly & Easy to Use */}
-        <section className="relative border-b border-[var(--border-color)] bg-[var(--bg-main)] pt-10 pb-16 sm:pt-14 sm:pb-20">
-          <div className="mx-auto max-w-5xl px-4 sm:px-6 text-center">
-            {/* Value Badge */}
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--badge-border)] bg-[var(--badge-bg)] px-3 py-1 text-xs font-medium text-[var(--accent-text)]">
-              <span className="h-2 w-2 rounded-full bg-[var(--status-success-text)] animate-pulse" />
-              <span>100% Free • No Sign-Up • Open Instantly</span>
+      {/* Main Content */}
+      <main className="flex-1">
+        {/* Debloated Hero Section */}
+        <section className="pt-10 pb-12 sm:pt-16 sm:pb-16 max-w-4xl mx-auto px-4 sm:px-6 text-center">
+          {/* Main Headline */}
+          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[var(--text-main)] leading-[1.15] mb-3 text-balance">
+            Live notes &amp; 500MB vault. <br />
+            <span className="text-[var(--accent-text)]">No sign-up needed.</span>
+          </h1>
+
+          {/* Subtitle */}
+          <p className="max-w-xl mx-auto text-sm sm:text-base text-[var(--text-muted)] leading-relaxed mb-6 text-pretty">
+            Write collaborative Markdown notes and share files up to 500MB instantly through a single link. Free, fast, and open to anyone.
+          </p>
+
+          {/* Clean 1-Line URL Bar */}
+          <form
+            onSubmit={handleHeroFormSubmit}
+            className="max-w-lg mx-auto p-1.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] shadow-md focus-within:border-[var(--accent-primary)] transition-all flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-3"
+          >
+            <div className="flex-1 flex items-center px-3 min-h-[42px] bg-[var(--bg-main)] rounded-lg border border-[var(--border-color)] sm:border-transparent">
+              <span className="text-xs font-mono text-[var(--text-muted)] select-none shrink-0 pr-1">
+                filesp.pages.dev/projects/
+              </span>
+              <input
+                ref={inputRef}
+                type="text"
+                value={slugInput}
+                onChange={(e) => setSlugInput(e.target.value)}
+                placeholder={suggestedSlug}
+                aria-label="Workspace name"
+                className="w-full bg-transparent text-xs sm:text-sm font-mono text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={handleShufflePlaceholder}
+                title="Shuffle name"
+                className="text-[var(--text-muted)] hover:text-[var(--text-main)] p-1 cursor-pointer"
+              >
+                <Shuffle className="w-3.5 h-3.5" />
+              </button>
             </div>
 
-            {/* Main Headline */}
-            <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-[var(--text-main)] mb-4 leading-tight text-balance">
-              Write notes. Share files. <br />
-              <span className="text-[var(--accent-text)]">Zero registration required.</span>
-            </h1>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <Button
+                type="submit"
+                variant="primary"
+                size="md"
+                className="flex-1 sm:flex-initial !px-4 !py-2.5 min-h-[40px] !text-xs !font-semibold"
+                iconRight={<ArrowRight className="w-3.5 h-3.5" />}
+              >
+                Start Space
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="md"
+                className="!px-3 !py-2.5 min-h-[40px] !text-xs"
+                onClick={handleRandomSpace}
+                title="Create random room"
+              >
+                <Zap className="w-4 h-4 text-[var(--accent-text)]" />
+              </Button>
+            </div>
+          </form>
 
-            {/* Subtitle */}
-            <p className="mx-auto max-w-2xl text-sm sm:text-base text-[var(--text-muted)] leading-relaxed mb-8 text-pretty">
-              Create an instant workspace with a single link. Type together in real time, drop heavy files up to 500MB, or scan a QR code to transfer photos between your phone and computer.
-            </p>
+          {/* Quick Idea Chips */}
+          <div className="flex flex-wrap items-center justify-center gap-1.5 text-xs text-[var(--text-muted)] mb-8">
+            <span className="text-[11px] uppercase tracking-wider">Try:</span>
+            {QUICK_CHIPS.map((chip) => (
+              <button
+                key={chip.slug}
+                type="button"
+                onClick={() => navigateToSpace(chip.slug)}
+                className="px-2.5 py-0.5 rounded-md bg-[var(--bg-surface)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] text-[var(--text-main)] hover:text-[var(--accent-text)] transition-colors cursor-pointer text-xs"
+              >
+                {chip.emoji} {chip.label}
+              </button>
+            ))}
+          </div>
 
-            {/* Easy-To-Use URL Creation Card */}
-            <div className="mx-auto max-w-xl rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] p-4 sm:p-5 shadow-lg text-left">
-              <form onSubmit={handleHeroFormSubmit} className="space-y-3">
-                <div>
-                  <label htmlFor="workspace-input" className="block text-xs font-semibold text-[var(--text-main)] mb-1.5">
-                    Choose your workspace link:
-                  </label>
-                  <div className="flex items-center rounded-xl border border-[var(--border-color)] bg-[var(--input-bg)] px-3 py-2.5 focus-within:border-[var(--accent-primary)] transition-colors">
-                    <span className="shrink-0 select-none font-mono text-xs text-[var(--text-muted)] pr-1">
-                      filesp.pages.dev/projects/
+          {/* Clean, Lightweight Split Window Preview */}
+          <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-surface)] shadow-lg overflow-hidden text-left">
+            {/* Window Chrome */}
+            <div className="px-3.5 py-2 bg-[var(--header-bg)] border-b border-[var(--border-color)] flex items-center justify-between text-xs font-mono text-[var(--text-muted)]">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+                <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+              </div>
+              <div className="flex items-center gap-1 text-[11px]">
+                <Lock className="w-3 h-3 text-[var(--accent-text)]" />
+                <span>filesp.pages.dev/projects/{effectivePreviewSlug}</span>
+              </div>
+              <div className="flex items-center gap-1 text-[10px] text-[var(--status-success-text)] font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--status-success-text)]" />
+                Live Sync
+              </div>
+            </div>
+
+            {/* Split Window Body */}
+            <div className="grid grid-cols-1 md:grid-cols-12 divide-y md:divide-y-0 md:divide-x divide-[var(--border-color)]">
+              {/* Left: Live Notes Pane (7 cols) */}
+              <div className="md:col-span-7 p-4 bg-[var(--bg-main)] space-y-2.5 text-xs font-mono">
+                <div className="flex items-center justify-between pb-1.5 border-b border-[var(--border-color)] text-[11px] text-[var(--text-muted)]">
+                  <span className="font-semibold text-[var(--text-main)] flex items-center gap-1">
+                    <Code2 className="w-3.5 h-3.5 text-[var(--accent-text)]" />
+                    meeting-notes.md
+                  </span>
+                  <span>Markdown</span>
+                </div>
+
+                <div className="space-y-1.5 text-[var(--text-main)] font-sans">
+                  <div className="font-bold text-sm">Sprint Highlights &amp; Tasks</div>
+                  <div className="space-y-1 font-mono text-xs">
+                    <div className="flex items-center gap-2 text-[var(--status-success-text)]">
+                      <span>☑</span>
+                      <span className="line-through text-[var(--text-muted)]">Fast real-time notes streaming</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[var(--status-success-text)]">
+                      <span>☑</span>
+                      <span className="line-through text-[var(--text-muted)]">500MB multi-file uploads</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[var(--accent-text)]">
+                      <span>☐</span>
+                      <span className="font-semibold text-[var(--text-main)]">Share link with teammates</span>
+                      <span className="text-[10px] px-1 py-0.2 rounded bg-[var(--accent-primary)]/15">typing...</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 text-[10px] text-[var(--text-muted)] flex items-center justify-between font-mono">
+                  <span>Auto-saved live</span>
+                  <span className="text-[var(--accent-text)]">● 2 collaborators typing</span>
+                </div>
+              </div>
+
+              {/* Right: File Vault Pane (5 cols) */}
+              <div className="md:col-span-5 p-4 bg-[var(--bg-surface)] flex flex-col justify-between space-y-3">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between pb-1.5 border-b border-[var(--border-color)] text-[11px] font-mono">
+                    <span className="font-semibold text-[var(--text-main)] flex items-center gap-1">
+                      <Upload className="w-3.5 h-3.5 text-[var(--accent-text)]" />
+                      File Vault
                     </span>
-                    <input
-                      id="workspace-input"
-                      ref={inputRef}
-                      type="text"
-                      value={slugInput}
-                      onChange={(e) => setSlugInput(e.target.value)}
-                      placeholder={suggestedSlug}
-                      aria-label="Workspace room name"
-                      autoComplete="off"
-                      spellCheck={false}
-                      className="w-full bg-transparent font-mono text-xs sm:text-sm font-medium text-[var(--text-main)] placeholder:text-[var(--text-muted)] focus:outline-none"
-                    />
-                    {slugInput && (
+                    <span className="text-[var(--text-muted)]">500MB limit</span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="p-2 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <FileText className="w-4 h-4 text-red-400 shrink-0" />
+                        <span className="truncate font-semibold text-[var(--text-main)] text-xs">report.pdf</span>
+                      </div>
                       <button
                         type="button"
-                        onClick={() => setSlugInput("")}
-                        aria-label="Clear room name"
-                        className="ml-1 rounded p-1 text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer"
+                        onClick={handleCopySample}
+                        className="text-[10px] font-mono px-2 py-0.5 rounded bg-[var(--badge-bg)] text-[var(--accent-text)] hover:opacity-80 cursor-pointer"
                       >
-                        <X className="h-3.5 w-3.5" />
+                        {copiedFile ? "Copied!" : "Link"}
                       </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={handleShufflePlaceholder}
-                      title="Suggest another random name"
-                      aria-label="Suggest another random name"
-                      className="ml-1 rounded p-1 text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer"
-                    >
-                      <Shuffle className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row items-center gap-2.5">
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    size="md"
-                    className="w-full sm:flex-1 !py-3 !text-sm !font-semibold shadow-sm"
-                    iconRight={<ArrowRight className="h-4 w-4" />}
-                  >
-                    Open Workspace
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="md"
-                    className="w-full sm:w-auto !py-3 !text-sm !font-medium"
-                    icon={<Zap className="h-4 w-4 text-[var(--accent-text)]" />}
-                    onClick={handleRandomSpace}
-                  >
-                    Random Space ⚡
-                  </Button>
-                </div>
-              </form>
-
-              {/* Quick ideas chips */}
-              <div className="mt-3.5 pt-3 border-t border-[var(--border-color)] flex flex-wrap items-center justify-between gap-2 text-xs">
-                <div className="flex flex-wrap items-center gap-1.5 text-[var(--text-muted)]">
-                  <span>Quick ideas:</span>
-                  {QUICK_CHIPS.map((chip) => (
-                    <button
-                      key={chip.slug}
-                      type="button"
-                      onClick={() => navigateToSpace(chip.slug)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[var(--bg-main)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] text-[var(--text-main)] hover:text-[var(--accent-text)] transition-colors cursor-pointer text-xs"
-                    >
-                      <span>{chip.emoji}</span>
-                      <span>{chip.label}</span>
-                    </button>
-                  ))}
-                </div>
-
-                {recentSpaces.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={handleOpenRecentModal}
-                    className="text-[var(--accent-text)] font-semibold hover:underline cursor-pointer flex items-center gap-1"
-                  >
-                    <History className="h-3.5 w-3.5" />
-                    <span>Recent ({recentSpaces.length})</span>
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Interactive Browser Window Mockup ("Show, Don't Tell") */}
-            <div className="mt-12 overflow-hidden rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] shadow-xl text-left">
-              {/* Window Header */}
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-color)] bg-[var(--header-bg)] px-4 py-2.5">
-                <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-red-500/80" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-amber-500/80" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/80" />
-                </div>
-
-                <div className="flex max-w-sm flex-1 items-center justify-center gap-1.5 rounded-lg border border-[var(--border-color)] bg-[var(--input-bg)] px-3 py-1 font-mono text-[11px] text-[var(--text-muted)]">
-                  <Lock className="h-3 w-3 text-[var(--accent-text)]" />
-                  <span className="truncate">filesp.pages.dev/projects/{effectivePreviewSlug}</span>
-                </div>
-
-                <div className="flex items-center gap-1.5 text-xs font-medium text-[var(--status-success-text)]">
-                  <span className="h-2 w-2 rounded-full bg-[var(--status-success-text)]" />
-                  <span>Live Sync</span>
-                </div>
-              </div>
-
-              {/* Mockup Tab Selector */}
-              <div
-                role="tablist"
-                aria-label="Workspace preview tabs"
-                className="flex items-center gap-1 overflow-x-auto border-b border-[var(--border-color)] bg-[var(--bg-main)] px-3 pt-2"
-              >
-                {(
-                  [
-                    { id: "notes", emoji: "📝", label: "Live Notes" },
-                    { id: "vault", emoji: "📁", label: "500MB File Vault" },
-                    { id: "phone", emoji: "📱", label: "Phone to PC" },
-                    { id: "security", emoji: "🔒", label: "Password Lock" },
-                  ] as const
-                ).map((tab) => {
-                  const isActive = activeTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      role="tab"
-                      type="button"
-                      aria-selected={isActive}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`inline-flex shrink-0 items-center gap-1.5 rounded-t-lg border border-b-0 px-3.5 py-2 text-xs font-medium transition-colors cursor-pointer ${
-                        isActive
-                          ? "border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)]"
-                          : "border-transparent bg-transparent text-[var(--text-muted)] hover:text-[var(--text-main)]"
-                      }`}
-                    >
-                      <span>{tab.emoji}</span>
-                      <span>{tab.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Viewport content */}
-              <div className="p-4 sm:p-6 min-h-[300px]">
-                {/* TAB 1: LIVE NOTES */}
-                {activeTab === "notes" && (
-                  <div className="grid gap-4 md:grid-cols-12">
-                    <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4 md:col-span-7 space-y-3">
-                      <div className="flex items-center justify-between pb-2 border-b border-[var(--border-color)] text-xs">
-                        <span className="font-semibold text-[var(--text-main)] flex items-center gap-1.5">
-                          <Code2 className="h-3.5 w-3.5 text-[var(--accent-text)]" />
-                          meeting-agenda.md
-                        </span>
-                        <button
-                          type="button"
-                          onClick={handleTriggerFormatDemo}
-                          className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-mono border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer"
-                        >
-                          <Wand2 className="h-3 w-3 text-[var(--accent-text)]" />
-                          <span>{isFormattedFlash ? "Cleaned!" : "Tidy Text"}</span>
-                        </button>
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="text-sm font-bold text-[var(--text-main)]">
-                          Sprint Planning &amp; Tasks
-                        </div>
-                        <div className="space-y-1.5">
-                          {previewTasks.map((task) => (
-                            <button
-                              key={task.id}
-                              type="button"
-                              onClick={() => handleTogglePreviewTask(task.id)}
-                              className="flex w-full items-center gap-2.5 rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] px-3 py-2 text-left text-xs transition-colors hover:border-[var(--accent-primary)] cursor-pointer"
-                            >
-                              <span
-                                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
-                                  task.done
-                                    ? "border-[var(--status-success-text)] bg-[var(--status-success-bg)] text-[var(--status-success-text)]"
-                                    : "border-[var(--border-color)] bg-[var(--input-bg)]"
-                                }`}
-                              >
-                                {task.done && <Check className="h-3 w-3" />}
-                              </span>
-                              <span className={task.done ? "text-[var(--text-muted)] line-through" : "text-[var(--text-main)]"}>
-                                {task.text}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="pt-2 text-[11px] text-[var(--text-muted)] flex items-center justify-between">
-                        <span>Click any checklist item above to toggle</span>
-                        <span className="text-[var(--accent-text)]">● 3 collaborators editing</span>
-                      </div>
                     </div>
 
-                    <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4 md:col-span-5 flex flex-col justify-between">
-                      <div className="space-y-3">
-                        <div className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">
-                          How it works
-                        </div>
-                        <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                          Anyone with the link can write at the same time. There are no save buttons—every word syncs across all open screens automatically in milliseconds.
-                        </p>
-                        <div className="p-3 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-color)] text-xs space-y-1.5">
-                          <div className="font-semibold text-[var(--text-main)]">What you can write:</div>
-                          <div className="text-[var(--text-muted)]">• Bullet points &amp; checklists</div>
-                          <div className="text-[var(--text-muted)]">• Code blocks &amp; tables</div>
-                          <div className="text-[var(--text-muted)]">• Mermaid flowcharts</div>
-                        </div>
+                    <div className="p-2 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <FileArchive className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span className="truncate font-semibold text-[var(--text-main)] text-xs">assets.zip</span>
                       </div>
-
-                      <div className="pt-2">
-                        <Button
-                          variant="secondary"
-                          size="xs"
-                          className="w-full"
-                          onClick={handleOpenCustomSpace}
-                          iconRight={<ArrowRight className="h-3.5 w-3.5" />}
-                        >
-                          Try it live now
-                        </Button>
-                      </div>
+                      <span className="text-[10px] font-mono text-[var(--text-muted)]">38MB</span>
                     </div>
                   </div>
-                )}
+                </div>
 
-                {/* TAB 2: 500MB FILE VAULT */}
-                {activeTab === "vault" && (
-                  <div className="space-y-4">
-                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--badge-border)] bg-[var(--badge-bg)] text-[var(--accent-text)]">
-                          <Upload className="h-4 w-4" />
-                        </div>
-                        <div>
-                          <div className="text-xs font-semibold text-[var(--text-main)]">
-                            Drag &amp; drop any file up to 500MB
-                          </div>
-                          <div className="text-[11px] text-[var(--text-muted)]">
-                            Videos, ZIPs, PDFs, APKs, photos, and documents download directly in the browser.
-                          </div>
-                        </div>
-                      </div>
-                      <Button
-                        variant="secondary"
-                        size="xs"
-                        icon={<ArrowRight className="h-3.5 w-3.5" />}
-                        onClick={handleOpenCustomSpace}
-                      >
-                        Open Vault
-                      </Button>
-                    </div>
-
-                    <div className="space-y-2.5">
-                      {VAULT_PREVIEW_FILES.map((file) => (
-                        <div
-                          key={file.id}
-                          className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-3.5 flex flex-col gap-2"
-                        >
-                          <div className="flex flex-wrap items-center justify-between gap-3">
-                            <div className="flex items-center gap-3 min-w-0">
-                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--accent-text)]">
-                                {file.kind === "video" && <Film className="h-4 w-4" />}
-                                {file.kind === "archive" && <FileArchive className="h-4 w-4" />}
-                                {file.kind === "doc" && <FileText className="h-4 w-4" />}
-                              </div>
-                              <div className="min-w-0">
-                                <div className="truncate font-semibold text-xs text-[var(--text-main)]">
-                                  {file.name}
-                                </div>
-                                <div className="text-[11px] text-[var(--text-muted)]">
-                                  {file.size} • {file.meta}
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                              {file.uploading ? (
-                                <span className="rounded-md bg-[var(--badge-bg)] px-2 py-1 font-mono text-[11px] font-medium text-[var(--accent-text)]">
-                                  {file.progress}%
-                                </span>
-                              ) : (
-                                <>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleCopyPreviewLink(file.id)}
-                                    className="inline-flex items-center gap-1 rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] px-2.5 py-1 text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer"
-                                  >
-                                    {copiedFileId === file.id ? (
-                                      <>
-                                        <Check className="h-3.5 w-3.5 text-[var(--status-success-text)]" />
-                                        <span>Copied!</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Copy className="h-3.5 w-3.5" />
-                                        <span>Copy Link</span>
-                                      </>
-                                    )}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={handleOpenCustomSpace}
-                                    className="inline-flex items-center gap-1 rounded-lg border border-[var(--badge-border)] bg-[var(--badge-bg)] px-2.5 py-1 text-xs font-medium text-[var(--accent-text)] hover:opacity-90 cursor-pointer"
-                                  >
-                                    <Download className="h-3.5 w-3.5" />
-                                    <span>Download</span>
-                                  </button>
-                                </>
-                              )}
-                            </div>
-                          </div>
-
-                          {file.uploading && (
-                            <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-main)]">
-                              <div
-                                className="h-full rounded-full bg-[var(--accent-primary)] transition-all"
-                                style={{ width: `${file.progress}%` }}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* TAB 3: PHONE TO PC */}
-                {activeTab === "phone" && (
-                  <div className="grid gap-4 md:grid-cols-2 items-center">
-                    <div className="flex flex-col justify-between rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4 space-y-4">
-                      <div>
-                        <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-main)] mb-1">
-                          <Smartphone className="h-4 w-4 text-[var(--accent-text)]" />
-                          Send Photos &amp; Files from Phone to PC
-                        </div>
-                        <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                          Tired of messaging yourself on WhatsApp or using cables? Just scan this QR code with your phone camera to open this exact workspace on your mobile.
-                        </p>
-                      </div>
-
-                      <div className="space-y-1.5 text-xs text-[var(--text-muted)]">
-                        <div className="flex items-center gap-2">
-                          <Check className="h-3.5 w-3.5 text-[var(--status-success-text)]" />
-                          <span>No app download or Bluetooth pairing</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Check className="h-3.5 w-3.5 text-[var(--status-success-text)]" />
-                          <span>Works on iPhone, iPad, and Android</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Check className="h-3.5 w-3.5 text-[var(--status-success-text)]" />
-                          <span>Drop photos straight onto your desktop</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-center justify-center p-4 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] text-center space-y-2">
-                      <div className="p-2.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-main)]">
-                        <svg
-                          viewBox="0 0 20 20"
-                          className="h-28 w-28"
-                          role="img"
-                          aria-label="Workspace QR code"
-                        >
-                          {QR_MATRIX.map((row, rIdx) =>
-                            row.map((cell, cIdx) =>
-                              cell === 1 ? (
-                                <rect
-                                  key={`${rIdx}-${cIdx}`}
-                                  x={cIdx}
-                                  y={rIdx}
-                                  width="1"
-                                  height="1"
-                                  fill="var(--text-main)"
-                                />
-                              ) : null
-                            )
-                          )}
-                        </svg>
-                      </div>
-                      <div className="font-mono text-xs text-[var(--text-muted)]">
-                        Point camera to scan
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* TAB 4: PASSWORD LOCK */}
-                {activeTab === "security" && (
-                  <div className="grid gap-4 md:grid-cols-2 items-center">
-                    <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4 space-y-3">
-                      <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-main)]">
-                        <Lock className="h-4 w-4 text-[var(--status-success-text)]" />
-                        Private Password Protection
-                      </div>
-                      <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                        Sharing sensitive work, client contracts, or private drafts? Set a password in one click. Only people who know the password will be able to view or edit notes and files.
-                      </p>
-                      <div className="pt-1">
-                        <button
-                          type="button"
-                          onClick={() => setIsPreviewLocked((v) => !v)}
-                          className="inline-flex items-center gap-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] px-3 py-2 text-xs font-semibold text-[var(--text-main)] hover:border-[var(--accent-primary)] transition-colors cursor-pointer"
-                        >
-                          {isPreviewLocked ? (
-                            <>
-                              <Lock className="h-4 w-4 text-[var(--status-success-text)]" />
-                              <span>Password Lock: Enabled (Click to test unlock)</span>
-                            </>
-                          ) : (
-                            <>
-                              <Unlock className="h-4 w-4 text-[var(--text-muted)]" />
-                              <span>Password Lock: Disabled (Click to enable)</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4 text-center space-y-3">
-                      <div className="w-10 h-10 rounded-full bg-[var(--status-success-bg)] text-[var(--status-success-text)] mx-auto flex items-center justify-center">
-                        <ShieldCheck className="h-5 w-5" />
-                      </div>
-                      <div className="text-sm font-bold text-[var(--text-main)]">
-                        {isPreviewLocked ? "Room is Password-Locked" : "Public Room Mode"}
-                      </div>
-                      <p className="text-xs text-[var(--text-muted)]">
-                        {isPreviewLocked
-                          ? "Visitors must type the correct password to unlock this room."
-                          : "Anyone with the link can open and edit. Add a password whenever you need privacy."}
-                      </p>
-                    </div>
-                  </div>
-                )}
+                <div className="text-[10px] text-center text-[var(--text-muted)]">
+                  Drop any file to share instantly
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* How It Works — 3 Simple Steps */}
-        <section id="how-it-works" className="border-b border-[var(--border-color)] bg-[var(--bg-surface)] py-14 sm:py-16">
-          <div className="mx-auto max-w-5xl px-4 sm:px-6">
-            <div className="text-center max-w-xl mx-auto mb-10">
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-2">
-                How It Works
-              </h2>
-              <p className="text-xs sm:text-sm text-[var(--text-muted)]">
-                Start working in 5 seconds with three simple steps.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 space-y-3">
-                <span className="w-8 h-8 rounded-lg bg-[var(--badge-bg)] text-[var(--accent-text)] border border-[var(--badge-border)] flex items-center justify-center font-bold text-sm">
-                  1
-                </span>
-                <h3 className="font-bold text-base text-[var(--text-main)]">Pick Any Name</h3>
+        {/* 4 Clean Value Pillars */}
+        <section id="features" className="py-12 border-t border-b border-[var(--border-color)] bg-[var(--bg-surface)]">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-4 sm:p-5 rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)] space-y-2">
+                <div className="flex items-center gap-2 text-sm font-bold text-[var(--text-main)]">
+                  <FileText className="w-4 h-4 text-[var(--accent-text)]" />
+                  Live Markdown Notes
+                </div>
                 <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                  Type a custom URL like <code className="px-1.5 py-0.5 rounded bg-[var(--bg-main)] text-[var(--accent-text)] font-mono">/projects/meeting</code> or click Random Space. Your workspace opens right away.
+                  Type together in real time. Full Markdown checklists, tables, code blocks, and live diagrams sync without page refreshes.
                 </p>
               </div>
 
-              <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 space-y-3">
-                <span className="w-8 h-8 rounded-lg bg-[var(--badge-bg)] text-[var(--accent-text)] border border-[var(--badge-border)] flex items-center justify-center font-bold text-sm">
-                  2
-                </span>
-                <h3 className="font-bold text-base text-[var(--text-main)]">Type &amp; Drop Files</h3>
+              <div className="p-4 sm:p-5 rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)] space-y-2">
+                <div className="flex items-center gap-2 text-sm font-bold text-[var(--text-main)]">
+                  <HardDrive className="w-4 h-4 text-[var(--accent-text)]" />
+                  500MB File Sharing
+                </div>
                 <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                  Take notes together in real time and attach files up to 500MB. Everyone sees changes live without refreshing the page.
+                  Bypass 25MB email attachment caps. Drop large videos, ZIPs, or PDFs with direct browser download links.
                 </p>
               </div>
 
-              <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 space-y-3">
-                <span className="w-8 h-8 rounded-lg bg-[var(--badge-bg)] text-[var(--accent-text)] border border-[var(--badge-border)] flex items-center justify-center font-bold text-sm">
-                  3
-                </span>
-                <h3 className="font-bold text-base text-[var(--text-main)]">Share the Link</h3>
+              <div className="p-4 sm:p-5 rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)] space-y-2">
+                <div className="flex items-center gap-2 text-sm font-bold text-[var(--text-main)]">
+                  <Smartphone className="w-4 h-4 text-[var(--accent-text)]" />
+                  Phone to PC Transfer
+                </div>
                 <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                  Share the link with anyone, scan the QR code from your phone, or add an optional password for private collaboration.
+                  Scan the workspace QR code with your phone camera to transfer photos, documents, or links straight to your desktop.
+                </p>
+              </div>
+
+              <div className="p-4 sm:p-5 rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)] space-y-2">
+                <div className="flex items-center gap-2 text-sm font-bold text-[var(--text-main)]">
+                  <Lock className="w-4 h-4 text-[var(--accent-text)]" />
+                  Password Protection
+                </div>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  Lock private workspaces in one click with an optional password. Only visitors who enter the password can access your space.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* 4 Everyday Use Cases */}
-        <section id="features" className="border-b border-[var(--border-color)] bg-[var(--bg-main)] py-14 sm:py-16">
-          <div className="mx-auto max-w-5xl px-4 sm:px-6">
-            <div className="text-center max-w-xl mx-auto mb-10">
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-2">
-                Built for Everyday Tasks
-              </h2>
-              <p className="text-xs sm:text-sm text-[var(--text-muted)]">
-                Fast, friction-free productivity between your devices and your team.
-              </p>
-            </div>
+        {/* Compact Comparison Table */}
+        <section id="compare" className="py-12 border-b border-[var(--border-color)] bg-[var(--bg-main)]">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6">
+            <h2 className="text-xl font-bold tracking-tight text-[var(--text-main)] mb-6 text-center">
+              Why Choose FileShare
+            </h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6 space-y-3 hover:border-[var(--accent-primary)] transition-colors">
-                <div className="w-10 h-10 rounded-xl bg-[var(--badge-bg)] text-[var(--accent-text)] flex items-center justify-center">
-                  <Smartphone className="h-5 w-5" />
-                </div>
-                <h3 className="font-bold text-base text-[var(--text-main)]">Phone to PC Transfer</h3>
-                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                  Need to send a photo or document from your phone to your laptop? Scan the workspace QR code on your PC screen, upload the photo from your phone, and download it instantly on PC.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6 space-y-3 hover:border-[var(--accent-primary)] transition-colors">
-                <div className="w-10 h-10 rounded-xl bg-[var(--badge-bg)] text-[var(--accent-text)] flex items-center justify-center">
-                  <Users className="h-5 w-5" />
-                </div>
-                <h3 className="font-bold text-base text-[var(--text-main)]">Live Shared Meeting Notes</h3>
-                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                  Co-edit meeting minutes, study guides, or brainstorm lists with friends or coworkers. Zero sign-up, zero Google Drive access requests, and zero delay.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6 space-y-3 hover:border-[var(--accent-primary)] transition-colors">
-                <div className="w-10 h-10 rounded-xl bg-[var(--badge-bg)] text-[var(--accent-text)] flex items-center justify-center">
-                  <HardDrive className="h-5 w-5" />
-                </div>
-                <h3 className="font-bold text-base text-[var(--text-main)]">500MB Quick File Drop</h3>
-                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                  Email attachment capped at 25MB? Drop heavy videos, ZIP files, PDFs, or design assets up to 500MB and send a single link that downloads directly in the browser.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6 space-y-3 hover:border-[var(--accent-primary)] transition-colors">
-                <div className="w-10 h-10 rounded-xl bg-[var(--badge-bg)] text-[var(--accent-text)] flex items-center justify-center">
-                  <Lock className="h-5 w-5" />
-                </div>
-                <h3 className="font-bold text-base text-[var(--text-main)]">Password-Locked Sharing</h3>
-                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                  Sharing sensitive client work, credentials, or personal notes? Add an optional password so only authorized people with the passphrase can view the content.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Platform Comparison Matrix */}
-        <section id="compare" className="border-b border-[var(--border-color)] bg-[var(--bg-surface)] py-14 sm:py-16">
-          <div className="mx-auto max-w-5xl px-4 sm:px-6">
-            <div className="text-center max-w-xl mx-auto mb-8">
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-2">
-                Why People Prefer FileShare
-              </h2>
-              <p className="text-xs sm:text-sm text-[var(--text-muted)]">
-                See how FileShare compares to traditional cloud drives and paste tools.
-              </p>
-            </div>
-
-            <div className="overflow-x-auto rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] shadow-xs">
-              <table className="w-full min-w-[640px] border-collapse text-left text-xs sm:text-sm">
+            <div className="overflow-x-auto rounded-xl border border-[var(--border-color)] bg-[var(--bg-surface)]">
+              <table className="w-full min-w-[580px] text-left text-xs">
                 <thead>
-                  <tr className="border-b border-[var(--border-color)] bg-[var(--bg-surface)]">
-                    <th className="px-4 py-3.5 font-bold text-[var(--text-main)]">Feature</th>
-                    <th className="border-x border-[var(--badge-border)] bg-[var(--badge-bg)] px-4 py-3.5 font-bold text-[var(--accent-text)]">
-                      FileShare
-                    </th>
-                    <th className="px-4 py-3.5 font-medium text-[var(--text-muted)]">Google Drive</th>
-                    <th className="px-4 py-3.5 font-medium text-[var(--text-muted)]">Standard Pastebin</th>
-                    <th className="px-4 py-3.5 font-medium text-[var(--text-muted)]">WeTransfer</th>
+                  <tr className="border-b border-[var(--border-color)] bg-[var(--bg-card)]">
+                    <th className="p-3 font-semibold text-[var(--text-main)]">Feature</th>
+                    <th className="p-3 font-bold text-[var(--accent-text)]">FileShare</th>
+                    <th className="p-3 text-[var(--text-muted)]">Google Drive</th>
+                    <th className="p-3 text-[var(--text-muted)]">Pastebin</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[var(--border-color)] text-xs text-[var(--text-muted)]">
+                <tbody className="divide-y divide-[var(--border-color)] text-[var(--text-muted)]">
                   {COMPARISON_ROWS.map((row) => (
                     <tr key={row.feature} className="hover:bg-[var(--bg-card-hover)] transition-colors">
-                      <td className="px-4 py-3.5 font-semibold text-[var(--text-main)]">
-                        {row.feature}
+                      <td className="p-3 font-medium text-[var(--text-main)]">{row.feature}</td>
+                      <td className="p-3 font-semibold text-[var(--status-success-text)] flex items-center gap-1">
+                        <Check className="w-3.5 h-3.5 shrink-0" />
+                        <span>{row.fileshare}</span>
                       </td>
-                      <td className="border-x border-[var(--badge-border)] bg-[var(--badge-bg)] px-4 py-3.5 font-semibold text-[var(--status-success-text)]">
-                        <span className="flex items-center gap-1.5">
-                          <Check className="h-3.5 w-3.5 shrink-0" />
-                          <span>{row.fileshare}</span>
-                        </span>
-                      </td>
-                      <td className="px-4 py-3.5">{row.drive}</td>
-                      <td className="px-4 py-3.5">{row.pastebin}</td>
-                      <td className="px-4 py-3.5">{row.wetransfer}</td>
+                      <td className="p-3">{row.drive}</td>
+                      <td className="p-3">{row.pastebin}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -1022,138 +546,53 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
           </div>
         </section>
 
-        {/* Guides & Resources Section */}
-        {ARTICLES.length > 0 && (
-          <section id="guides" className="border-b border-[var(--border-color)] bg-[var(--bg-main)] py-14 sm:py-16">
-            <div className="mx-auto max-w-5xl px-4 sm:px-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-3 mb-8">
-                <div>
-                  <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-1">
-                    Helpful Guides &amp; Tips
-                  </h2>
-                  <p className="text-xs sm:text-sm text-[var(--text-muted)]">
-                    Quick tutorials on getting the most out of your workspaces.
-                  </p>
-                </div>
-                <Link
-                  href="/resources"
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--accent-text)] hover:underline"
-                >
-                  <BookOpen className="h-3.5 w-3.5" />
-                  <span>View all guides</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
+        {/* Compact FAQ Accordion */}
+        <section id="faq" className="py-12 max-w-3xl mx-auto px-4 sm:px-6">
+          <h2 className="text-xl font-bold tracking-tight text-[var(--text-main)] mb-6 text-center">
+            Frequently Asked Questions
+          </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {ARTICLES.slice(0, 3).map((article) => (
-                  <Link
-                    key={article.slug}
-                    href={`/resources/${article.slug}`}
-                    className="group rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 hover:border-[var(--accent-primary)] hover:bg-[var(--bg-card-hover)] transition-all flex flex-col justify-between"
+          <div className="divide-y divide-[var(--border-color)] rounded-xl border border-[var(--border-color)] bg-[var(--bg-surface)] overflow-hidden">
+            {FAQ_ITEMS.map((item, idx) => {
+              const isOpen = openFaqIndex === idx;
+              return (
+                <div key={item.question}>
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                    className="w-full flex items-center justify-between p-3.5 text-left text-xs font-semibold text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] cursor-pointer transition-colors"
                   >
-                    <div>
-                      <div className="flex items-center justify-between text-[11px] font-mono text-[var(--text-muted)] mb-2">
-                        <span className="text-[var(--accent-text)] font-semibold">{article.category}</span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {article.readTime}
-                        </span>
-                      </div>
-                      <h3 className="text-sm font-bold text-[var(--text-main)] group-hover:text-[var(--accent-text)] transition-colors mb-2">
-                        {article.title}
-                      </h3>
-                      <p className="text-xs text-[var(--text-muted)] line-clamp-3 leading-relaxed mb-4">
-                        {article.description}
-                      </p>
+                    <span>{item.question}</span>
+                    <ChevronDown className={`w-4 h-4 shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180 text-[var(--accent-text)]" : "text-[var(--text-muted)]"}`} />
+                  </button>
+                  {isOpen && (
+                    <div className="px-3.5 pb-3.5 text-xs text-[var(--text-muted)] leading-relaxed">
+                      {item.answer}
                     </div>
-                    <div className="pt-3 border-t border-[var(--border-color)] flex items-center justify-between text-xs text-[var(--text-muted)]">
-                      <span>{article.date}</span>
-                      <span className="font-semibold text-[var(--accent-text)] flex items-center gap-1">
-                        Read <ArrowRight className="h-3 w-3" />
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* FAQ Section */}
-        <section id="faq" className="border-b border-[var(--border-color)] bg-[var(--bg-surface)] py-14 sm:py-16">
-          <div className="mx-auto max-w-3xl px-4 sm:px-6">
-            <div className="text-center max-w-xl mx-auto mb-8">
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-2">
-                Frequently Asked Questions
-              </h2>
-              <p className="text-xs sm:text-sm text-[var(--text-muted)]">
-                Everything you need to know about FileShare.
-              </p>
-            </div>
-
-            <div className="divide-y divide-[var(--border-color)] rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] overflow-hidden">
-              {FAQ_ITEMS.map((item, idx) => {
-                const isOpen = openFaqIndex === idx;
-                return (
-                  <div key={item.question}>
-                    <button
-                      type="button"
-                      aria-expanded={isOpen}
-                      onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
-                      className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-[var(--bg-card-hover)] cursor-pointer"
-                    >
-                      <span className="text-sm font-semibold text-[var(--text-main)]">
-                        {item.question}
-                      </span>
-                      <ChevronDown
-                        className={`h-4 w-4 shrink-0 transition-transform duration-200 ${
-                          isOpen ? "rotate-180 text-[var(--accent-text)]" : "text-[var(--text-muted)]"
-                        }`}
-                      />
-                    </button>
-                    {isOpen && (
-                      <div className="px-5 pb-4 text-xs sm:text-sm leading-relaxed text-[var(--text-muted)]">
-                        {item.answer}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </section>
 
-        {/* Bottom CTA Banner */}
-        <section className="bg-[var(--bg-main)] py-14 sm:py-20">
-          <div className="mx-auto max-w-4xl px-4 sm:px-6 text-center space-y-5">
-            <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-[var(--text-main)]">
-              Start in 5 seconds. No account needed.
+        {/* Clean Bottom Banner */}
+        <section className="py-12 border-t border-[var(--border-color)] bg-[var(--bg-surface)] text-center">
+          <div className="max-w-md mx-auto px-4 space-y-3">
+            <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-main)]">
+              Ready to start?
             </h2>
-            <p className="text-xs sm:text-base text-[var(--text-muted)] max-w-lg mx-auto leading-relaxed">
-              Open a free workspace right now. Take live notes, send large files up to 500MB, and share with anyone through a single link.
+            <p className="text-xs text-[var(--text-muted)]">
+              No forms, no passwords to create, no fees. Just click and collaborate.
             </p>
-            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <div className="pt-2 flex items-center justify-center gap-2">
               <Button
                 variant="primary"
-                size="lg"
-                icon={<Zap className="h-4 w-4" />}
+                size="md"
+                icon={<Zap className="w-4 h-4" />}
                 onClick={handleRandomSpace}
-                className="w-full sm:w-auto !px-6 !py-3"
               >
-                Create Instant Workspace ⚡
-              </Button>
-              <Button
-                variant="secondary"
-                size="lg"
-                iconRight={<ArrowRight className="h-4 w-4" />}
-                onClick={() => {
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                  inputRef.current?.focus();
-                }}
-                className="w-full sm:w-auto !px-6 !py-3"
-              >
-                Choose Custom Link
+                Instant Space ⚡
               </Button>
             </div>
           </div>
@@ -1162,7 +601,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
 
       <Footer />
 
-      {/* Recent Spaces History Modal */}
+      {/* Recent Spaces Modal */}
       <Modal
         open={isRecentModalOpen}
         onClose={() => setIsRecentModalOpen(false)}
@@ -1179,7 +618,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
                 setRecentQuery("");
               }}
             >
-              Clear History
+              Clear
             </Button>
             <Button
               size="sm"
@@ -1193,106 +632,63 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
       >
         <div className="space-y-3">
           {recentSpaces.length > 0 && (
-            <div className="flex items-center gap-2 rounded-xl border border-[var(--border-color)] bg-[var(--input-bg)] px-3 py-2 focus-within:border-[var(--accent-primary)]">
+            <div className="flex items-center gap-2 rounded-xl border border-[var(--border-color)] bg-[var(--input-bg)] px-3 py-2">
               <Search className="h-4 w-4 shrink-0 text-[var(--text-muted)]" />
               <input
                 type="text"
                 value={recentQuery}
                 onChange={(e) => setRecentQuery(e.target.value)}
-                placeholder="Search your workspaces..."
-                aria-label="Filter recent workspaces"
+                placeholder="Search..."
                 className="w-full bg-transparent text-xs text-[var(--text-main)] placeholder:text-[var(--text-muted)] focus:outline-none"
               />
-              {recentQuery && (
-                <button
-                  type="button"
-                  onClick={() => setRecentQuery("")}
-                  aria-label="Clear filter"
-                  className="text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
             </div>
           )}
 
           {sortedRecentSpaces.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-[var(--border-color)] bg-[var(--bg-surface)] px-4 py-8 text-center">
-              <History className="mx-auto h-6 w-6 text-[var(--text-muted)] opacity-50" />
-              <p className="mt-2 text-sm font-medium text-[var(--text-main)]">
-                {recentSpaces.length === 0
-                  ? "No recent spaces yet"
-                  : "No matching workspaces found"}
-              </p>
-              <p className="mt-1 text-xs text-[var(--text-muted)]">
-                {recentSpaces.length === 0
-                  ? "Rooms you visit will appear here so you can easily return to them."
-                  : "Try searching for a different room name."}
-              </p>
+            <div className="p-6 text-center text-xs text-[var(--text-muted)]">
+              No recent spaces found.
             </div>
           ) : (
-            <ul className="max-h-80 space-y-2 overflow-y-auto pr-1">
+            <ul className="max-h-72 space-y-1.5 overflow-y-auto pr-1">
               {sortedRecentSpaces.map((space) => (
                 <li
                   key={space.slug}
-                  className="flex items-center justify-between gap-2 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] px-3 py-2.5 transition-colors hover:border-[var(--accent-primary)]"
+                  className="flex items-center justify-between p-2 rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] text-xs"
                 >
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsRecentModalOpen(false);
-                      navigateToSpace(space.slug);
-                    }}
-                    className="flex min-w-0 flex-1 flex-col text-left cursor-pointer"
-                  >
-                    <span className="truncate font-mono text-xs font-semibold text-[var(--text-main)]">
+                  <div className="flex-1 min-w-0 pr-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsRecentModalOpen(false);
+                        navigateToSpace(space.slug);
+                      }}
+                      className="w-full text-left truncate font-mono font-medium text-[var(--text-main)] cursor-pointer hover:underline"
+                    >
                       /projects/{space.slug}
-                    </span>
-                    <span className="mt-0.5 flex items-center gap-2 text-[11px] text-[var(--text-muted)]">
-                      {space.pinned && (
-                        <span className="rounded bg-[var(--badge-bg)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--accent-text)]">
-                          Pinned
-                        </span>
-                      )}
-                      <span>
-                        {clientNow
-                          ? formatRelativeTime(space.lastVisited, clientNow)
-                          : "Visited recently"}
-                      </span>
-                    </span>
-                  </button>
-
-                  <div className="flex shrink-0 items-center gap-1">
+                    </button>
+                    <div className="text-[10px] text-[var(--text-muted)]">
+                      {clientNow ? formatRelativeTime(space.lastVisited, clientNow) : ""}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
                     <button
                       type="button"
                       onClick={() => togglePin(space.slug)}
                       title={space.pinned ? "Unpin space" : "Pin space"}
-                      aria-label={
-                        space.pinned
-                          ? `Unpin ${space.slug}`
-                          : `Pin ${space.slug}`
-                      }
-                      className={`rounded-lg p-1.5 transition-colors hover:bg-[var(--bg-card-hover)] cursor-pointer ${
+                      className={`p-1 transition-colors cursor-pointer ${
                         space.pinned
                           ? "text-[var(--accent-text)]"
                           : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
                       }`}
                     >
-                      {space.pinned ? (
-                        <PinOff className="h-3.5 w-3.5" />
-                      ) : (
-                        <Pin className="h-3.5 w-3.5" />
-                      )}
+                      <Pin className={`w-3.5 h-3.5 ${space.pinned ? "fill-current" : ""}`} />
                     </button>
-
                     <button
                       type="button"
                       onClick={() => removeRecentSpace(space.slug)}
-                      title="Remove from history"
-                      aria-label={`Remove ${space.slug} from history`}
-                      className="rounded-lg p-1.5 text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-card-hover)] hover:text-[var(--status-danger-text)] cursor-pointer"
+                      className="p-1 text-[var(--text-muted)] hover:text-red-400 cursor-pointer"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </li>

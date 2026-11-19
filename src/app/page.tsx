@@ -7,7 +7,7 @@ const appUrl = getAppUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
-  title: "Free Online Notepad Without Login & File Sharing | FileShare",
+  title: "Free Online Notepad & File Sharing | FileShare",
   description: "Free online notepad without login for real-time Markdown collaboration and secure file sharing up to 500MB. Create a workspace instantly with no registration.",
   keywords: [
     "online notepad without login",
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     canonical: appUrl,
   },
   openGraph: {
-    title: "Free Online Notepad Without Login & File Sharing | FileShare",
+    title: "Free Online Notepad & File Sharing | FileShare",
     description: "Real-time Markdown notes and secure file sharing up to 500MB without registration.",
     url: appUrl,
     siteName: "FileShare",
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Free Online Notepad Without Login & File Sharing | FileShare",
+    title: "Free Online Notepad & File Sharing | FileShare",
     description: "Create a real-time Markdown workspace and share files up to 500MB with no sign-up.",
     images: [`${appUrl}/og-image.png`],
   },

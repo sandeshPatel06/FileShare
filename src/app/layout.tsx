@@ -22,7 +22,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
   title: {
-    default: "Free Online Notepad Without Login & File Sharing | FileShare",
+    default: "Free Online Notepad & File Sharing | FileShare",
     template: "%s | FileShare",
   },
   description: "Free online notepad without login for real-time Markdown collaboration and secure file sharing up to 500MB. Create a workspace instantly with no registration.",
@@ -107,7 +107,7 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
   openGraph: {
-    title: "Free Online Notepad Without Login & File Sharing | FileShare",
+    title: "Free Online Notepad & File Sharing | FileShare",
     description: "Collaborate on Markdown notes in real time and share files up to 500MB without registration.",
     url: appUrl,
     siteName: "FileShare",
@@ -120,7 +120,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Free Online Notepad Without Login & File Sharing | FileShare",
+    title: "Free Online Notepad & File Sharing | FileShare",
     description: "Real-time Markdown notes and secure 500MB file sharing with no sign-up required.",
     images: [`${appUrl}/og-image.png`],
   },

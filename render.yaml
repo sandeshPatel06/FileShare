@@ -25,3 +25,10 @@ services:
         value: filesharedev2
       - key: B2_REGION
         value: us-east-005
+      # Google AdSense Unit Slots
+      - key: NEXT_PUBLIC_ADS_SLOT_GUIDE
+        value: "6198869307"
+      - key: NEXT_PUBLIC_ADS_SLOT_ABOUT
+        value: "1524080945"
+      - key: NEXT_PUBLIC_ADS_SLOT_ARTICLE
+        value: "7927331059"

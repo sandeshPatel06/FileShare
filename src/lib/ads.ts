@@ -18,10 +18,9 @@
  */
 export const ADSENSE_CLIENT_ID = "ca-pub-4947821599815451";
 
-const guideMid = process.env.NEXT_PUBLIC_ADS_SLOT_GUIDE || "";
-const aboutMid = process.env.NEXT_PUBLIC_ADS_SLOT_ABOUT || "";
-/** Keep empty during review — no ads on article pages yet */
-const articleMid = process.env.NEXT_PUBLIC_ADS_SLOT_ARTICLE || "";
+const guideMid = process.env.NEXT_PUBLIC_ADS_SLOT_GUIDE || "6198869307";
+const aboutMid = process.env.NEXT_PUBLIC_ADS_SLOT_ABOUT || "1524080945";
+const articleMid = process.env.NEXT_PUBLIC_ADS_SLOT_ARTICLE || "7927331059";
 
 export const ADSENSE_SLOTS = {
   guideMid,

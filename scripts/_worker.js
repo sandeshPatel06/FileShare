@@ -16,36 +16,6 @@ export default {
       });
     }
 
-    const isImageOrAsset =
-      pathname === "/og-image.png" ||
-      pathname === "/logo.png" ||
-      pathname === "/favicon.ico" ||
-      pathname === "/icon.svg" ||
-      pathname === "/manifest.json" ||
-      pathname.startsWith("/_next/static/") ||
-      /\.(png|jpe?g|gif|webp|svg|ico|woff2?|ttf|eot)$/i.test(pathname);
-
-    // Try serving static assets directly from Cloudflare Pages dist bundle if available
-    if (isImageOrAsset && env?.ASSETS) {
-      try {
-        const assetRes = await env.ASSETS.fetch(request);
-        if (assetRes.status < 400) {
-          const headers = new Headers(assetRes.headers);
-          headers.set("Access-Control-Allow-Origin", "*");
-          headers.set("Cross-Origin-Resource-Policy", "cross-origin");
-          headers.set("Timing-Allow-Origin", "*");
-          headers.set("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800");
-          return new Response(assetRes.body, {
-            status: assetRes.status,
-            statusText: assetRes.statusText,
-            headers,
-          });
-        }
-      } catch (e) {
-        // Fall back to backend on error
-      }
-    }
-
     const backendHost = env?.BACKEND_HOST || "fileshare-live.onrender.com";
     const targetUrl = new URL(request.url);
     targetUrl.hostname = backendHost;
@@ -79,16 +49,20 @@ export default {
       const newHeaders = new Headers(response.headers);
       const contentType = response.headers.get("content-type") || "";
 
-      // Allow cross-origin embedding for images, fonts, and static assets
-      if (
-        isImageOrAsset ||
-        contentType.startsWith("image/") ||
-        contentType.startsWith("font/")
-      ) {
+      // Allow cross-origin embedding specifically for public images & fonts
+      const isPublicImage =
+        pathname === "/og-image.png" ||
+        pathname === "/logo.png" ||
+        pathname === "/favicon.ico" ||
+        pathname === "/favicon.png" ||
+        pathname === "/icon.svg" ||
+        pathname === "/manifest.json" ||
+        contentType.startsWith("image/");
+
+      if (isPublicImage) {
         newHeaders.set("Access-Control-Allow-Origin", "*");
         newHeaders.set("Cross-Origin-Resource-Policy", "cross-origin");
         newHeaders.set("Timing-Allow-Origin", "*");
-        newHeaders.set("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800");
       }
 
       const location = response.headers.get("Location") || response.headers.get("location");

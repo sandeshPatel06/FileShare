@@ -16,7 +16,7 @@ import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { AdSenseScript } from "@/components/ads/AdSenseScript";
 import { AdBanner } from "@/components/ads/AdBanner";
 import { CookieSettingsButton } from "@/components/ui/CookieConsent";
-import { getAppUrl } from "@/lib/seo";
+import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 import { ADSENSE_SLOTS } from "@/lib/ads";
 
 interface Props {
@@ -39,6 +39,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!article) {
     return {
       title: "Article Not Found — FileShare",
+      robots: {
+        index: false,
+        follow: false,
+      },
     };
   }
 
@@ -55,23 +59,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: article.description,
       url: canonicalUrl,
       siteName: "FileShare",
+      locale: "en_US",
       type: "article",
       publishedTime: article.date,
       authors: [article.author],
-      images: [
-        {
-          url: `${appUrl}/logo.png`,
-          width: 512,
-          height: 512,
-          alt: article.title,
-        },
+      section: article.category,
+      tags: [
+        article.category,
+        "FileShare",
+        "Real-Time Collaboration",
+        "File Sharing",
+        "Engineering",
       ],
+      images: getDefaultOgImages(appUrl, article.title),
     },
     twitter: {
       card: "summary_large_image",
       title: article.title,
       description: article.description,
-      images: [`${appUrl}/logo.png`],
+      images: [`${appUrl}/og-image.png`],
     },
   };
 }
@@ -94,6 +100,16 @@ export default async function ArticlePage({ params }: Props) {
     "@type": "TechArticle",
     headline: article.title,
     description: article.description,
+    url: `${appUrl}/resources/${slug}`,
+    mainEntityOfPage: `${appUrl}/resources/${slug}`,
+    articleSection: article.category,
+    keywords: [
+      article.category,
+      "FileShare",
+      "Real-Time Collaboration",
+      "File Sharing",
+      "Engineering",
+    ].join(", "),
     author: {
       "@type": "Organization",
       name: article.author,
@@ -102,14 +118,15 @@ export default async function ArticlePage({ params }: Props) {
     publisher: {
       "@type": "Organization",
       name: "FileShare",
+      url: appUrl,
       logo: {
         "@type": "ImageObject",
         url: `${appUrl}/logo.png`,
       },
     },
     datePublished: article.date,
-    mainEntityOfPage: `${appUrl}/resources/${slug}`,
     wordCount: article.wordCount,
+    image: `${appUrl}/logo.png`,
   };
 
   const breadcrumbJsonLd = {

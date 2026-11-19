@@ -14,7 +14,7 @@ import {
 import { AdSenseScript } from "@/components/ads/AdSenseScript";
 import { AdBanner } from "@/components/ads/AdBanner";
 import { CookieSettingsButton } from "@/components/ui/CookieConsent";
-import { getAppUrl } from "@/lib/seo";
+import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 import { ADSENSE_SLOTS } from "@/lib/ads";
 
 const appUrl = getAppUrl();
@@ -26,17 +26,70 @@ export const metadata: Metadata = {
     canonical: `${appUrl}/about`,
   },
   openGraph: {
-    title: "About FileShare — Mission, Architecture & Privacy Values",
+    title: "About FileShare — Engineering Mission, Architecture & Privacy Values",
     description: "Learn why FileShare was created: our engineering philosophy, ephemeral architecture, and privacy values.",
     url: `${appUrl}/about`,
     siteName: "FileShare",
+    locale: "en_US",
     type: "website",
+    images: getDefaultOgImages(
+      appUrl,
+      "About FileShare — Mission, Architecture & Privacy Values"
+    ),
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About FileShare — Engineering Mission, Architecture & Privacy Values",
+    description: "Learn why FileShare was created: our engineering philosophy, ephemeral architecture, and privacy values.",
+    images: [`${appUrl}/og-image.png`],
   },
 };
 
 export default function AboutPage() {
+  const aboutSchema = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "AboutPage",
+        "@id": `${appUrl}/about#webpage`,
+        "url": `${appUrl}/about`,
+        "name": "About FileShare — Engineering Mission, Architecture & Privacy Values",
+        "description": "Learn why FileShare was created: our engineering philosophy, privacy-first ephemeral architecture, open-source values, and transparent platform infrastructure.",
+        "isPartOf": {
+          "@type": "WebSite",
+          "@id": `${appUrl}/#website`,
+          "name": "FileShare",
+          "url": appUrl,
+        },
+        "inLanguage": "en-US",
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${appUrl}/about#breadcrumb`,
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": appUrl,
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "About",
+            "item": `${appUrl}/about`,
+          },
+        ],
+      },
+    ],
+  };
+
   return (
     <div className="min-h-dvh bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-200">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutSchema) }}
+      />
       {/* Conditionally load AdSense on this comprehensive publisher about page */}
       <AdSenseScript />
 

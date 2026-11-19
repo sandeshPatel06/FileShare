@@ -12,10 +12,10 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Redirect old domains to new domain
+  // Redirect old domains to canonical domain
   if (
-    currentDomain.includes("fileshare-live.onrender.com") ||
-    currentDomain.includes("fileshare.shptechnology.online")
+    currentDomain.includes("onrender.com") ||
+    currentDomain.includes("shptechnology.online")
   ) {
     const url = request.nextUrl.clone();
     url.hostname = "filesp.pages.dev";

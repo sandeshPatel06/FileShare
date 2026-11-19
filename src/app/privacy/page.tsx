@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Shield, FileText, Lock, Globe, Database, Cookie, AlertCircle, Scale, UserCheck } from "lucide-react";
 import { CookieSettingsButton } from "@/components/ui/CookieConsent";
-import { getAppUrl } from "@/lib/seo";
+import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 
 const appUrl = getAppUrl();
 
@@ -13,11 +13,22 @@ export const metadata: Metadata = {
     canonical: `${appUrl}/privacy`,
   },
   openGraph: {
-    title: "Privacy Policy — FileShare",
+    title: "Privacy Policy — GDPR & India DPDP Act 2023 Compliant — FileShare",
     description: "Learn how FileShare protects your personal data in compliance with GDPR and India's DPDP Act 2023.",
     url: `${appUrl}/privacy`,
     siteName: "FileShare",
+    locale: "en_US",
     type: "website",
+    images: getDefaultOgImages(
+      appUrl,
+      "FileShare — Privacy Policy & Data Protection Notice"
+    ),
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Privacy Policy — GDPR & India DPDP Act 2023 Compliant — FileShare",
+    description: "Learn how FileShare protects your personal data in compliance with GDPR and India's DPDP Act 2023.",
+    images: [`${appUrl}/og-image.png`],
   },
 };
 

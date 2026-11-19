@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FileText, CheckCircle2, AlertTriangle, ShieldAlert, Scale, Globe, Building2 } from "lucide-react";
-import { getAppUrl } from "@/lib/seo";
+import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 
 const appUrl = getAppUrl();
 
@@ -12,11 +12,22 @@ export const metadata: Metadata = {
     canonical: `${appUrl}/terms`,
   },
   openGraph: {
-    title: "Terms and Conditions — FileShare",
+    title: "Terms and Conditions & Intermediary Guidelines — FileShare",
     description: "Terms of Service, Intermediary Guidelines, and Acceptable Use Policy for FileShare.",
     url: `${appUrl}/terms`,
     siteName: "FileShare",
+    locale: "en_US",
     type: "website",
+    images: getDefaultOgImages(
+      appUrl,
+      "FileShare — Terms and Conditions & Intermediary Guidelines"
+    ),
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Terms and Conditions & Intermediary Guidelines — FileShare",
+    description: "Terms of Service, Intermediary Guidelines, and Acceptable Use Policy for FileShare.",
+    images: [`${appUrl}/og-image.png`],
   },
 };
 

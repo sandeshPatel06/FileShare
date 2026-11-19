@@ -19,7 +19,7 @@ import {
 import { AdSenseScript } from "@/components/ads/AdSenseScript";
 import { AdBanner } from "@/components/ads/AdBanner";
 import { CookieSettingsButton } from "@/components/ui/CookieConsent";
-import { getAppUrl } from "@/lib/seo";
+import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 import { ADSENSE_SLOTS } from "@/lib/ads";
 
 const appUrl = getAppUrl();
@@ -27,15 +27,36 @@ const appUrl = getAppUrl();
 export const metadata: Metadata = {
   title: "Complete Documentation & User Guide — FileShare",
   description: "Comprehensive manual and knowledge base for FileShare. Master real-time Markdown notes, AI formatting, Mermaid diagrams, file vaults, and cryptographic security.",
+  keywords: [
+    "FileShare user guide",
+    "FileShare documentation",
+    "collaborative markdown tutorial",
+    "real-time notes documentation",
+    "how to use online notepad without login",
+    "mermaid diagrams tutorial",
+    "file vault manual",
+    "ephemeral workspace guide",
+  ],
   alternates: {
     canonical: `${appUrl}/guide`,
   },
   openGraph: {
     title: "Complete Documentation & User Guide — FileShare",
-    description: "Master real-time Markdown notes, Mermaid diagrams, file vaults, and security on FileShare.",
+    description: "Master real-time Markdown notes, Mermaid diagrams, file vaults, and cryptographic security on FileShare.",
     url: `${appUrl}/guide`,
     siteName: "FileShare",
+    locale: "en_US",
     type: "website",
+    images: getDefaultOgImages(
+      appUrl,
+      "FileShare Documentation & User Guide"
+    ),
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Complete Documentation & User Guide — FileShare",
+    description: "Master real-time Markdown notes, Mermaid diagrams, file vaults, and cryptographic security on FileShare.",
+    images: [`${appUrl}/og-image.png`],
   },
 };
 
@@ -44,6 +65,8 @@ export default function GuidePage() {
   const guideFaqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
+    "@id": `${appUrl}/guide#faq`,
+    "url": `${appUrl}/guide`,
     "mainEntity": [
       {
         "@type": "Question",
@@ -80,11 +103,87 @@ export default function GuidePage() {
     ]
   };
 
+  const guideHowToSchema = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "@id": `${appUrl}/guide#howto`,
+    "name": "How to Use FileShare Real-Time Workspace, Markdown Editor, and File Vault",
+    "description": "Step-by-step instructions for creating ephemeral workspaces, collaborating in real time, rendering Mermaid diagrams, using the AI formatting copilot, and uploading files up to 500MB on FileShare.",
+    "url": `${appUrl}/guide`,
+    "image": `${appUrl}/logo.png`,
+    "totalTime": "PT5M",
+    "step": [
+      {
+        "@type": "HowToStep",
+        "position": 1,
+        "name": "Create or Navigate to a Workspace Slug",
+        "text": "Open FileShare and choose a custom workspace slug under /s/[slug] or click 'New Space' for a cryptographically randomized name. The space is provisioned atomically on first visit.",
+        "url": `${appUrl}/guide#section-1`
+      },
+      {
+        "@type": "HowToStep",
+        "position": 2,
+        "name": "Write and Format Live Markdown",
+        "text": "Type in the split-view editor using standard GitHub Flavored Markdown (GFM). Use Cmd/Ctrl+Shift+F to trigger the AI Copilot formatter to clean headings, lists, and line breaks without disturbing code blocks.",
+        "url": `${appUrl}/guide#section-2`
+      },
+      {
+        "@type": "HowToStep",
+        "position": 3,
+        "name": "Render Declarative Mermaid Diagrams",
+        "text": "Add ```mermaid fenced code blocks to create flowcharts, sequence diagrams, and architecture maps that compile dynamically to SVG in the live preview.",
+        "url": `${appUrl}/guide#section-4`
+      },
+      {
+        "@type": "HowToStep",
+        "position": 4,
+        "name": "Upload and Manage Files in the Vault",
+        "text": "Drag and drop archives, documents, images, or media up to 500MB into the File Vault. Files are backed by cloud storage with streaming downloads and inline media previews.",
+        "url": `${appUrl}/guide#section-6`
+      },
+      {
+        "@type": "HowToStep",
+        "position": 5,
+        "name": "Lock Workspace and Share via QR Code",
+        "text": "Optionally set a bcrypt passphrase lock to restrict access to authenticated JWT sessions, or click the QR code icon to instantly open the space on mobile devices.",
+        "url": `${appUrl}/guide#section-7`
+      }
+    ]
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "@id": `${appUrl}/guide#breadcrumb`,
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": appUrl
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Documentation & User Guide",
+        "item": `${appUrl}/guide`
+      }
+    ]
+  };
+
   return (
     <div className="min-h-dvh bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-200">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(guideFaqSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(guideHowToSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       {/* Conditionally load AdSense on this comprehensive publisher guide */}
       <AdSenseScript />

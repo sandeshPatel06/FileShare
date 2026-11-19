@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import db from "@/lib/db";
 import { SharePage } from "@/components/SharePage";
 import { slugSchema } from "@/lib/validators";
-import { getAppUrl } from "@/lib/seo";
+import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 import type { Metadata } from "next";
 
 interface Props {
@@ -28,6 +28,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       follow: false,
       noimageindex: true,
       nocache: true,
+      googleBot: {
+        index: false,
+        follow: false,
+        noimageindex: true,
+      },
     },
     alternates: {
       canonical: canonicalUrl,
@@ -37,21 +42,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: `Real-time collaborative text and file sharing workspace at /s/${slug}.`,
       url: canonicalUrl,
       siteName: "FileShare",
+      locale: "en_US",
       type: "website",
-      images: [
-        {
-          url: `${appUrl}/logo.png`,
-          width: 512,
-          height: 512,
-          alt: `FileShare Workspace - ${slug}`,
-        },
-      ],
+      images: getDefaultOgImages(
+        appUrl,
+        `FileShare Workspace - ${slug}`
+      ),
     },
     twitter: {
       card: "summary_large_image",
       title: `${slug} — FileShare Live Space`,
       description: `Collaborate live in real-time at /s/${slug}.`,
-      images: [`${appUrl}/logo.png`],
+      images: [`${appUrl}/og-image.png`],
     },
   };
 }

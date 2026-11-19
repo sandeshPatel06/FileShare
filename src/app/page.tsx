@@ -1,11 +1,12 @@
 import { generateSlug } from "@/lib/slugGenerator";
 import { LandingPage } from "@/components/LandingPage";
-import { getAppUrl } from "@/lib/seo";
+import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 import type { Metadata } from "next";
 
 const appUrl = getAppUrl();
 
 export const metadata: Metadata = {
+  metadataBase: new URL(appUrl),
   title: "Free Online Notepad Without Login & File Sharing | FileShare",
   description: "Free online notepad without login for real-time Markdown collaboration and secure file sharing up to 500MB. Create a workspace instantly with no registration.",
   keywords: [
@@ -47,21 +48,18 @@ export const metadata: Metadata = {
     description: "Real-time Markdown notes and secure file sharing up to 500MB without registration.",
     url: appUrl,
     siteName: "FileShare",
+    locale: "en_US",
     type: "website",
-    images: [
-      {
-        url: `${appUrl}/logo.png`,
-        width: 512,
-        height: 512,
-        alt: "FileShare Logo — Real-Time Notes & File Vault",
-      },
-    ],
+    images: getDefaultOgImages(
+      appUrl,
+      "FileShare Logo — Real-Time Notes & File Vault"
+    ),
   },
   twitter: {
     card: "summary_large_image",
     title: "Free Online Notepad Without Login & File Sharing | FileShare",
     description: "Create a real-time Markdown workspace and share files up to 500MB with no sign-up.",
-    images: [`${appUrl}/logo.png`],
+    images: [`${appUrl}/og-image.png`],
   },
 };
 

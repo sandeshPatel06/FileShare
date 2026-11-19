@@ -3,7 +3,7 @@ import Link from "next/link";
 import { FileText, BookOpen, Clock, Tag, ArrowRight, ShieldCheck, Sparkles, Compass } from "lucide-react";
 import { getAllArticles } from "@/lib/articles";
 import { CookieSettingsButton } from "@/components/ui/CookieConsent";
-import { getAppUrl } from "@/lib/seo";
+import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 
 const appUrl = getAppUrl();
 
@@ -18,7 +18,18 @@ export const metadata: Metadata = {
     description: "Explore comprehensive guides on collaborative note-taking, file sharing, security, and developer productivity.",
     url: `${appUrl}/resources`,
     siteName: "FileShare",
+    locale: "en_US",
     type: "website",
+    images: getDefaultOgImages(
+      appUrl,
+      "FileShare Knowledge Hub — Engineering Resources & Guides"
+    ),
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Engineering Resources & Guides — FileShare Knowledge Hub",
+    description: "Explore in-depth engineering articles on real-time collaborative note-taking, secure file vaults, modern Markdown syntax, and privacy-first remote productivity.",
+    images: [`${appUrl}/og-image.png`],
   },
 };
 

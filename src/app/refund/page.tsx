@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CreditCard, CheckCircle2, ShieldAlert, ArrowLeft, Mail, RefreshCcw } from "lucide-react";
-import { getAppUrl } from "@/lib/seo";
+import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 
 const appUrl = getAppUrl();
 
@@ -16,7 +16,18 @@ export const metadata: Metadata = {
     description: "Read the transparent Refund and Cancellation terms for FileShare.",
     url: `${appUrl}/refund`,
     siteName: "FileShare",
+    locale: "en_US",
     type: "website",
+    images: getDefaultOgImages(
+      appUrl,
+      "FileShare — Refund & Cancellation Policy"
+    ),
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Refund & Cancellation Policy — FileShare",
+    description: "Read the transparent Refund and Cancellation terms for FileShare.",
+    images: [`${appUrl}/og-image.png`],
   },
 };
 

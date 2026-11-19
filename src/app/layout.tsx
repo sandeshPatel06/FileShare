@@ -5,7 +5,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { AdaptiveFontLoader } from "@/components/AdaptiveFontLoader";
 import { ToastProvider } from "@/components/ui/Toast";
 import { CookieConsent } from "@/components/ui/CookieConsent";
-import { getAppUrl } from "@/lib/seo";
+import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 
 const appUrl = getAppUrl();
 
@@ -113,20 +113,16 @@ export const metadata: Metadata = {
     siteName: "FileShare",
     locale: "en_US",
     type: "website",
-    images: [
-      {
-        url: `${appUrl}/logo.png`,
-        width: 512,
-        height: 512,
-        alt: "FileShare Logo — Real-Time Notes & File Sharing Vault",
-      },
-    ],
+    images: getDefaultOgImages(
+      appUrl,
+      "FileShare — Real-Time Notes & File Sharing Vault"
+    ),
   },
   twitter: {
     card: "summary_large_image",
     title: "Free Online Notepad Without Login & File Sharing | FileShare",
     description: "Real-time Markdown notes and secure 500MB file sharing with no sign-up required.",
-    images: [`${appUrl}/logo.png`],
+    images: [`${appUrl}/og-image.png`],
   },
   robots: {
     index: true,

@@ -79,7 +79,7 @@ src/
   middleware.ts           # DEPRECATED in Next 16 → see src/proxy.ts (301 old onrender host → canonical domain)
 ```
 
-Config: `next.config.ts` (security headers, `allowedDevOrigins`), `deploy.sh`, `render.yaml`, `.github/workflows/ci.yml`.
+Config: `next.config.ts` (security headers, `allowedDevOrigins`), `deploy.sh`, `render.yaml`, `scripts/build-pages.sh`.
 
 ---
 
@@ -243,9 +243,9 @@ Production canonical host is forced in `src/lib/seo.ts` when `NODE_ENV=productio
 
 ## 6. CI / deploy
 
-- **CI (`.github/workflows/ci.yml`):** `tsc --noEmit`, `eslint`, production build on `main`.
-- **Render:** build `./deploy.sh`, start `npm start`; set env vars from README.
-- **Agent rule still applies:** agents themselves should not run full `npm run build` in interactive loops; CI does.
+- **Deploy:** Cloudflare Pages automatically builds via `scripts/build-pages.sh` on push to `main`; Render builds `./deploy.sh` and starts `npm start`.
+- **Pre-commit quality check:** run `npx tsc --noEmit` and `npx eslint .` before committing.
+- **Agent rule still applies:** agents should not run full `npm run build` in interactive loops.
 
 ---
 

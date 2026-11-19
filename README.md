@@ -85,7 +85,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - **Database**: PostgreSQL (`pg`) with automatic table provisioning & SQLite (`better-sqlite3`) fallback
 - **Storage**: Backblaze B2 S3 SDK (`@aws-sdk/client-s3`) & local disk fallback
 - **Streaming Engine**: Node.js `EventEmitter` + Server-Sent Events (SSE)
-- **CI/CD**: GitHub Actions workflow (`.github/workflows/ci.yml`)
+- **Deployment**: Cloudflare Pages edge proxy (`filesp.pages.dev`) + Render Node runtime backend
 
 ---
 

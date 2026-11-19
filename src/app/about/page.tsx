@@ -20,13 +20,13 @@ import { ADSENSE_SLOTS } from "@/lib/ads";
 const appUrl = getAppUrl();
 
 export const metadata: Metadata = {
-  title: "About FileShare — Engineering Mission & Privacy",
+  title: "About Us — Architecture & Privacy",
   description: "Learn why FileShare was created: our engineering philosophy, privacy-first ephemeral architecture, open-source values, and transparent platform infrastructure.",
   alternates: {
     canonical: `${appUrl}/about`,
   },
   openGraph: {
-    title: "About FileShare — Engineering Mission & Privacy",
+    title: "About Us — Architecture & Privacy",
     description: "Learn why FileShare was created: our engineering philosophy, ephemeral architecture, and privacy values.",
     url: `${appUrl}/about`,
     siteName: "FileShare",
@@ -39,7 +39,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "About FileShare — Engineering Mission & Privacy",
+    site: "@SandeshPat007",
+    creator: "@SandeshPat007",
+    title: "About Us — Architecture & Privacy",
     description: "Learn why FileShare was created: our engineering philosophy, ephemeral architecture, and privacy values.",
     images: [`${appUrl}/og-image.png`],
   },

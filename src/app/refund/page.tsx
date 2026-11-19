@@ -6,13 +6,13 @@ import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 const appUrl = getAppUrl();
 
 export const metadata: Metadata = {
-  title: "Refund & Cancellation Policy — FileShare",
+  title: "Refund Policy",
   description: "Official Refund and Cancellation Policy for FileShare, operated by SHP Technology. Learn about our free service tier, voluntary contributions, and dispute resolutions.",
   alternates: {
     canonical: `${appUrl}/refund`,
   },
   openGraph: {
-    title: "Refund & Cancellation Policy — FileShare",
+    title: "Refund Policy — FileShare",
     description: "Read the transparent Refund and Cancellation terms for FileShare.",
     url: `${appUrl}/refund`,
     siteName: "FileShare",
@@ -25,7 +25,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Refund & Cancellation Policy — FileShare",
+    site: "@SandeshPat007",
+    creator: "@SandeshPat007",
+    title: "Refund Policy — FileShare",
     description: "Read the transparent Refund and Cancellation terms for FileShare.",
     images: [`${appUrl}/og-image.png`],
   },

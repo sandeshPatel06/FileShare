@@ -7,13 +7,13 @@ import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 const appUrl = getAppUrl();
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — GDPR & DPDP Compliant | FileShare",
+  title: "Privacy Policy (GDPR & DPDP)",
   description: "Comprehensive Privacy Policy for FileShare (SHP Technology). Fully compliant with the EU General Data Protection Regulation (GDPR) and India's Digital Personal Data Protection (DPDP) Act, 2023.",
   alternates: {
     canonical: `${appUrl}/privacy`,
   },
   openGraph: {
-    title: "Privacy Policy — GDPR & DPDP Compliant | FileShare",
+    title: "Privacy Policy — GDPR & DPDP Compliant",
     description: "Learn how FileShare protects your personal data in compliance with GDPR and India's DPDP Act 2023.",
     url: `${appUrl}/privacy`,
     siteName: "FileShare",
@@ -26,7 +26,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Privacy Policy — GDPR & DPDP Compliant | FileShare",
+    site: "@SandeshPat007",
+    creator: "@SandeshPat007",
+    title: "Privacy Policy — GDPR & DPDP Compliant",
     description: "Learn how FileShare protects your personal data in compliance with GDPR and India's DPDP Act 2023.",
     images: [`${appUrl}/og-image.png`],
   },

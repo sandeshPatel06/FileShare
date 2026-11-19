@@ -8,13 +8,13 @@ import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 const appUrl = getAppUrl();
 
 export const metadata: Metadata = {
-  title: "Engineering Resources & Guides — FileShare Knowledge Hub",
+  title: "Engineering Resources & Guides",
   description: "Explore in-depth engineering articles on real-time collaborative note-taking, secure file vaults, modern Markdown syntax, and privacy-first remote productivity.",
   alternates: {
     canonical: `${appUrl}/resources`,
   },
   openGraph: {
-    title: "Engineering Resources & Guides — FileShare Knowledge Hub",
+    title: "Knowledge Hub & Guides — FileShare",
     description: "Explore comprehensive guides on collaborative note-taking, file sharing, security, and developer productivity.",
     url: `${appUrl}/resources`,
     siteName: "FileShare",
@@ -27,7 +27,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Engineering Resources & Guides — FileShare Knowledge Hub",
+    site: "@SandeshPat007",
+    creator: "@SandeshPat007",
+    title: "Knowledge Hub & Guides — FileShare",
     description: "Explore in-depth engineering articles on real-time collaborative note-taking, secure file vaults, modern Markdown syntax, and privacy-first remote productivity.",
     images: [`${appUrl}/og-image.png`],
   },

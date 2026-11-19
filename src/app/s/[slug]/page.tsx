@@ -51,6 +51,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
+      site: "@SandeshPat007",
+      creator: "@SandeshPat007",
       title: `${slug} — FileShare Live Space`,
       description: `Collaborate live in real-time at /s/${slug}.`,
       images: [`${appUrl}/og-image.png`],

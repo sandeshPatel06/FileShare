@@ -25,7 +25,7 @@ import { ADSENSE_SLOTS } from "@/lib/ads";
 const appUrl = getAppUrl();
 
 export const metadata: Metadata = {
-  title: "Complete Documentation & User Guide — FileShare",
+  title: "User Guide & Documentation",
   description: "Comprehensive manual and knowledge base for FileShare. Master real-time Markdown notes, AI formatting, Mermaid diagrams, file vaults, and cryptographic security.",
   keywords: [
     "FileShare user guide",
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     canonical: `${appUrl}/guide`,
   },
   openGraph: {
-    title: "Complete Documentation & User Guide — FileShare",
+    title: "User Guide & Documentation — FileShare",
     description: "Master real-time Markdown notes, Mermaid diagrams, file vaults, and cryptographic security on FileShare.",
     url: `${appUrl}/guide`,
     siteName: "FileShare",
@@ -54,7 +54,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Complete Documentation & User Guide — FileShare",
+    site: "@SandeshPat007",
+    creator: "@SandeshPat007",
+    title: "User Guide & Documentation — FileShare",
     description: "Master real-time Markdown notes, Mermaid diagrams, file vaults, and cryptographic security on FileShare.",
     images: [`${appUrl}/og-image.png`],
   },

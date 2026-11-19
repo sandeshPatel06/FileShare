@@ -57,6 +57,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
+    site: "@SandeshPat007",
+    creator: "@SandeshPat007",
     title: "Free Online Notepad & File Sharing | FileShare",
     description: "Create a real-time Markdown workspace and share files up to 500MB with no sign-up.",
     images: [`${appUrl}/og-image.png`],

@@ -48,14 +48,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const canonicalUrl = `${appUrl}/resources/${slug}`;
 
+  const displayTitle = article.title.length > 60 ? `${article.title.slice(0, 57)}...` : article.title;
+  const serpHrefTitle = article.title.length <= 48 ? `${article.title} | FileShare` : `${article.title.slice(0, 47)}... | FileShare`;
+
   return {
-    title: `${article.title} — FileShare Resources`,
+    title: {
+      absolute: serpHrefTitle,
+    },
     description: article.description,
     alternates: {
       canonical: canonicalUrl,
     },
     openGraph: {
-      title: article.title,
+      title: displayTitle,
       description: article.description,
       url: canonicalUrl,
       siteName: "FileShare",
@@ -75,7 +80,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: article.title,
+      site: "@SandeshPat007",
+      creator: "@SandeshPat007",
+      title: displayTitle,
       description: article.description,
       images: [`${appUrl}/og-image.png`],
     },

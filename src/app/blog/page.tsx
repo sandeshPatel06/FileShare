@@ -5,14 +5,14 @@ import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 const appUrl = getAppUrl();
 
 export const metadata: Metadata = {
-  title: "Engineering Blog & Resources — FileShare",
+  title: "Engineering Blog",
   description:
     "Explore the FileShare engineering blog and technical resource publications.",
   alternates: {
     canonical: `${appUrl}/resources`,
   },
   openGraph: {
-    title: "Engineering Blog & Resources — FileShare",
+    title: "FileShare Engineering Blog",
     description:
       "Explore the FileShare engineering blog and technical resource publications.",
     url: `${appUrl}/resources`,
@@ -26,7 +26,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Engineering Blog & Resources — FileShare",
+    site: "@SandeshPat007",
+    creator: "@SandeshPat007",
+    title: "FileShare Engineering Blog",
     description:
       "Explore the FileShare engineering blog and technical resource publications.",
     images: [`${appUrl}/og-image.png`],

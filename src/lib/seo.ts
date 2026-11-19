@@ -29,6 +29,8 @@ export function getAppUrl(): string {
 }
 
 export const SITE_NAME = "FileShare";
+export const DEFAULT_TWITTER_SITE = "@SandeshPat007";
+export const DEFAULT_TWITTER_CREATOR = "@SandeshPat007";
 
 export function getDefaultOgImages(appUrl: string, customAlt?: string) {
   return [
@@ -45,4 +47,21 @@ export function getDefaultOgImages(appUrl: string, customAlt?: string) {
       alt: customAlt ? `${customAlt} Logo` : "FileShare Logo — Real-Time Notes & File Sharing Vault",
     },
   ];
+}
+
+export function getDefaultTwitter(options: {
+  title: string;
+  description: string;
+  image?: string;
+  card?: "summary_large_image" | "summary";
+}) {
+  const appUrl = getAppUrl();
+  return {
+    card: options.card || ("summary_large_image" as const),
+    site: DEFAULT_TWITTER_SITE,
+    creator: DEFAULT_TWITTER_CREATOR,
+    title: options.title,
+    description: options.description,
+    images: [options.image || `${appUrl}/og-image.png`],
+  };
 }

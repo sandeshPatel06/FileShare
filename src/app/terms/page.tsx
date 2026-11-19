@@ -6,13 +6,13 @@ import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 const appUrl = getAppUrl();
 
 export const metadata: Metadata = {
-  title: "Terms and Conditions & Intermediary Guidelines — FileShare",
+  title: "Terms and Conditions",
   description: "Terms and Conditions for FileShare (SHP Technology). Compliant with the Indian Information Technology Act, 2000 and global digital service regulations.",
   alternates: {
     canonical: `${appUrl}/terms`,
   },
   openGraph: {
-    title: "Terms and Conditions & Intermediary Guidelines — FileShare",
+    title: "Terms and Conditions — FileShare",
     description: "Terms of Service, Intermediary Guidelines, and Acceptable Use Policy for FileShare.",
     url: `${appUrl}/terms`,
     siteName: "FileShare",
@@ -25,7 +25,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Terms and Conditions & Intermediary Guidelines — FileShare",
+    site: "@SandeshPat007",
+    creator: "@SandeshPat007",
+    title: "Terms and Conditions — FileShare",
     description: "Terms of Service, Intermediary Guidelines, and Acceptable Use Policy for FileShare.",
     images: [`${appUrl}/og-image.png`],
   },

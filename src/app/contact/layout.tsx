@@ -4,7 +4,7 @@ import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 const appUrl = getAppUrl();
 
 export const metadata: Metadata = {
-  title: "Contact Us & Support — FileShare",
+  title: "Contact & Support",
   description: "Get in touch with the FileShare team. Technical inquiries, feedback, DMCA notices, and user support.",
   alternates: {
     canonical: `${appUrl}/contact`,
@@ -23,6 +23,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
+    site: "@SandeshPat007",
+    creator: "@SandeshPat007",
     title: "Contact Us & Support — FileShare",
     description: "Get in touch with the FileShare team for technical inquiries, DMCA notices, and user support.",
     images: [`${appUrl}/og-image.png`],

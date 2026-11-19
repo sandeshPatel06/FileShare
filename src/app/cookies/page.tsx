@@ -7,7 +7,7 @@ import { getAppUrl, getDefaultOgImages } from "@/lib/seo";
 const appUrl = getAppUrl();
 
 export const metadata: Metadata = {
-  title: "Cookie Policy — FileShare",
+  title: "Cookie Policy",
   description: "Detailed Cookie Policy for FileShare. Understand what cookies and browser storage technologies we use, why we use them, and how to manage your privacy preferences.",
   alternates: {
     canonical: `${appUrl}/cookies`,
@@ -26,6 +26,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
+    site: "@SandeshPat007",
+    creator: "@SandeshPat007",
     title: "Cookie Policy — FileShare",
     description: "Learn about the cookies and storage technologies used by FileShare.",
     images: [`${appUrl}/og-image.png`],
